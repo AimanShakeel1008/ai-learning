@@ -8,3 +8,6 @@ progress-tracker.md
 __pycache__/
 *.pyc
 .venv/
+
+# Local Claude Code settings - machine-specific, never commit
+.claude/
