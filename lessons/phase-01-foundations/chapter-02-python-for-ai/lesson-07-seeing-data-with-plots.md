@@ -82,11 +82,13 @@ pip install matplotlib
 
 *(Verify this install command still matches current matplotlib documentation if anything looks unfamiliar — package install commands are usually very stable, but it costs nothing to check.)*
 
-1. Import pandas and `matplotlib.pyplot as plt`, then build a 12-ticket DataFrame with `text`, `category`, and `satisfaction_rating` (one still missing, as in Lesson 06), plus `length` and `exclamations` columns computed with the same vectorized `.str` operations from last lesson.
-2. Draw a histogram of `length` with `plt.hist(..., bins=5)`, labelled with a title and axis labels.
-3. Count tickets per `category` with `.value_counts()`, then plot those counts as a bar chart.
-4. Drop the one missing rating with `.dropna(subset=['satisfaction_rating'])` (Lesson 06's tool, used here because the next two plots need real numbers in both places), then scatter-plot `length` against `satisfaction_rating`.
-5. Draw a box plot of `satisfaction_rating` grouped `by='category'`, clearing pandas' default title with `plt.suptitle("")` so only the chosen title remains.
+1. Import pandas and `matplotlib.pyplot as plt`, create a `plots/` folder next to the notebook with `os.makedirs("plots", exist_ok=True)`, then build a 12-ticket DataFrame with `text`, `category`, and `satisfaction_rating` (one still missing, as in Lesson 06), plus `length` and `exclamations` columns computed with the same vectorized `.str` operations from last lesson.
+2. Draw a histogram of `length` with `plt.hist(..., bins=5)`, labelled with a title and axis labels, then save it with `plt.savefig("plots/lesson-07-histogram-length.png")` before `plt.show()`.
+3. Count tickets per `category` with `.value_counts()`, plot those counts as a bar chart, and save it the same way.
+4. Drop the one missing rating with `.dropna(subset=['satisfaction_rating'])` (Lesson 06's tool, used here because the next two plots need real numbers in both places), scatter-plot `length` against `satisfaction_rating`, and save it.
+5. Draw a box plot of `satisfaction_rating` grouped `by='category'`, clearing pandas' default title with `plt.suptitle("")` so only the chosen title remains, and save it.
+
+Each `plt.savefig(...)` call must come *before* `plt.show()` — once a plot is shown, matplotlib clears its internal drawing surface, so a `savefig` call placed after `plt.show()` would save a blank image instead of the chart just drawn.
 
 ## 5. If You Ran This
 
