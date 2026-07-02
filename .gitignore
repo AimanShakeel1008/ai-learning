@@ -1,0 +1,10 @@
+# Local-only course control files - never commit these
+CLAUDE.md
+curriculum.md
+progress-tracker.md
+
+# Jupyter / Python noise
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.venv/
