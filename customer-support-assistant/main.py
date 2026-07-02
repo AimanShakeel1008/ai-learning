@@ -1,4 +1,4 @@
-from phase_01_foundations.ticket_urgency import predict_urgency, urgency_score
+from ticket_urgency import predict_urgency, urgency_score
 
 SAMPLE_TICKETS = [
     "My payment failed twice and I need this resolved right now",
@@ -12,6 +12,11 @@ def main():
     print("1) Ticket urgency detection")
     for ticket in SAMPLE_TICKETS:
         print(f"   [{predict_urgency(ticket)}] (score {urgency_score(ticket)}) {ticket}")
+
+    assert predict_urgency(SAMPLE_TICKETS[0]) == "urgent"
+    assert predict_urgency(SAMPLE_TICKETS[1]) == "not urgent"
+    print()
+    print("Self-check passed.")
 
 
 if __name__ == "__main__":

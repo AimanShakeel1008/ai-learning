@@ -51,3 +51,7 @@ if __name__ == "__main__":
     ]
     for ticket in demo_tickets:
         print(f"{ticket} -> {predict_urgency(ticket)} (score: {urgency_score(ticket)})")
+
+    assert predict_urgency("My payment failed twice and I need this resolved right now") == "urgent"
+    assert predict_urgency("Do you have this item in a larger size") == "not urgent"
+    print("Self-check passed.")

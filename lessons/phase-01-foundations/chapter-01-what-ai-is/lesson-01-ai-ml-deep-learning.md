@@ -5,9 +5,8 @@
 **Files created:**
 - `lessons/phase-01-foundations/chapter-01-what-ai-is/lesson-01-ai-ml-deep-learning.md` (this file)
 - `lesson-notebooks/phase-01-foundations/chapter-01-what-ai-is/lesson-01-ai-ml-deep-learning.ipynb`
-- `customer-support-assistant/phase_01_foundations/ticket_urgency.ipynb`
-- `customer-support-assistant/phase_01_foundations/ticket_urgency.py`
-- `customer-support-assistant/phase_01_foundations/__init__.py`
+- `customer-support-assistant/ticket_urgency.py`
+- `customer-support-assistant/notebooks/ticket_urgency.ipynb`
 - `customer-support-assistant/main.py`
 
 **Prerequisite lessons:** none — this is the first lesson of the course.
@@ -138,13 +137,13 @@ The same word-counting idea, slightly expanded with more example tickets, become
 
 This capability now exists in two matched forms, and this pairing is how every future lesson will add to the project:
 
-- `customer-support-assistant/phase_01_foundations/ticket_urgency.ipynb` — a notebook for reading and experimenting with the logic one cell at a time, same as any other lesson notebook.
-- `customer-support-assistant/phase_01_foundations/ticket_urgency.py` — the same logic as a clean, importable Python module. This is what the real assistant actually runs.
+- `customer-support-assistant/ticket_urgency.py` — the logic as a clean, importable Python module. This is what the real assistant actually runs.
+- `customer-support-assistant/notebooks/ticket_urgency.ipynb` — a notebook for reading and experimenting with the same logic one cell at a time, same as any other lesson notebook. All companion notebooks live together under `notebooks/`, kept separate from the runnable code at the project root.
 - `customer-support-assistant/main.py` — the project's entry point. It imports `ticket_urgency.py` and demonstrates the assistant's current capabilities. Every future lesson that adds a capability will extend `main.py` so the whole project keeps running end to end.
 
-**Note on folder naming:** inside `customer-support-assistant/`, phase folders use underscores (`phase_01_foundations`) instead of hyphens, because this folder is a real Python package and Python import statements cannot contain a hyphen. The `lessons/` and `lesson-notebooks/` folders keep hyphens, since nothing ever `import`s them as code.
+The project is a single, growing codebase — one file per feature, not one folder per course phase. When a later lesson improves a feature (for example, replacing this word-counter with real machine learning in Phase 2), it edits `ticket_urgency.py` and `notebooks/ticket_urgency.ipynb` in place, at the same path, rather than creating a second copy elsewhere. Git already keeps the full history of how each file changed, so the project itself only ever needs to hold its current, best version.
 
-This feature is clearly marked as a toy, first-draft version. Starting in Phase 2, once we learn real classification algorithms and proper evaluation, we will replace this hand-rolled counter with an actual trained model — this file exists so you can watch, lesson by lesson, how a real feature evolves from "the simplest thing that could possibly learn" into something production-worthy.
+This feature is clearly marked as a toy, first-draft version. Starting in Phase 2, once we learn real classification algorithms and proper evaluation, we will replace this hand-rolled counter with an actual trained model, in place — this file exists so you can watch, lesson by lesson, how a real feature evolves from "the simplest thing that could possibly learn" into something production-worthy.
 
 **To run the whole project:** open a terminal, `cd customer-support-assistant`, then run `python main.py`.
 

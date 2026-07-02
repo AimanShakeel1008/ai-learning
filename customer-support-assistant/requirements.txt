@@ -1,0 +1,3 @@
+# External (non-stdlib) libraries the project actually imports.
+# Add a line here in the same lesson that first imports something new.
+# Currently empty: every file so far only uses the Python standard library.
