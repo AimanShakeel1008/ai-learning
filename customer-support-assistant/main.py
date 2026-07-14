@@ -1,4 +1,4 @@
-from ticket_urgency import predict_urgency, urgency_score
+from ticket_urgency import predict_urgency, urgency_probability
 from resolution_time import predict_resolution_minutes
 
 SAMPLE_TICKETS = [
@@ -10,9 +10,10 @@ SAMPLE_TICKETS = [
 def main():
     print("Customer Support Assistant - current capabilities")
     print()
-    print("1) Ticket urgency detection")
+    print("1) Ticket urgency detection (learned by logistic regression)")
     for ticket in SAMPLE_TICKETS:
-        print(f"   [{predict_urgency(ticket)}] (score {urgency_score(ticket)}) {ticket}")
+        probability = urgency_probability(ticket)
+        print(f"   [{predict_urgency(ticket)}] (P(urgent)={probability:.2f}) {ticket}")
 
     assert predict_urgency(SAMPLE_TICKETS[0]) == "urgent"
     assert predict_urgency(SAMPLE_TICKETS[1]) == "not urgent"
