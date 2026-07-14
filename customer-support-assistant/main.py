@@ -1,9 +1,16 @@
 from ticket_urgency import predict_urgency, urgency_probability
 from resolution_time import predict_resolution_minutes
+from ticket_category import predict_category
 
 SAMPLE_TICKETS = [
     "My payment failed twice and I need this resolved right now",
     "Do you have this item in a larger size",
+]
+
+CATEGORY_TICKETS = [
+    "Where is my package it has been two weeks",
+    "I was charged twice and want a refund",
+    "I cannot log in please reset my password",
 ]
 
 
@@ -29,6 +36,15 @@ def main():
     short_ticket_words = len(SAMPLE_TICKETS[1].split())
     long_ticket_words = len(SAMPLE_TICKETS[0].split())
     assert predict_resolution_minutes(long_ticket_words) >= predict_resolution_minutes(short_ticket_words)
+
+    print()
+    print("3) Ticket category routing (learned by a decision tree)")
+    for ticket in CATEGORY_TICKETS:
+        print(f"   [{predict_category(ticket)}] {ticket}")
+
+    assert predict_category(CATEGORY_TICKETS[0]) == "shipping"
+    assert predict_category(CATEGORY_TICKETS[1]) == "billing"
+    assert predict_category(CATEGORY_TICKETS[2]) == "account"
 
     print()
     print("Self-check passed.")
