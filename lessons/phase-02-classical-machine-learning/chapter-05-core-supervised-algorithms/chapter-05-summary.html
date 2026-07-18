@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 5 Summary — Core Supervised Algorithms</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#learned">1 · What we learned</a>
+    <a href="#map">2 · How the ideas connect</a>
+    <a href="#story">3 · The story so far</a>
+    <a href="#lessons">4 · Lessons in this chapter</a>
+    <a href="#comingback">5 · Ideas that come back</a>
+    <a href="#selfcheck">6 · Self-check</a>
+    <a href="#challenge">7 · Chapter challenge</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-18-knn-svm.html">← Lesson 18 — kNN and SVM</a>
+    <span class="disabled">Lesson 19 — Cleaning Data (coming next)</span>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 2 · Chapter 5 · Summary</p>
+  <h1>Core Supervised Algorithms</h1>
+  <p class="subtitle">Chapter 5 complete (Lessons 14–18) — five model families, from lines to trees to memories to margins.</p>
+</header>
+
+<section id="learned">
+<h2><span class="secno">1</span>What we learned, and what we added to the assistant</h2>
+
+<p>Chapter 4 gave us the rulebook: pipeline, honest splits, over/underfitting. Chapter 5 finally filled the "train" stage with real algorithms — <strong>five families of them, every one built from scratch by hand</strong>, so none of them is magic to you now.</p>
+
+<ul>
+  <li><strong>Lesson 14 — linear regression.</strong> Predicting a <em>number</em> by fitting a line: prediction = weight × feature + bias. The line is found by <strong>gradient descent</strong> (Lesson 9's downhill walk) minimising <strong>mean squared error</strong>. First real learned model in the project: <code>resolution_time.py</code>, which estimates minutes-to-resolve from ticket length.</li>
+  <li><strong>Lesson 15 — logistic regression.</strong> Predicting a <em>category</em> by squashing a weighted sum through the <strong>sigmoid</strong> into a probability between 0 and 1, trained with <strong>log loss</strong>, decided at a <strong>threshold</strong> that is a business choice, not math. It replaced the hand-written urgency rule in <code>ticket_urgency.py</code> with genuine learning.</li>
+  <li><strong>Lesson 16 — decision trees and random forests.</strong> Predicting by asking learned <strong>yes/no questions</strong>, chosen greedily to minimise <strong>Gini impurity</strong>, with tree <strong>depth</strong> as the overfitting knob. A <strong>random forest</strong> tames single-tree jumpiness with bootstrap samples + random feature menus + voting. The tree became the project's category router, <code>ticket_category.py</code>.</li>
+  <li><strong>Lesson 17 — gradient boosting.</strong> Trees built <em>in sequence</em>, each small stump fitted to the <strong>residuals</strong> — the to-do list of what all previous trees still get wrong — shrunk by a <strong>learning rate</strong>. It is gradient descent taken one tree at a time, and (as XGBoost/LightGBM) the usual champion on tabular data. Theory + notebook only.</li>
+  <li><strong>Lesson 18 — kNN and SVM.</strong> Two more ways to decide: <strong>k-nearest neighbors</strong> stores everything and lets the k closest examples vote (k is the bias–variance dial; distance breaks without scaling), and the <strong>support vector machine</strong> picks the separating line with the <strong>widest margin</strong>, pinned only by its <strong>support vectors</strong>, with the <strong>kernel idea</strong> for shapes no straight line can split. Theory + notebook only.</li>
+</ul>
+
+<p><strong>Added to the assistant this chapter:</strong> <code>resolution_time.py</code> (Lesson 14) and an upgraded <code>ticket_urgency.py</code> (Lesson 15), then <code>ticket_category.py</code> (Lesson 16) — each with its companion notebook and self-check asserts, all wired into <code>main.py</code>. Lessons 17 and 18 deliberately left the project alone: their industrial versions arrive with scikit-learn in Chapter 9.</p>
+</section>
+
+<section id="map">
+<h2><span class="secno">2</span>How the chapter's ideas connect</h2>
+
+<pre><code>            CHAPTER 5 — FIVE WAYS TO MAKE A PREDICTION
+
+  WEIGHTED-SUM FAMILY       QUESTION-ASKING FAMILY      GEOMETRY &amp; MEMORY
+  (learn the numbers)       (learn the thresholds)      (use the points themselves)
+
+  L14 linear regression     L16 one decision tree       L18 kNN
+    weight*x + bias           readable flowchart          store everything;
+    -&gt; predicts a NUMBER      of yes/no questions         the k closest VOTE
+  L15 logistic regression   L16 random forest           L18 SVM
+    same sum -&gt; sigmoid       many trees, bootstrap       the widest street
+    -&gt; a PROBABILITY          + menus + voting            between the classes
+                            L17 gradient boosting
+                              trees in sequence,
+                              each fixes the leftovers
+
+  engine underneath L14/L15 (and, in spirit, L17): GRADIENT DESCENT (L9)
+  every family has an overfitting dial, tuned on VALIDATION data (L12/L13):
+    tree depth | boosting rounds &amp; learning rate | k in kNN | C in SVM</code></pre>
+
+<p>The through-line: all five families answer the same question — <em>"given features, what is the answer?"</em> — but they disagree about what to <strong>learn</strong>. The weighted-sum family learns a few numbers and is fast, smooth, and explainable. The question-asking family learns thresholds, eats unscaled and mixed data happily, and (boosted) wins most tabular contests. The geometry-and-memory family learns almost nothing (kNN) or only the borderline (SVM) — and both live or die by <strong>distance</strong>, which is why feature scaling matters so much for them. Chapter 4's rules referee everything: whichever family you pick, its knobs get tuned on validation data, never on the test set.</p>
+</section>
+
+<section id="story">
+<h2><span class="secno">3</span>The story so far: how the assistant has grown</h2>
+
+<ul>
+  <li><strong>Phase 1</strong> left the assistant with one toy: a word-counting urgency guesser. Everything else was tools and math — arrays, tables, plots, gradients, probability.</li>
+  <li><strong>Chapter 4</strong> added no code but installed the habits: pipeline, honest splits, reading the train-vs-validation gap.</li>
+  <li><strong>Chapter 5 is where the assistant became genuinely machine-learned.</strong> It now has three trained capabilities: <code>ticket_urgency.py</code> (logistic regression → probability of urgency), <code>resolution_time.py</code> (linear regression → estimated minutes), and <code>ticket_category.py</code> (decision tree → shipping/billing/account routing). <code>python main.py</code> from inside <code>customer-support-assistant/</code> still runs and self-checks all three end to end, exactly as it did after Lesson 16.</li>
+  <li><strong>What we now know that the project doesn't yet use:</strong> forests, boosting, kNN, and SVMs — the alternatives we will line up against the current models with scikit-learn in Chapter 9, letting a validation set pick winners honestly.</li>
+</ul>
+</section>
+
+<section id="lessons">
+<h2><span class="secno">4</span>Lessons in this chapter</h2>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Lesson</th><th>Core idea</th><th>Key tool / term</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>14 — Linear regression</strong></td><td>Predict a number with a line of best fit, found by walking downhill on squared error.</td><td><strong>MSE</strong>; <strong>gradient descent</strong>; weight &amp; bias; residuals</td></tr>
+    <tr><td><strong>15 — Logistic regression</strong></td><td>Squash a weighted sum through the sigmoid to get a probability, then decide at a threshold.</td><td><strong>Sigmoid</strong>; <strong>log loss</strong>; <strong>decision boundary</strong>; threshold as business choice</td></tr>
+    <tr><td><strong>16 — Decision trees &amp; random forests</strong></td><td>Learn yes/no questions greedily; many bootstrap trees voting beat one deep tree.</td><td><strong>Gini impurity</strong>; depth knob; <strong>bootstrap + feature menus + voting</strong></td></tr>
+    <tr><td><strong>17 — Gradient boosting</strong></td><td>Small trees in sequence, each trained on the residuals the previous ones left behind.</td><td><strong>Residuals as to-do list</strong>; decision stump; <strong>learning rate</strong>; XGBoost/LightGBM</td></tr>
+    <tr><td><strong>18 — kNN &amp; SVM</strong></td><td>Vote among the k closest stored examples; or separate classes with the widest-margin street.</td><td><strong>Euclidean distance</strong>; k as bias–variance dial; <strong>margin</strong>; <strong>support vectors</strong>; kernel idea</td></tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section id="comingback">
+<h2><span class="secno">5</span>Ideas that come back later, and where</h2>
+
+<ul>
+  <li><strong>Logistic regression is secretly a single neuron.</strong> A weighted sum passed through a squashing function is exactly what one artificial neuron computes — <strong>Lesson 31</strong> builds neural networks by stacking Lesson 15's core move, and <strong>Lessons 32–33</strong> train them with the same gradient descent + loss recipe as Lessons 14–15.</li>
+  <li><strong>Nearest-neighbor search returns as the engine of retrieval.</strong> Phase 6 (<strong>Lessons 63–64</strong>) finds the help articles closest to a customer's question in embedding space — kNN at industrial scale inside vector databases — and "similar customers/items" powers recommendations in <strong>Lesson 28</strong>.</li>
+  <li><strong>Trees and boosting become the library workhorses.</strong> In <strong>Chapter 9</strong> (Lessons 26–27) scikit-learn versions of this chapter's models get compared, tuned, and saved properly — and boosted trees stay the default strong answer for tabular business data.</li>
+  <li><strong>The scaling trap gets its real treatment in Lesson 21.</strong> Lesson 14 met it in gradient descent and Lesson 18 showed it breaking distance outright; Lesson 21 covers scaling, imbalance, and leakage as their own discipline.</li>
+  <li><strong>Every family's overfitting dial (depth, rounds, learning rate, k, C) becomes "hyperparameter tuning"</strong> — chosen with validation data and cross-validation in <strong>Lessons 23 and 27</strong>, without ever touching the test set.</li>
+</ul>
+</section>
+
+<section id="selfcheck">
+<h2><span class="secno">6</span>Self-check</h2>
+
+<ol>
+  <li>Linear and logistic regression both compute a weighted sum. What one step turns the first into the second, and what does the output mean after that step?</li>
+  <li>A random forest and gradient boosting both use many trees. State the two ways they differ in <em>how</em> the trees are built and combined.</li>
+  <li>Why does kNN with k = 1 score 100% on its own training data, and what does that number tell you about the model's real quality?</li>
+  <li>Name the overfitting dial for each: a decision tree, gradient boosting, kNN, and a soft-margin SVM — and say which data (train / validation / test) you use to set each dial.</li>
+  <li>What is a support vector, and what happens to an SVM's boundary if you delete a training point that is <em>not</em> one?</li>
+</ol>
+
+<details>
+<summary>Click to reveal the answers</summary>
+<div class="details-body">
+
+<ol>
+  <li>Pass the weighted sum through the <strong>sigmoid</strong>, which squashes any number into the range 0–1. The output then reads as a <strong>probability of the positive class</strong> (e.g. P(urgent)), which you turn into a yes/no at a chosen threshold.</li>
+  <li><strong>How they are built:</strong> a forest builds its trees <em>independently in parallel</em>, each on a bootstrap sample with random feature menus; boosting builds trees <em>in sequence</em>, each one fitted to the residuals the previous trees left behind. <strong>How they combine:</strong> a forest <em>votes/averages equal peers</em>; boosting <em>adds up ordered corrections</em>, each shrunk by the learning rate.</li>
+  <li>Because every stored point's nearest neighbor is <strong>itself</strong> (distance 0), so it always "predicts" its own label. It tells you <strong>nothing</strong> — only performance on held-out validation data measures real quality (Lesson 12's rule, again).</li>
+  <li>Tree: <strong>depth</strong> (and minimum leaf size). Boosting: <strong>number of rounds and the learning rate</strong> (and stump/tree depth). kNN: <strong>k</strong>. SVM: <strong>C</strong>, the penalty for street violations (plus the kernel choice). All of them are set using the <strong>validation</strong> split — never the test set, which is looked at once at the very end.</li>
+  <li>A support vector is a training point sitting <strong>exactly at the margin distance</strong> — on the street's edge — one of the few points that pin the boundary in place. Deleting a non-support-vector changes <strong>nothing</strong>: the widest street is defined only by the borderline points.</li>
+</ol>
+
+</div>
+</details>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">7</span>Chapter challenge</h2>
+
+<p><strong>Part 1 — pick the family.</strong> You are the ML engineer for the online store. For each task below, name the single best-fitting model family from this chapter and justify it in one or two sentences:</p>
+
+<ol>
+  <li>Estimate <em>how many minutes</em> a ticket will take to resolve, from three numeric features whose relationship to time looks roughly straight-line.</li>
+  <li>Predict customer churn from 50,000 rows of mixed tabular features, and squeeze out the best accuracy you can for a quarterly business report.</li>
+  <li>The support team asks: <em>"for each new ticket, just show us the three most similar past tickets and how they were resolved."</em></li>
+  <li>Flag urgent tickets with a <em>probability</em>, so operations can move the alert threshold up or down as staffing changes.</li>
+  <li>Route tickets into three categories with a model the support team can print as a wall-poster flowchart and check by eye.</li>
+</ol>
+
+<p><strong>Part 2 — work the numbers by hand.</strong> Four past tickets have a single "urgency score": not urgent at <strong>2</strong> and <strong>3</strong>; urgent at <strong>7</strong> and <strong>9</strong>. A new ticket arrives with score <strong>4</strong>.</p>
+
+<ol>
+  <li>What does kNN predict for the new ticket with k = 1? With k = 3?</li>
+  <li>An SVM-style classifier considers the thresholds 4.5, 5.0, and 6.5 ("above → urgent"). Compute each margin, pick the winner, and name the support vectors.</li>
+  <li>Does the winning threshold agree with the k = 3 vote on the new ticket? Say in one sentence how the two methods reached their (same or different) answers by completely different reasoning.</li>
+</ol>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>Part 1.</strong></p>
+
+<ol>
+  <li><strong>Linear regression.</strong> A number to predict + a roughly straight-line relationship is exactly its home turf, and its weights tell you how many minutes each feature adds — cheap and explainable.</li>
+  <li><strong>Gradient boosting</strong> (XGBoost/LightGBM in practice). Large tabular data, accuracy is the priority: this is the family that usually wins there, with rounds/learning rate tuned on validation data.</li>
+  <li><strong>k-nearest neighbors with k = 3.</strong> The team literally asked for the three nearest neighbors — kNN's output <em>is</em> the product here (similar past cases plus their outcomes), not just a label.</li>
+  <li><strong>Logistic regression.</strong> It natively outputs a probability, and Lesson 15 taught that the alert threshold on that probability is a business dial — exactly what operations wants to move.</li>
+  <li><strong>A single decision tree, kept shallow.</strong> It is the one model that <em>is</em> a readable flowchart; a forest or boosted ensemble would be stronger but unprintable.</li>
+</ol>
+
+<p><strong>Part 2, step 1 — kNN.</strong> Distances from score 4: to 3 → 1, to 2 → 2, to 7 → 3, to 9 → 5. With <strong>k = 1</strong> the nearest is 3 (not urgent) → <strong>NOT URGENT</strong>. With <strong>k = 3</strong> the voters are 3 (not), 2 (not), 7 (urgent) → 2 votes to 1 → <strong>NOT URGENT</strong>.</p>
+
+<p><strong>Part 2, step 2 — the margins.</strong> A threshold's margin is its distance to the closest ticket; the closest not-urgent is 3 and the closest urgent is 7:</p>
+
+<ul>
+  <li>Threshold 4.5: gaps |3 − 4.5| = 1.5 and |7 − 4.5| = 2.5 → margin <strong>1.5</strong>.</li>
+  <li>Threshold 5.0: gaps 2.0 and 2.0 → margin <strong>2.0</strong> — the widest, sitting exactly halfway between 3 and 7.</li>
+  <li>Threshold 6.5: gaps 3.5 and 0.5 → margin <strong>0.5</strong>.</li>
+</ul>
+
+<p>The winner is <strong>5.0</strong>. The support vectors are the tickets at <strong>3 and 7</strong> — the borderline pair. (The tickets at 2 and 9 could move considerably without changing anything.)</p>
+
+<p><strong>Part 2, step 3.</strong> Yes — threshold 5.0 puts score 4 below the line: <strong>NOT URGENT</strong>, agreeing with the k = 3 vote. But the reasoning differs completely: kNN answered by <em>polling the stored examples nearest to the new ticket</em>, while the SVM answered by <em>drawing the widest street between the two classes in advance</em> and checking which side the ticket falls on — memory versus geometry, landing on the same verdict.</p>
+
+</div>
+</details>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Chapter 6 — Data and Features</p>
+  <p>Lesson 19 — Cleaning data and handling missing values: why messy data is the norm, and the choices behind every cleaning step.</p>
+</footer>
+
+<p class="footnote">Chapter 5 of the curriculum complete · Phase 2 (Classical Machine Learning) · Core Supervised Algorithms · Lessons 14–18 done.</p>
+
+</main>
+</div>
+</body>
+</html>
