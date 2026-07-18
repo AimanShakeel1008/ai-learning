@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 18 — k-Nearest Neighbors and Support Vector Machines</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-17-gradient-boosting.html">← Lesson 17 — Gradient Boosting</a>
+    <span class="disabled">Chapter 5 Summary (coming next)</span>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 2 · Chapter 5 · Lesson 18</p>
+  <h1>k-Nearest Neighbors and Support Vector Machines</h1>
+  <p class="subtitle">Predicting by remembering the closest examples — and separating classes with the widest possible street.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> <code>lesson-notebooks/phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-18-knn-svm.ipynb</code></p>
+  <p><strong>Prerequisites:</strong> Lesson 8 (vectors, points in space), Lesson 13 (overfitting and underfitting), Lesson 15 (decision boundary), Lesson 16 (thresholds and greedy search)</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>This lesson finishes Chapter 5 with the last two classics of classical machine learning: <strong>k-nearest neighbors</strong> and the <strong>support vector machine</strong>. They predict in two ways we have not seen yet. Every model so far <em>learned</em> something during training — a slope, a curve, a tree of questions. The first method in this lesson learns <strong>nothing at all</strong>. It just remembers every example it has ever seen, and answers new questions by looking up the most similar old ones. The second method learns a boundary line, like Lesson 15 did — but it chooses that line by a completely different rule: not "which line makes the training data most likely," but "which line leaves the <em>widest safety gap</em> between the two groups."</p>
+
+<p>Here is the quiet reason this lesson matters more than it looks: the k-nearest-neighbors idea — <em>find the stored examples closest to this new thing</em> — is the exact engine behind modern AI retrieval. In Phase 6, when our assistant searches the store's help articles to answer a customer's question, it will turn every article into a vector and then find the <strong>nearest neighbors</strong> of the customer's question. Vector databases are, at heart, very fast nearest-neighbor machines. Learn the small version now and the big version later will feel familiar.</p>
+
+<p>And the support vector machine gives us two ideas that echo through the rest of the course: the <strong>margin</strong> (a good boundary is one with breathing room, not just one that is barely correct) and the <strong>kernel trick</strong> (when no straight line works, add a cleverly chosen feature and suddenly one does). After this lesson, you have met every major family of classical supervised learning.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p><strong>For k-nearest neighbors: the experienced doctor's memory.</strong></p>
+
+<p>A doctor with thirty years of experience sees a new patient. She does not run a formula. She thinks: "Who are the most similar patients I have seen before? What was wrong with <em>them</em>?" If the three most similar past patients all had the same condition, that is her working diagnosis.</p>
+
+<ul>
+  <li><strong>The doctor's memory of past patients</strong> = the stored training examples. That memory <em>is</em> the model — nothing else is learned.</li>
+  <li><strong>"Most similar patients"</strong> = the nearest neighbors, found by measuring distance between the new case and every old one.</li>
+  <li><strong>Asking three of them, not one</strong> = the k in kNN. One similar patient might have been an odd case; three outvote a fluke.</li>
+  <li><strong>Asking three hundred</strong> = too many. Most of them are barely similar to this patient, and the answer collapses into "whatever is most common in general."</li>
+</ul>
+
+<p><strong>For the support vector machine: the widest street between two neighborhoods.</strong></p>
+
+<p>Two districts sit side by side, and the city must draw a road between them. A road that scrapes along the houses of one district technically separates them — but the first delivery truck that wobbles slightly will clip a wall. The safest road is the one drawn so that the distance to the <em>nearest house on either side</em> is as large as possible: the widest street.</p>
+
+<ul>
+  <li><strong>The two districts</strong> = the two classes (urgent and not urgent).</li>
+  <li><strong>The road</strong> = the decision boundary.</li>
+  <li><strong>The wobbling truck</strong> = tomorrow's new tickets, which never land exactly where the old ones did. A wide street tolerates the wobble.</li>
+  <li><strong>The houses touching the street's edges</strong> = the support vectors. They alone fix where the road goes; every house further back could be demolished and the road would not move.</li>
+</ul>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<h3>3.1 kNN: the laziest model in machine learning</h3>
+
+<p>Let us define the method properly. <strong>k-nearest neighbors</strong> (kNN) is a way to classify a new example in three steps. First, store all the labelled training examples — that is the entire "training". Second, when a new example arrives, measure its <strong>distance</strong> to every stored example. Third, take the <strong>k</strong> closest ones (k is a small number you choose, like 3) and let them <strong>vote</strong>: whichever label is in the majority becomes the prediction.</p>
+
+<p>Why does such a simple idea exist? Because it rests on one very reasonable belief: <em>similar things tend to have similar answers</em>. A ticket that looks like four past urgent tickets is probably urgent. This belief is often true, so kNN is often a surprisingly strong baseline — and it needs zero training time.</p>
+
+<p>In our notebook, each ticket is described by two numbers: how many urgency words it contains (<code>urgent_words</code>) and how many ALL-CAPS words it contains (<code>caps_words</code>). Eight labelled tickets are stored:</p>
+
+<pre><code>not urgent:  (0,0)  (1,0)  (0,1)  (1,2)
+urgent:      (3,3)  (4,2)  (3,4)  (5,3)</code></pre>
+
+<p>Because each ticket is two numbers, it is a point on a flat map (Lesson 8's vectors). The not-urgent tickets cluster near the bottom-left, the urgent ones near the top-right.</p>
+
+<h3>3.2 Distance: turning "similar" into a number</h3>
+
+<p>"Find the most similar tickets" is not something a computer can do until <em>similar</em> is a number. kNN's answer: two tickets are similar when their points are <strong>close together</strong>. The distance we use is the ordinary straight-line distance you would measure with a ruler, and it is computed with school Pythagoras: take the difference in each feature, square each difference, add them, and take the square root. Its technical name is the <strong>Euclidean distance</strong>.</p>
+
+<p>A tiny worked example. New ticket B has features (2, 2). Stored ticket (3, 3) differs by −1 in each feature. Squared: 1 and 1. Added: 2. Square root: <strong>√2 ≈ 1.414</strong>. That is their distance. A smaller number means more similar.</p>
+
+<h3>3.3 The vote — and what happens when we change k</h3>
+
+<p>For new ticket B (2, 2), we measure the distance to all eight stored tickets:</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Stored ticket</th><th>Label</th><th>Distance to B (2, 2)</th></tr></thead>
+  <tbody>
+    <tr><td>(1, 2)</td><td>not urgent</td><td><strong>1.000</strong> — closest of all</td></tr>
+    <tr><td>(3, 3)</td><td>urgent</td><td>1.414</td></tr>
+    <tr><td>(4, 2)</td><td>urgent</td><td>2.000</td></tr>
+    <tr><td>(1, 0)</td><td>not urgent</td><td>2.236</td></tr>
+    <tr><td>(0, 1)</td><td>not urgent</td><td>2.236</td></tr>
+    <tr><td>(3, 4)</td><td>urgent</td><td>2.236</td></tr>
+    <tr><td>(0, 0)</td><td>not urgent</td><td>2.828</td></tr>
+    <tr><td>(5, 3)</td><td>urgent</td><td>3.162</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Now watch what the choice of k does — same ticket, same distances, three different answers:</p>
+
+<ul>
+  <li><strong>k = 1:</strong> only the single closest ticket votes. That is (1, 2), a not-urgent ticket. Prediction: <strong>NOT URGENT</strong>.</li>
+  <li><strong>k = 3:</strong> the three closest vote: not urgent (1.000), urgent (1.414), urgent (2.000). Two votes to one. Prediction: <strong>URGENT</strong>.</li>
+  <li><strong>k = 7:</strong> seven vote: four not-urgent, three urgent. Prediction: <strong>NOT URGENT</strong>.</li>
+</ul>
+
+<p>The answer flips twice. This is not a bug — it is Lesson 13's bias–variance dial wearing a new costume. <strong>k = 1</strong> trusts a single neighbor completely: it can be swayed by one mislabelled or odd training example, which is overfitting (in fact, with k = 1 the model scores 100% on its own training data — every stored ticket's nearest neighbor is itself). A <strong>very large k</strong> — say k = 8, the whole dataset — always predicts the overall majority no matter what the new ticket looks like, which is underfitting: it has collapsed into Lesson 11's baseline. Good k values sit in between and are chosen the honest way, with a validation set (Lesson 12). One practical habit: use an <strong>odd</strong> k for two-class problems, so the vote can never tie.</p>
+
+<div class="note">
+<p><strong>kNN can predict numbers too.</strong> Everything above is classification, but the same machine does regression: find the k nearest tickets and answer with the <em>average</em> of their values (for example, the average of their resolution times) instead of a vote. Nothing else changes.</p>
+</div>
+
+<h3>3.4 What kNN really costs</h3>
+
+<p>kNN moves all its work to the worst possible moment. Training is free — just store the list. But <em>every prediction</em> requires measuring the distance to <strong>every stored example</strong>. With 8 tickets that is nothing; with 10 million tickets, every single incoming ticket triggers 10 million distance calculations. Models like logistic regression are the mirror image: slow-ish to train once, then each prediction is a handful of multiplications. (Phase 6's vector databases exist precisely to make nearest-neighbor search fast at massive scale — using clever approximate shortcuts.)</p>
+
+<p>kNN has two more honest weaknesses:</p>
+
+<ul>
+  <li><strong>Unscaled features break the distance.</strong> Distance treats every feature's units as equally important. Suppose we add a third feature, message length in words, which ranges from 0 to 200 while our word counts range from 0 to 5. In the notebook, a mild-worded long ticket (2, 2, 150 words) is compared to a mild-worded not-urgent ticket P = (1, 2, 48 words) and a strong-worded urgent ticket Q = (3, 3, 150 words). With raw length included, the distance to P is ≈ 102.0 and to Q is ≈ 1.414 — the length difference of 102 words drowned everything else, and the ticket is called urgent just because it is <em>long</em>. The fix is to rescale features to similar ranges before measuring distance; that is a Lesson 21 topic, and this is the first place you can see exactly why it matters.</li>
+  <li><strong>Too many features make "near" meaningless.</strong> With hundreds of features, a strange thing happens to geometry: every point ends up roughly equally far from every other point, so "the nearest neighbors" stops carrying information. This problem has a dramatic name — the <strong>curse of dimensionality</strong> — and it is one reason kNN shines mostly on small, low-dimensional problems.</li>
+</ul>
+
+<h3>3.5 The support vector machine: many lines separate — pick the widest street</h3>
+
+<p>Now the second method. Recall Lesson 15's <strong>decision boundary</strong>: a line with one class on each side. Here is the observation that starts the SVM: when two classes are cleanly separable, there are <em>infinitely many</em> lines that separate them — and they are not equally good. A line that hugs the urgent cluster classifies today's training data perfectly, but tomorrow's slightly-different urgent ticket can easily land on the wrong side of it.</p>
+
+<p>A <strong>support vector machine</strong> (SVM) is a classifier that picks, among all the separating lines, the one with the largest <strong>margin</strong>. The margin of a line is a plain quantity: the distance from the line to the <em>closest training point of either class</em>. Widest margin = widest street between the neighborhoods = the most breathing room for new data. That single sentence is the whole idea; everything else is machinery for finding that line.</p>
+
+<p>The notebook makes this concrete with six cleanly separated tickets — not urgent: (0,0), (1,1), (0,2); urgent: (4,4), (5,3), (4,2) — and candidate lines of the form <code>urgent_words + caps_words = c</code>. A ticket's position relative to such a line depends only on its feature <strong>sum</strong>: the not-urgent sums are 0, 2, 2 and the urgent sums are 8, 8, 6, so any c between 2 and 6 separates the classes. The distance from a ticket to the line is <code>|sum − c| ÷ √2</code> — the sum-gap, shrunk by √2 because walking straight toward the line moves both features at once, changing the sum by √2 per step of length 1. (Plain meaning first: a ticket whose sum is 2 away from c is really about 1.414 ruler-units from the line.)</p>
+
+<p>Score every candidate line by its margin — its distance to the closest ticket:</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Line (sum = c)</th><th>Closest not-urgent (sum 2)</th><th>Closest urgent (sum 6)</th><th>Margin (smaller of the two)</th></tr></thead>
+  <tbody>
+    <tr><td>2.5</td><td>0.354</td><td>2.475</td><td>0.354</td></tr>
+    <tr><td>3.0</td><td>0.707</td><td>2.121</td><td>0.707</td></tr>
+    <tr><td>3.5</td><td>1.061</td><td>1.768</td><td>1.061</td></tr>
+    <tr><td><strong>4.0</strong></td><td>1.414</td><td>1.414</td><td><span class="hi"><strong>1.414 — widest</strong></span></td></tr>
+    <tr><td>4.5</td><td>1.768</td><td>1.061</td><td>1.061</td></tr>
+    <tr><td>5.0</td><td>2.121</td><td>0.707</td><td>0.707</td></tr>
+    <tr><td>5.5</td><td>2.475</td><td>0.354</td><td>0.354</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The winner is <strong>sum = 4</strong>, sitting exactly halfway between the closest not-urgent sum (2) and the closest urgent sum (6). Notice the shape of the table: the margin rises, peaks in the middle, and falls — hugging either class shrinks the street. A real SVM does not try candidates one by one like we just did; it solves for the widest street directly with optimization mathematics. The answer it finds is the same kind of line — our brute-force table is the idea made visible.</p>
+
+<h3>3.6 Support vectors: the only points that matter</h3>
+
+<p>Look at which tickets sit <em>exactly</em> at the margin distance of 1.414 from the winning line: (1,1) and (0,2) on the not-urgent side (sum 2), and (4,2) on the urgent side (sum 6). These are the <strong>support vectors</strong> — the training points that touch the street's edges and thereby pin the street in place. They give the method its name.</p>
+
+<p>Every other ticket is irrelevant to the boundary. Delete (0,0) or (4,4) or (5,3) and the widest street is still exactly sum = 4. This is a striking property: the SVM's decision is defined by a <em>handful of borderline examples</em>, not by the crowd. (Contrast kNN, which keeps everything, and logistic regression, where every point tugs on the curve at least a little.)</p>
+
+<h3>3.7 Real data overlaps: the soft margin</h3>
+
+<p>Our six tickets were chosen to be perfectly separable. Real data almost never is — there will be some mild-worded ticket that was nonetheless urgent, sitting deep in the wrong territory, and then <em>no</em> separating line exists at all. The practical fix is called a <strong>soft margin</strong>: the SVM is allowed to leave a few training points inside the street, or even on the wrong side, but pays a penalty for each one. A knob (called <code>C</code> in most libraries) sets the price: a high penalty forces the line to bend over backwards for every point (risking overfitting), a low penalty keeps the street wide and calm even if a few odd tickets are misclassified (risking underfitting). It is the same bias–variance trade yet again, priced in street violations.</p>
+
+<h3>3.8 When no straight line can ever work: the kernel idea</h3>
+
+<p>Some patterns defeat every straight line, no matter how it is placed. The notebook's example uses one feature: a customer's star rating, centered on 3 stars, so 1★ becomes −2 and 5★ becomes +2. Suppose tickets with <em>extreme</em> ratings — furious 1★ or delighted 5★ — should get a human follow-up, and middling ratings are routine:</p>
+
+<pre><code>rating:  -2   -1    0   +1   +2
+label:  follow  routine routine routine  follow</code></pre>
+
+<p>The follow-up cases sit at <em>both ends</em> with routine in the middle. A single threshold ("rating ≤ t → follow-up") can catch one end, never both — try every threshold and the best still makes a mistake. Now manufacture one new feature: the <strong>squared rating</strong>. The values become 4, 1, 0, 1, 4. In this new feature, the two ends have become <em>neighbors</em> — both are big — and one clean threshold, <code>squared ≥ 2.5</code>, separates the classes perfectly.</p>
+
+<p>That is the trick: <strong>when no line works in the original features, lift the data into extra manufactured features where a line does work</strong>. A real SVM does this with a piece of mathematics called a <strong>kernel</strong> — a shortcut that lets it behave <em>as if</em> it had built huge families of such lifted features (squares, products, and far richer ones) without ever actually computing them, which keeps it fast. The full kernel mathematics is beyond this lesson; the squared-rating example is the honest heart of it. This trick is the main reason SVMs were the strongest classifiers in machine learning for about a decade before deep learning took over.</p>
+
+<h3>3.9 Where these two sit in your toolbox</h3>
+
+<p>Chapter 5 has now given you five families, and they divide up neatly by <em>how</em> they decide: linear regression and logistic regression draw <strong>weighted-sum</strong> boundaries; trees, forests, and boosting ask <strong>threshold questions</strong>; kNN consults <strong>memory</strong>; the SVM draws the <strong>widest-margin</strong> boundary, optionally through kernel-lifted features. Section 8 gives the honest guidance on when to reach for which.</p>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>The notebook for this lesson builds both methods from scratch, with nothing but <code>math</code> and matplotlib:</p>
+
+<p><strong>Saved:</strong> <code>lesson-notebooks/phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-18-knn-svm.ipynb</code></p>
+
+<ol>
+  <li><strong>Part 1 — kNN:</strong> stores the 8 labelled tickets (and prints them — that list is the whole model), plots the two clusters with the two new tickets marked as stars, computes one distance by hand with Pythagoras, builds the full distance table for borderline ticket B (2, 2), picks the 3 nearest by repeated smallest-search and holds the vote, then wraps it all into <code>knn_predict</code> and asks the same ticket with k = 1, 3, and 7 to watch the answer flip. A final cell shows the scaling trap: adding raw message length as a third feature flips a prediction purely because of length.</li>
+  <li><strong>Part 2 — SVM:</strong> takes 6 cleanly separated tickets, scores 7 candidate lines by their margin (distance to the closest ticket), crowns the widest street, identifies the support vectors, draws the street with its two dashed edges, and finishes with the kernel idea: every straight threshold fails on the extreme-ratings data, then the manufactured <code>rating × rating</code> feature separates it perfectly.</li>
+</ol>
+
+<p>The plots are saved to <code>plots/lesson-18-knn-neighbors.png</code> and <code>plots/lesson-18-svm-margin.png</code> next to the notebook. Both methods here are hand-built for understanding; the industrial versions (with all the speed tricks and the real kernel machinery) come from scikit-learn in Chapter 9.</p>
+
+<div class="tryit">
+<p><strong>Try it:</strong> open the notebook in VS Code or Jupyter and run the cells top to bottom. Then try moving new ticket B around — change <code>knn_predict(2, 2, k)</code> to other coordinates and watch where the k = 1 and k = 3 answers agree and disagree. Deep inside a cluster they always agree; the disagreements live in the border zone.</p>
+</div>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<p>Step by step, top to bottom:</p>
+
+<ol>
+  <li>The first code cell prints the 8 stored tickets. Nothing is fitted — storing them is the entire training.</li>
+  <li>The plot cell draws blue not-urgent points bottom-left, red urgent points top-right, a purple star at A (4, 4) deep in red territory, and a gold star at B (2, 2) in the gap between the groups. It saves the PNG and shows it.</li>
+  <li>The distance cell works one example: B (2, 2) vs (3, 3) → differences −1 and −1 → 1 + 1 = 2 → distance √2 ≈ 1.414.</li>
+  <li>The distance-table cell prints all 8 distances, matching the table in Section 3.3 — closest is (1, 2), a not-urgent ticket, at 1.0.</li>
+  <li>The voting cell picks the 3 smallest distances one at a time, prints each pick, and holds the vote: urgent wins 2–1.</li>
+  <li>The k-experiment cell asks the same ticket with k = 1, 3, 7 and prints three different verdicts; the sanity-check line confirms the obvious ticket A (4, 4) is urgent 3–0.</li>
+  <li>The scaling cell shows the same new ticket being called NOT URGENT with the two word-count features, then URGENT once raw message length joins the distance — with the two distances (≈ 1.0 vs ≈ 102.0 to the same ticket) making the cause visible.</li>
+  <li>The SVM margin cell prints the seven-line margin table rising to 1.414 at sum = 4.0 and falling again, and crowns sum = 4.</li>
+  <li>The support-vector cell prints exactly three tickets: (1, 1), (0, 2), (4, 2).</li>
+  <li>The street plot shows the solid boundary, two dashed edges, and the three circled support vectors touching the edges. Saves the second PNG.</li>
+  <li>The kernel cells print an error count for every straight threshold (best is still 1 wrong out of 5), then the squared feature [4, 1, 0, 1, 4] and a perfect 0-errors run with the threshold at 2.5.</li>
+</ol>
+
+<p>Key predicted outputs (the two most important cells):</p>
+
+<pre><code><span class="c"># the k experiment — same ticket, three answers</span>
+k = 1 -> votes urgent: 0 | not urgent: 1 -> prediction: NOT URGENT
+<span class="hi">k = 3 -> votes urgent: 2 | not urgent: 1 -> prediction: URGENT</span>
+k = 7 -> votes urgent: 3 | not urgent: 4 -> prediction: NOT URGENT
+
+clear ticket (4, 4) with k = 3 -> votes urgent: 3 | not urgent: 0 -> prediction: URGENT</code></pre>
+
+<pre><code><span class="c"># the margin table</span>
+line: sum = 2.5 -> margin (closest ticket): 0.354
+line: sum = 3.0 -> margin (closest ticket): 0.707
+line: sum = 3.5 -> margin (closest ticket): 1.061
+<span class="hi">line: sum = 4.0 -> margin (closest ticket): 1.414</span>
+line: sum = 4.5 -> margin (closest ticket): 1.061
+line: sum = 5.0 -> margin (closest ticket): 0.707
+line: sum = 5.5 -> margin (closest ticket): 0.354
+
+widest street wins: sum = 4.0 with margin 1.414</code></pre>
+
+<div class="warn">
+<p><strong>This output is a prediction.</strong> I have traced the code by hand rather than running it. The arithmetic here is deterministic, so your numbers should match — but run the notebook yourself to confirm, and expect the plots to look slightly different from any description of them.</p>
+</div>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<p><strong>No project change in this lesson — deliberately.</strong> The assistant already routes tickets two ways: urgency by logistic regression (<code>ticket_urgency.py</code>) and category by a decision tree (<code>ticket_category.py</code>). Both were chosen because they fit their data well, and swapping one for a hand-built kNN or SVM would be a sideways move, not an upgrade — you would learn nothing new about the assistant, and the project would gain a second copy of a solved problem.</p>
+
+<p>What this lesson adds to the project is <em>foresight</em>. In Chapter 9, scikit-learn will let us line up logistic regression, trees, kNN, and SVMs on the same ticket data and let a validation set pick the winner honestly — that is when these two methods enter the project's story. And in Phase 6, the nearest-neighbor idea returns at full scale: the assistant will answer questions by finding the help articles <em>nearest</em> to the customer's question in meaning-space. Today's 8-ticket distance scan is the toy version of that engine. The project is untouched and <code>python main.py</code> runs exactly as it did after Lesson 16.</p>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Forgetting to scale features before kNN or SVM.</strong> Both methods live and die by distances. One big-range feature (message length, order total in cents) silently takes over the geometry, as the notebook's 102-vs-1.4 demo shows. Trees and forests do not care about scale; distance-based methods care enormously.</li>
+  <li><strong>Using an even k.</strong> With two classes and k = 4, a 2–2 vote has no majority and your code needs an arbitrary tie-break. An odd k makes the problem vanish.</li>
+  <li><strong>Judging kNN by its training accuracy.</strong> With k = 1 it is always 100% — every stored point's nearest neighbor is itself. Meaningless. Only validation performance (Lesson 12) says anything.</li>
+  <li><strong>Deploying kNN on a large dataset without thinking about prediction cost.</strong> Training is free, but every prediction scans everything. A model that must answer thousands of tickets per minute against millions of stored examples needs the approximate-search machinery of Phase 6, not a raw scan.</li>
+  <li><strong>Believing the SVM's line is "the only correct" boundary.</strong> It is the widest-margin line <em>for this training sample</em> under the chosen penalty and kernel. Change the borderline points — the support vectors — and the line moves. The margin is a robustness argument, not a guarantee.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p><strong>Reach for kNN when:</strong> the dataset is small (thousands, not millions), the features are few and on sensible scales, and "similar past cases had this answer" is genuinely the right logic — recommendation-style problems ("customers similar to this one bought…", coming in Lesson 28) are its natural home. It is also a fine five-minute baseline: if a fancy model cannot beat kNN, the fancy model is not earning its complexity.</p>
+
+<p><strong>Reach for an SVM when:</strong> the dataset is small-to-medium but the features are many — classic text classification with thousands of word-count features was SVM's home turf for years — and you want a decisive boundary with maximum breathing room. With a kernel it handles curved patterns that defeat straight lines.</p>
+
+<p><strong>The honest modern picture:</strong> on big tabular business data, gradient boosting (Lesson 17) usually beats both. On text and images, deep learning (Phase 3 onward) took the crown that SVMs once held. So why learn them? Because kNN's nearest-neighbor engine <em>is</em> modern retrieval (Phase 6), because the margin idea reappears wherever robustness matters, and because on small clean problems these two are still sometimes the best tool — simple, fast to set up, and easy to explain to a colleague. Knowing when the simple method suffices is a professional skill in itself.</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li>k-nearest neighbors does no training at all: it stores every labelled example, and classifies a new one by letting its k closest stored examples vote, where closeness is straight-line (Euclidean) distance in feature space.</li>
+  <li>The choice of k is the bias–variance dial — k = 1 trusts one neighbor and overfits, k = everything collapses into the majority baseline and underfits — so k is chosen with a validation set, and kept odd to avoid tied votes.</li>
+  <li>Distance-based methods silently break when features live on different scales, because a big-range feature dominates the geometry; rescaling features first (Lesson 21) is mandatory for kNN and SVM.</li>
+  <li>A support vector machine picks, among all boundaries that separate the classes, the one with the widest margin — the greatest distance to the closest point of either class — and that boundary is pinned entirely by the few borderline points called support vectors.</li>
+  <li>When no straight line can separate the classes, adding a manufactured feature (like a squared value) can make one work, and the kernel trick lets an SVM get that effect efficiently without building the features by hand.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>Do both parts by hand — no code needed.</p>
+
+<p><strong>Part 1 (kNN).</strong> Six stored tickets, features (urgent_words, caps_words): not urgent at (1, 1), (0, 2), (0, 0); urgent at (3, 2), (4, 1), (5, 3). A new ticket arrives at (2, 2).</p>
+
+<ol>
+  <li>Compute the distance from the new ticket to all six stored tickets (squared distances are enough to rank them — say why that shortcut is legal).</li>
+  <li>What does kNN predict with k = 1? With k = 3?</li>
+  <li>The two answers disagree. Explain in one sentence what that tells you about where this ticket sits.</li>
+</ol>
+
+<p><strong>Part 2 (SVM, one feature).</strong> Four tickets with a single "urgency score": not urgent at 1 and 2; urgent at 6 and 9. The candidate thresholds are 2.5, 4.0, and 5.5 (each classifies "score above the threshold → urgent").</p>
+
+<ol>
+  <li>Compute each threshold's margin — its distance to the closest ticket.</li>
+  <li>Which threshold would an SVM pick, and what is special about where it sits?</li>
+  <li>Which tickets are the support vectors? What happens to the answer if the ticket at 9 moves to 90?</li>
+</ol>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>Part 1, step 1 — the distances.</strong> Squared distance = (difference in urgent_words)² + (difference in caps_words)². Ranking by squared distance is legal because the square root never changes the order — if a² &lt; b² for positive numbers, then a &lt; b. From (2, 2):</p>
+
+<ul>
+  <li>(3, 2) urgent: 1 + 0 = <strong>1</strong> (distance 1.000)</li>
+  <li>(1, 1) not urgent: 1 + 1 = <strong>2</strong> (distance ≈ 1.414)</li>
+  <li>(0, 2) not urgent: 4 + 0 = <strong>4</strong> (distance 2.000)</li>
+  <li>(4, 1) urgent: 4 + 1 = <strong>5</strong> (distance ≈ 2.236)</li>
+  <li>(0, 0) not urgent: 4 + 4 = <strong>8</strong> (distance ≈ 2.828)</li>
+  <li>(5, 3) urgent: 9 + 1 = <strong>10</strong> (distance ≈ 3.162)</li>
+</ul>
+
+<p><strong>Part 1, step 2 — the votes.</strong> With <strong>k = 1</strong>, only (3, 2) votes: <strong>URGENT</strong>. With <strong>k = 3</strong>, the voters are (3, 2) urgent, (1, 1) not urgent, (0, 2) not urgent — two votes to one: <strong>NOT URGENT</strong>.</p>
+
+<p><strong>Part 1, step 3.</strong> The flip means the ticket sits in the border zone between the two clusters: its single closest neighbor is urgent, but the local neighborhood as a whole leans not-urgent — exactly the kind of point where the choice of k decides the answer.</p>
+
+<p><strong>Part 2, step 1 — the margins.</strong> On one feature, the "line" is just a threshold, and distance is plain subtraction:</p>
+
+<ul>
+  <li>Threshold 2.5: closest tickets are 2 (gap 0.5) and 6 (gap 3.5) → margin <strong>0.5</strong>.</li>
+  <li>Threshold 4.0: closest tickets are 2 (gap 2.0) and 6 (gap 2.0) → margin <strong>2.0</strong>.</li>
+  <li>Threshold 5.5: closest tickets are 2 (gap 3.5) and 6 (gap 0.5) → margin <strong>0.5</strong>.</li>
+</ul>
+
+<p><strong>Part 2, step 2.</strong> The SVM picks <strong>4.0</strong>, the widest margin. What is special: it sits exactly halfway between the closest not-urgent ticket (2) and the closest urgent ticket (6) — the middle of the street between the two nearest houses.</p>
+
+<p><strong>Part 2, step 3.</strong> The support vectors are the tickets at <strong>2 and 6</strong> — the borderline pair that pins the threshold. If the ticket at 9 moves to 90, <em>nothing happens</em>: it was never a support vector, so the widest street between 2 and 6 is completely unchanged. That is the SVM's signature property — only the borderline points matter.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>That completes all five lessons of Chapter 5 — the core supervised algorithms are now in your toolbox, from lines to trees to memories to margins. Next comes the <strong>Chapter 5 summary</strong>: the map of how these five families relate, which to reach for when, and a boss challenge that mixes them.</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Chapter 5 Summary — Core Supervised Algorithms</p>
+  <p>One map of all five model families, how they divide up the world, and a boss challenge across the whole chapter.</p>
+</footer>
+
+<p class="footnote">Lesson 18 of 113 — Phase 2 (Classical Machine Learning), Chapter 5 (Core Supervised Algorithms), lesson 5 of 5 in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>
