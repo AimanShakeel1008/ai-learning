@@ -169,6 +169,112 @@
 Can you tell me about your shipping policy whenever you get a chance
   rule-based says: not urgent
   learned approach says: not urgent (score: -16 )</code></pre>
+
+<div class="sim">
+<p class="sim-hint">Build a ticket by switching words on and off, and watch both approaches decide — sometimes differently. Try <em>please + help + right + now</em> (fools the rulebook), then <em>broken</em> alone (fools the tally).</p>
+<div class="sim-controls" id="sim1-words">
+  <button type="button" class="sim-btn" data-net="0" data-rule="1" aria-pressed="false">urgent</button>
+  <button type="button" class="sim-btn" data-net="1" data-rule="1" aria-pressed="false">immediately</button>
+  <button type="button" class="sim-btn" data-net="0" data-rule="1" aria-pressed="false">broken</button>
+  <button type="button" class="sim-btn" data-net="2" data-rule="0" aria-pressed="false">right</button>
+  <button type="button" class="sim-btn" data-net="2" data-rule="0" aria-pressed="false">now</button>
+  <button type="button" class="sim-btn" data-net="2" data-rule="0" aria-pressed="false">please</button>
+  <button type="button" class="sim-btn" data-net="1" data-rule="0" aria-pressed="false">help</button>
+  <button type="button" class="sim-btn" data-net="1" data-rule="0" aria-pressed="false">need</button>
+  <button type="button" class="sim-btn" data-net="-1" data-rule="0" aria-pressed="false">package</button>
+  <button type="button" class="sim-btn" data-net="-1" data-rule="0" aria-pressed="false">wondering</button>
+  <button type="button" class="sim-btn" data-net="-1" data-rule="0" aria-pressed="false">whenever</button>
+  <button type="button" class="sim-btn" data-net="-1" data-rule="0" aria-pressed="false">policy</button>
+</div>
+<div class="sim-console" id="sim1-out" aria-live="polite"></div>
+<p class="sim-note">This is a model of the mechanism, not the real thing — it replays the notebook's keyword list and the word tallies from its six training sentences. The notebook is the authority: open <code>lesson-01-ai-ml-deep-learning.ipynb</code> and run it to watch the real functions decide.</p>
+</div>
+<script>
+(function () {
+  var buttons = document.querySelectorAll("#sim1-words .sim-btn");
+  var out = document.getElementById("sim1-out");
+
+  function fmt(net) {
+    if (net > 0) { return "+" + net; }
+    return String(net);
+  }
+
+  function render() {
+    var on = [];
+    var i;
+    for (i = 0; i < buttons.length; i++) {
+      if (buttons[i].classList.contains("active")) {
+        on.push({
+          word: buttons[i].textContent,
+          net: parseInt(buttons[i].getAttribute("data-net"), 10),
+          rule: buttons[i].getAttribute("data-rule") === "1"
+        });
+      }
+    }
+
+    if (on.length === 0) {
+      out.innerHTML = '<span class="skip">Switch some words on above to build a ticket.</span>';
+      return;
+    }
+
+    var names = [];
+    var matched = [];
+    var parts = [];
+    var total = 0;
+    var unseenRuleWords = [];
+    for (i = 0; i < on.length; i++) {
+      names.push(on[i].word);
+      total += on[i].net;
+      parts.push(on[i].word + " " + fmt(on[i].net));
+      if (on[i].rule) { matched.push(on[i].word); }
+      if (on[i].rule && on[i].net === 0) { unseenRuleWords.push(on[i].word); }
+    }
+
+    var ruleSays = matched.length > 0 ? "urgent" : "not urgent";
+    var learnedSays = total > 0 ? "urgent" : "not urgent";
+
+    var lines = [];
+    lines.push("Ticket words: " + names.join(", "));
+    lines.push("");
+    lines.push("Rule-based rulebook (fixed keyword list):");
+    if (matched.length > 0) {
+      lines.push('  found keyword: "' + matched.join('", "') + '"');
+    } else {
+      lines.push('  <span class="skip">no keyword from the fixed list found</span>');
+    }
+    lines.push('  says: <span class="hi">' + ruleSays + "</span>");
+    lines.push("");
+    lines.push("Learned word tally (from the 6 training sentences):");
+    lines.push("  " + parts.join("   "));
+    lines.push("  total score = " + total + "  (score above 0 means urgent)");
+    lines.push('  says: <span class="hi">' + learnedSays + "</span>");
+    for (i = 0; i < unseenRuleWords.length; i++) {
+      lines.push('  <span class="skip">note: "' + unseenRuleWords[i] + '" scores 0 — it never appeared in the training sentences, so the tally has no opinion on it</span>');
+    }
+    lines.push("");
+    if (ruleSays === learnedSays) {
+      lines.push('<span class="ok">Both approaches agree: ' + ruleSays + ".</span>");
+    } else {
+      lines.push('<span class="bad">The two approaches DISAGREE on this ticket.</span> The rulebook only sees its fixed list; the tally only knows words from its training examples.');
+    }
+    out.innerHTML = lines.join("\n");
+  }
+
+  function toggle(btn) {
+    var isOn = btn.classList.toggle("active");
+    btn.setAttribute("aria-pressed", isOn ? "true" : "false");
+    render();
+  }
+
+  for (var i = 0; i < buttons.length; i++) {
+    (function (btn) {
+      btn.addEventListener("click", function () { toggle(btn); });
+    })(buttons[i]);
+  }
+
+  render();
+})();
+</script>
 </section>
 
 <section id="assistant">

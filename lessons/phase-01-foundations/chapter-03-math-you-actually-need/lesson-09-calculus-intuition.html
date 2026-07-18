@@ -126,6 +126,130 @@
 
 <p><strong>When the learning rate is too big.</strong> With learning rate <code>0.2</code> on the same valley, each step <em>overshoots</em> the bottom and lands higher up the opposite wall, where the slope is even steeper, causing a bigger overshoot next time. The loss grows every step instead of shrinking: <code>25.4 → 30.7 → 37.2 → ...</code>. This failure is called <strong>diverging</strong>, and it is one of the most common ways real training runs die. Too small a learning rate has the opposite cost: thousands of timid steps to cross ground that ten bold ones could cover.</p>
 
+<div class="sim">
+<p class="sim-hint">This is the notebook's exact valley — loss = 5.25 × (w − 2)², bottom at w = 2. Pick a step size and take steps: 0.05 glides down and brakes by itself, 0.19 leaps wall to wall but spirals in, 0.2 bounces higher every time.</p>
+<div class="sim-controls">
+  <span>learning rate:</span>
+  <button type="button" class="sim-btn active" data-lr="0.05" aria-pressed="true">0.05</button>
+  <button type="button" class="sim-btn" data-lr="0.19" aria-pressed="false">0.19</button>
+  <button type="button" class="sim-btn" data-lr="0.2" aria-pressed="false">0.2</button>
+  <button type="button" class="sim-btn go" id="sim1-step">Take a step</button>
+  <button type="button" class="sim-btn" id="sim1-reset">Reset to w = 0</button>
+</div>
+<div class="sim-tree" id="sim1-valley" aria-hidden="true"></div>
+<div class="sim-console" id="sim1-out" aria-live="polite"></div>
+<p class="sim-note">This is a model of the mechanism, not the real thing — the same arithmetic as the notebook's descent cells, one click per step. The notebook is the authority: open <code>lesson-09-calculus-intuition.ipynb</code> and run the gradient-descent and divergence cells for real.</p>
+</div>
+<script>
+(function () {
+  var lrButtons = document.querySelectorAll('.sim-controls .sim-btn[data-lr]');
+  var stepBtn = document.getElementById("sim1-step");
+  var resetBtn = document.getElementById("sim1-reset");
+  var valley = document.getElementById("sim1-valley");
+  var out = document.getElementById("sim1-out");
+
+  var w = 0;
+  var lr = 0.05;
+  var stepCount = 0;
+  var flewOut = false;
+  var convergedShown = false;
+
+  function loss(x) { return 5.25 * (x - 2) * (x - 2); }
+  function slope(x) { return 10.5 * (x - 2); }
+  function fmt(x) { return x.toFixed(3); }
+
+  function spaces(n) {
+    var s = "";
+    for (var i = 0; i < n; i++) { s += " "; }
+    return s;
+  }
+
+  function drawValley() {
+    // axis runs from w = -1 (col 0) to w = 5 (col 60), one column per 0.1
+    var col = Math.round((w + 1) * 10);
+    var offLeft = col < 0;
+    var offRight = col > 60;
+    if (col < 0) { col = 0; }
+    if (col > 60) { col = 60; }
+    var ball = spaces(col) + '<span class="path">●</span>';
+    if (offLeft || offRight) {
+      ball += ' <span class="dim">(w = ' + fmt(w) + ", off the chart)</span>";
+    }
+    var axis = "";
+    for (var i = 0; i <= 60; i++) { axis += (i % 10 === 0) ? "+" : "-"; }
+    var labels = "-1        0         1         2         3         4         5";
+    var bottom = spaces(30) + '<span class="goal">▲</span><span class="dim"> bottom (w = 2)</span>';
+    valley.innerHTML = ball + "\n" + axis + "\n" + '<span class="dim">' + labels + "</span>\n" + bottom;
+  }
+
+  function append(html) {
+    if (out.innerHTML !== "") { out.innerHTML += "\n"; }
+    out.innerHTML += html;
+    out.scrollTop = out.scrollHeight;
+  }
+
+  function doStep() {
+    if (flewOut) {
+      append('<span class="skip">w has left the valley — press "Reset to w = 0" first.</span>');
+      return;
+    }
+    stepCount += 1;
+    var s = slope(w);
+    var oldW = w;
+    var oldLoss = loss(w);
+    w = w - lr * s;
+    var newLoss = loss(w);
+    append("step " + stepCount + ": slope at w = " + fmt(oldW) + " is " + fmt(s));
+    append("        new w = " + fmt(oldW) + " − " + lr + " × (" + fmt(s) + ") = " + fmt(w));
+    if (newLoss < oldLoss) {
+      append('        loss: ' + fmt(oldLoss) + " → " + fmt(newLoss) + '  <span class="ok">downhill ✓</span>');
+    } else {
+      append('        loss: ' + fmt(oldLoss) + " → " + fmt(newLoss) + '  <span class="bad">the loss GREW ✗</span>');
+    }
+    if (!convergedShown && Math.abs(slope(w)) < 0.01) {
+      convergedShown = true;
+      append('<span class="ok">slope ≈ 0 — flat ground. This is the bottom: gradient descent has converged.</span>');
+    }
+    if (Math.abs(w - 2) > 4) {
+      flewOut = true;
+      append('<span class="bad">Every bounce lands higher than the last — this is divergence. Press Reset and try a smaller learning rate.</span>');
+    }
+    drawValley();
+  }
+
+  function reset() {
+    w = 0;
+    stepCount = 0;
+    flewOut = false;
+    convergedShown = false;
+    out.innerHTML = "";
+    append("start: w = " + fmt(w) + ", loss = " + fmt(loss(w)) + ", learning rate = " + lr);
+    drawValley();
+  }
+
+  function pickLr(btn) {
+    for (var i = 0; i < lrButtons.length; i++) {
+      lrButtons[i].classList.remove("active");
+      lrButtons[i].setAttribute("aria-pressed", "false");
+    }
+    btn.classList.add("active");
+    btn.setAttribute("aria-pressed", "true");
+    lr = parseFloat(btn.getAttribute("data-lr"));
+    append('<span class="skip">learning rate set to ' + lr + "</span>");
+  }
+
+  for (var i = 0; i < lrButtons.length; i++) {
+    (function (btn) {
+      btn.addEventListener("click", function () { pickLr(btn); });
+    })(lrButtons[i]);
+  }
+  stepBtn.addEventListener("click", doStep);
+  resetBtn.addEventListener("click", reset);
+
+  reset();
+})();
+</script>
+
 <p><strong>The gradient: many knobs at once.</strong> Real models have more than one knob. Give our scorer a second one — a <strong>baseline</strong> <code>b</code> added to every prediction: <code>prediction = w × urgent_words + b</code>. Now the question “which way is downhill?” must be asked <em>per knob</em>: nudge only <code>w</code> (holding <code>b</code> still) to get <code>w</code>'s slope, nudge only <code>b</code> (holding <code>w</code> still) to get <code>b</code>'s slope. A slope measured this way — one knob nudged, the rest frozen — is called a <strong>partial derivative</strong>. Collect all the slopes into one ordered list and you have the <strong>gradient</strong>: for our two-knob scorer at <code>w = 0, b = 0</code>, the gradient is <code>[−24.5, −9.0]</code>, meaning “loss falls steeply if <code>w</code> grows, and moderately if <code>b</code> grows.” An ordered list of numbers is exactly Lesson 08's <em>vector</em> — the gradient is a vector of slopes, one entry per knob. It points in the direction of steepest <em>increase</em> of the loss, so stepping against it is the fastest way down; the recipe stays word-for-word the same, just applied to every knob at once. The symbol you will see for it is <code>∇</code> (pronounced “nabla” or just “the gradient of”): <code>∇loss = [slope for knob 1, slope for knob 2, ...]</code>.</p>
 
 <p><strong>Scaling this up is the whole story of training.</strong> A neural network is a machine with millions or billions of knobs (its <strong>parameters</strong>). Training it is: compute the loss on real data, compute the gradient (one slope per knob), step every knob against its own slope, repeat. Nothing conceptually beyond this lesson happens — the only missing piece is that nudging billions of knobs one at a time is far too slow, and <strong>backpropagation</strong> (Phase 3) fixes exactly that by computing every slope in one pass. The idea you just learned survives unchanged all the way to the largest language models.</p>
