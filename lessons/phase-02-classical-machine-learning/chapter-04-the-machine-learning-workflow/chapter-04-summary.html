@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 4 Summary — The Machine Learning Workflow</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#learned">1 · What we learned</a>
+    <a href="#map">2 · How the ideas connect</a>
+    <a href="#story">3 · The story so far</a>
+    <a href="#lessons">4 · Lessons in this chapter</a>
+    <a href="#comingback">5 · Ideas that come back</a>
+    <a href="#selfcheck">6 · Self-check</a>
+    <a href="#challenge">7 · Chapter challenge</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-13-overfitting-underfitting-bias-variance.html">← Lesson 13 — Overfitting &amp; Underfitting</a>
+    <a class="next" href="../chapter-05-core-supervised-algorithms/lesson-14-linear-regression.html">Lesson 14 — Linear Regression →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 2 · Chapter 4 · Summary</p>
+  <h1>The Machine Learning Workflow</h1>
+  <p class="subtitle">Chapter 4 complete (Lessons 11–13) — build a model, score it honestly, understand the score.</p>
+</header>
+
+<section id="learned">
+<h2><span class="secno">1</span>What we learned, and what we added to the assistant</h2>
+
+<p>Chapter 4 was about the <strong>workflow</strong> — the repeatable process every machine-learning project follows, no matter which algorithm you eventually use. Before touching a single real algorithm, we learned how to set a project up so its results can be <em>trusted</em>.</p>
+
+<ul>
+  <li><strong>Lesson 11 — the end-to-end pipeline.</strong> We walked the five stages every ML project shares: <strong>data → features → train → evaluate → use</strong>. We turned raw ticket text into numbers with <strong>bag-of-words</strong>, “trained” a simple word-count classifier, held out a <strong>test set</strong>, and measured <strong>accuracy against a majority-class baseline</strong> so a score means something.</li>
+  <li><strong>Lesson 12 — train, validation, and test sets.</strong> We learned <em>why</em> we hide data. Testing on the data you trained on is the <strong>cardinal sin</strong> — a memoriser scored a fake 1.00 then collapsed to 0.33 on new tickets. We split data three ways: <strong>train</strong> (learn), <strong>validation</strong> (make choices), <strong>test</strong> (final honest grade, looked at once), and named <strong>data leakage</strong>.</li>
+  <li><strong>Lesson 13 — overfitting, underfitting, and bias-variance.</strong> We learned to <em>read</em> those honest scores. <strong>Underfitting</strong> (too simple, high bias) fails everywhere; <strong>overfitting</strong> (too complex, high variance) aces training and fails on new data. The <strong>gap between training and validation error</strong> is the diagnostic, and the <strong>bias-variance U-curve</strong> shows the sweet spot in the middle.</li>
+</ul>
+
+<p>Nothing was added to the customer-support assistant — this chapter is the rulebook we'll follow every time we <em>do</em> add a model, starting in Chapter 5.</p>
+</section>
+
+<section id="map">
+<h2><span class="secno">2</span>How the chapter's ideas connect</h2>
+
+<pre><code>  LESSON 11               LESSON 12                 LESSON 13
+  the PROCESS      --&gt;     honest SCORING     --&gt;   reading the SCORE
+  (5-stage pipeline)      (hide data properly)     (over/underfit, bias-variance)
+
+  data -&gt; features        train | validation |     train error vs validation error
+  -&gt; train -&gt; evaluate     test  (each a job)        -&gt; the GAP tells you what's wrong
+  -&gt; use                  memoriser proves the      -&gt; U-curve: pick the middle
+                          cardinal sin</code></pre>
+
+<p>The through-line: <strong>Lesson 11</strong> gives you the machine (a pipeline that produces a model and a score). <strong>Lesson 12</strong> makes sure that score is <em>honest</em> by hiding data the model never learns from. <strong>Lesson 13</strong> teaches you what the honest score is <em>telling you</em> — and none of Lesson 13's diagnosis is even possible without Lesson 12's held-out split, because you need a training score <em>and</em> a validation score to see the gap between them. Three lessons, one idea: build a model, score it honestly, and understand the score.</p>
+</section>
+
+<section id="story">
+<h2><span class="secno">3</span>The story so far: how the assistant has grown</h2>
+
+<ul>
+  <li><strong>Phase 1 (Chapters 1–3)</strong> gave the assistant its first toy brain (a rule-based, then word-counting, urgency classifier in <code>ticket_urgency.py</code>) and gave <em>us</em> the tools and math underneath AI: Python libraries, NumPy arrays, pandas tables, plots, linear algebra, calculus/gradient descent, and probability.</li>
+  <li><strong>Chapter 4</strong> added no code to the assistant — on purpose. Instead it installed the <strong>professional habits</strong> we'll use every time we upgrade it: run the full pipeline, split data honestly, and diagnose over/underfitting from the train-vs-validation gap.</li>
+  <li><strong>What's still true:</strong> the assistant is still the small Chapter-1 word-counter. <code>python main.py</code> runs it end to end and its self-check <code>assert</code>s still pass. The difference is that <em>we</em> are now ready to replace that toy with a real, properly-evaluated learned model — which is exactly what Chapter 5 begins.</li>
+</ul>
+</section>
+
+<section id="lessons">
+<h2><span class="secno">4</span>Lessons in this chapter</h2>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Lesson</th><th>Core idea</th><th>Key tool / term</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>11 — The end-to-end ML pipeline</strong></td><td>Every ML project follows the same five stages: data → features → train → evaluate → use.</td><td>Bag-of-words features; hold-out test set; <strong>accuracy vs. majority-class baseline</strong></td></tr>
+    <tr><td><strong>12 — Train, validation, and test sets</strong></td><td>Hide data from the model so its score is honest; the cardinal sin is testing on training data.</td><td><strong>Train / validation / test</strong> split; <strong>data leakage</strong></td></tr>
+    <tr><td><strong>13 — Overfitting, underfitting, bias-variance</strong></td><td>Read the honest score: both-bad = underfit; great-train-poor-validation = overfit.</td><td><strong>Bias vs. variance</strong>; the <strong>train-vs-validation gap</strong>; the <strong>U-curve</strong></td></tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section id="comingback">
+<h2><span class="secno">5</span>Ideas that come back later, and where</h2>
+
+<ul>
+  <li><strong>The train/validation/test split</strong> is the backbone of <em>every</em> model we build from Lesson 14 on, and gets a scarce-data upgrade — <strong>cross-validation</strong> — in <strong>Lesson 23</strong>.</li>
+  <li><strong>Overfitting and the bias-variance tradeoff</strong> return with full force in deep learning: <strong>Lesson 33</strong> (“training neural networks well”) is largely a toolkit — regularization, dropout, early stopping — for fighting the overfitting we met here.</li>
+  <li><strong>Baselines and honest evaluation</strong> grow into a whole toolbox of <strong>classification metrics</strong> (precision, recall, F1, the confusion matrix) in <strong>Lesson 22</strong>, where we'll see why plain accuracy can lie.</li>
+  <li><strong>Data leakage</strong>, named in Lesson 12, gets its own dedicated treatment alongside scaling and class imbalance in <strong>Lesson 21</strong>.</li>
+  <li><strong>The pipeline shape</strong> (data → features → train → evaluate → use) is exactly the skeleton the scikit-learn <code>fit</code>/<code>predict</code>/<code>transform</code> workflow formalises in <strong>Lesson 26</strong>.</li>
+</ul>
+</section>
+
+<section id="selfcheck">
+<h2><span class="secno">6</span>Self-check</h2>
+
+<ol>
+  <li>Name the five stages of the machine-learning pipeline in order, and say what “features” means.</li>
+  <li>Why is a model's <strong>accuracy on its own training data</strong> almost worthless as a measure of quality?</li>
+  <li>What is each of the three splits — <strong>train, validation, test</strong> — actually <em>for</em>, and which one may be looked at only once?</li>
+  <li>You see training error 0.02 and validation error 0.40. Which failure is this, what is its technical name, and what are two ways to fix it?</li>
+  <li>As model complexity rises, what happens to <strong>training error</strong> versus <strong>validation error</strong>, and how do you use those two curves to pick the best model?</li>
+</ol>
+
+<details>
+<summary>Click to reveal the answers</summary>
+<div class="details-body">
+
+<ol>
+  <li><strong>Data → features → train → evaluate → use.</strong> <em>Features</em> are the numeric signals we turn raw data into so a model can work with it (e.g. bag-of-words counts from ticket text).</li>
+  <li>Because the model was <strong>allowed to learn from those exact examples</strong>, so it can score high by <strong>memorising</strong> rather than understanding — the “cardinal sin.” A high training score tells you almost nothing about performance on new, unseen data.</li>
+  <li><strong>Train</strong> = the examples the model learns its parameters from. <strong>Validation</strong> = held-out data <em>you</em> use to make choices during development (which model, which settings). <strong>Test</strong> = the final honest grade, looked at <strong>exactly once</strong>, on data that never influenced the model in any way.</li>
+  <li>This is <strong>overfitting</strong> (tiny training error, much larger validation error, a big gap); its technical name is <strong>high variance</strong>. Fix it by using a <strong>simpler model</strong>, adding <strong>more training data</strong>, or applying techniques that penalise complexity (regularization, early stopping).</li>
+  <li><strong>Training error keeps falling</strong> as complexity rises (it can always hug the training points tighter). <strong>Validation error falls, bottoms out, then rises</strong> — a <strong>U</strong>. You pick the complexity at the <strong>bottom of the validation U</strong> (lowest validation error), never the lowest training error.</li>
+</ol>
+
+</div>
+</details>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">7</span>Chapter challenge</h2>
+
+<p><strong>The scenario.</strong> You inherit a support-ticket “priority predictor” from a teammate who left. They proudly documented: <em>“Trained on all 4,000 historical tickets. Accuracy: 0.97. Ready to ship.”</em> You run it on last week's 300 real tickets and it scores <strong>0.61</strong>. The categories in the historical data are 70% “normal”, 20% “high”, 10% “urgent”.</p>
+
+<p><strong>Your task:</strong> (1) Diagnose what almost certainly went wrong, using the right technical terms. (2) Explain why the 0.97 was measured wrong <em>and</em> why 0.61 might still not be as bad as it looks compared to doing nothing. (3) Lay out, step by step, exactly how you'd rebuild the evaluation so the next number you report is trustworthy — including how you'd choose between two candidate models without cheating.</p>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>(1) Diagnosis: overfitting, hidden by the cardinal sin of testing on training data.</strong> The 0.97 was measured on the same 4,000 tickets the model trained on, so it's the memoriser's flattering score — it reflects how well the model memorised, not how well it generalises. The drop to 0.61 on genuinely new tickets reveals a large <strong>train-vs-validation gap</strong>: high training performance, much lower real-world performance = <strong>high variance / overfitting</strong>. (We can't be <em>certain</em> it's overfitting versus other bugs, but a 0.97 → 0.61 collapse from training data to new data is its textbook signature.)</p>
+
+<p><strong>(2) Why 0.97 is wrong, and why 0.61 isn't the whole story.</strong> The 0.97 is invalid because it broke the one rule of honest evaluation: the grade must come from data the model never learned from. As for 0.61 — compare it to the <strong>majority-class baseline</strong> from Lesson 11: always guessing “normal” would score about <strong>0.70</strong> on data that's 70% normal. So a model at <strong>0.61 is actually <em>worse</em> than doing nothing</strong>. That baseline comparison is what turns a bare accuracy number into a verdict — without it, 0.61 sounds okay; with it, we know this model is broken.</p>
+
+<p><strong>(3) Rebuilding the evaluation, step by step.</strong></p>
+
+<ul>
+  <li><strong>Split first, before any tuning or cleaning:</strong> carve the 4,000 tickets into three piles, e.g. <strong>~2,400 train / 800 validation / 800 test</strong>. Split <em>before</em> preprocessing so no information from validation/test leaks into how you prepare the data.</li>
+  <li><strong>Guard against leakage:</strong> make sure no ticket appears in two piles (watch for duplicates), and that the split ratios roughly preserve the 70/20/10 class mix so each pile is representative.</li>
+  <li><strong>Train candidates on train only.</strong> Say you're deciding between Model A and Model B — fit <em>both</em> using just the 2,400 training tickets.</li>
+  <li><strong>Choose on validation.</strong> Score both on the 800 validation tickets and keep the winner. All model selection happens here, so the test set stays untouched.</li>
+  <li><strong>Judge once on test.</strong> Take the single chosen model and measure it <strong>one time</strong> on the 800 test tickets. That number is what you report.</li>
+  <li><strong>Report it against the baseline</strong> (0.70 here) and check the <strong>train-vs-validation gap</strong>: if training accuracy is high but validation is low, you're overfitting — simplify the model or get more data before shipping. If both are low and near the baseline, you're underfitting — add better features or a stronger model.</li>
+  <li><strong>If data were scarce,</strong> you'd swap the single validation set for <strong>cross-validation</strong> (Lesson 23) — but the unbreakable rule is unchanged: the final number comes from data the model neither trained on nor was tuned against.</li>
+</ul>
+
+</div>
+</details>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Chapter 5 — Core Supervised Algorithms</p>
+  <p>Lesson 14 — Linear regression: the first genuine learning algorithm, trained by the gradient descent from Lesson 09.</p>
+  <p><a href="../chapter-05-core-supervised-algorithms/lesson-14-linear-regression.html">Continue to Lesson 14 →</a></p>
+</footer>
+
+<p class="footnote">Chapter 4 of the curriculum complete · Phase 2 (Classical Machine Learning) · The Machine Learning Workflow · Lessons 11–13 done.</p>
+
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Force LF line endings for all text files, so the repo behaves the same
+# from Windows, WSL, and Linux checkouts.
+* text=auto eol=lf
+
+# Files that are definitely binary - never rewrite line endings
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary

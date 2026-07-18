@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 14 — Linear Regression: Predicting a Number</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="../chapter-04-the-machine-learning-workflow/chapter-04-summary.html">← Chapter 4 Summary</a>
+    <a class="next" href="lesson-15-logistic-regression.html">Lesson 15 — Logistic Regression →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 2 · Chapter 5 · Lesson 14</p>
+  <h1>Linear Regression: Predicting a Number</h1>
+  <p class="subtitle">The first genuinely learned model: a line of best fit, discovered by gradient descent.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> this lesson page · <code>lesson-notebooks/phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-14-linear-regression.ipynb</code> · <code>customer-support-assistant/resolution_time.py</code> · <code>customer-support-assistant/notebooks/resolution_time.ipynb</code></p>
+  <p><strong>Files updated:</strong> <code>customer-support-assistant/main.py</code></p>
+  <p><strong>Project change:</strong> yes — the assistant gets its first genuinely <strong>learned</strong> model: <code>resolution_time.py</code>, which estimates a ticket's resolution time in minutes.</p>
+  <p><strong>Prerequisites:</strong> Lesson 09 (loss / mean squared error, gradient descent — this lesson <em>is</em> that machinery aimed at a real task), Lesson 11 (the train→evaluate→use pipeline), Lesson 13 (the fitting failure modes we'll keep watching for).</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>Everything the assistant has done so far, a human hand-wrote the rule for. The urgency detector “learns” word counts, but <em>we</em> decided that urgent words add and calm words subtract. This lesson crosses a real line: for the first time, we hand the machine some data and let <strong>it</strong> discover the rule, with no human writing down the relationship.</p>
+
+<p>The tool is <strong>linear regression</strong> — the simplest real machine-learning algorithm, and the one every practitioner reaches for first when the answer is a <strong>number</strong> (minutes, price, temperature, demand). It draws the single straight line that best fits your data, then reads predictions off that line. It's simple enough to build from scratch in an afternoon, yet the exact same idea — parameters trained by gradient descent to minimise a loss — is the seed that grows into neural networks and, eventually, large language models.</p>
+
+<p>For our customer-support assistant, it powers a genuinely useful new feature: <strong>estimated resolution time</strong>. Given how long a ticket is, predict how many minutes it'll take an agent to resolve — the kind of number a support team uses to triage a queue and set expectations. And unlike the urgency toy, no human writes the “minutes per word” rule; the model learns it.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p>Imagine you're a moving company giving quotes. Over years you've noticed: the more boxes a customer has, the longer the job takes. You don't have a formula — just a gut feel built from hundreds of past jobs.</p>
+
+<p>Now picture every past job as a dot on a wall chart: boxes across the bottom, hours up the side. The dots scatter, but they clearly drift upward — more boxes, more hours. You grab a piece of string and stretch it across the chart so it runs right through the middle of the cloud of dots, as close to as many as possible. That taut string is your <strong>line of best fit</strong>.</p>
+
+<p>When a new customer calls and says “I have 40 boxes,” you find 40 along the bottom, go up to the string, and read the hours across — that's your quote. Linear regression is exactly this, made precise: the dots are your data, the string is the model, “running through the middle of the dots” is <em>training</em>, and reading a new value off the string is <em>prediction</em>. The only thing the math adds is a rule for placing the string in the provably-best spot instead of by eye.</p>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<h3>The model is a straight line</h3>
+
+<p><strong>Plain definition:</strong> linear regression models the answer as a straight-line function of the input. Feed in a number <code>x</code>, get out a number <code>y</code>, using the line <code>y = w × x + b</code>.</p>
+
+<p>A line is pinned down by exactly two numbers, and each has a plain meaning:</p>
+
+<ul>
+  <li><strong><code>w</code> — the slope.</strong> Its technical name is the <strong>weight</strong>. It answers: <em>for each extra unit of input, how much does the output change?</em> If <code>w = 5</code>, every extra unit of <code>x</code> adds 5 to <code>y</code>.</li>
+  <li><strong><code>b</code> — the intercept.</strong> Its technical name is the <strong>bias</strong>. It's the output when <code>x = 0</code> — the baseline the slope builds on. (This “bias” means a constant offset, nothing to do with the “high bias” of Lesson 13. Same word, different job — worth keeping straight.)</li>
+</ul>
+
+<p>Together <code>w</code> and <code>b</code> are the model's <strong>parameters</strong>: the numbers the model <em>learns</em>. Here's the key mental shift — <strong>a trained linear-regression model is literally just those two numbers.</strong> Save <code>w</code> and <code>b</code> and you've saved the whole model.</p>
+
+<p><strong>Tiny concrete example:</strong> say we land on <code>w = 4.9</code> and <code>b = 5.6</code> for “minutes to resolve a ticket, from its length in tens of words.” A ticket of 30 words is <code>x = 3</code>, so the prediction is <code>4.9 × 3 + 5.6 = 20.3</code> minutes. A 50-word ticket is <code>x = 5</code> → <code>4.9 × 5 + 5.6 = 30.1</code> minutes. The line does all the work.</p>
+
+<h3>Measuring how good a line is: the loss</h3>
+
+<p>Before we can find the <em>best</em> line, we need to score <em>any</em> line, so we can compare. We reuse <strong>mean squared error (MSE)</strong> from Lesson 09.</p>
+
+<p>Plain meaning first: for each data point, look at how far the line's prediction is from the true value — that gap is the <strong>error</strong>. Square it (so a miss above and a miss below both count as positive, and a big miss is punished far more than a small one). Average those squared errors over all points. That average is the loss. Symbols second:</p>
+
+<pre><code>MSE = average over all points of (prediction − actual)²</code></pre>
+
+<p>Worked example — one point at <code>x = 2</code>, true value <code>14</code>, using the line <code>w = 3, b = 0</code>:</p>
+
+<ul>
+  <li>prediction = <code>3 × 2 + 0 = 6</code></li>
+  <li>error = <code>6 − 14 = −8</code></li>
+  <li>squared error = <code>64</code></li>
+</ul>
+
+<p>A line hugging the dots gives a small MSE; a badly-placed line gives a big one. <strong>Training = finding the <code>w</code> and <code>b</code> that make this number as small as possible.</strong></p>
+
+<h3>How it learns: gradient descent, now with two knobs</h3>
+
+<p>Lesson 09 turned one knob downhill. Linear regression has <strong>two</strong> knobs (<code>w</code> and <code>b</code>), so the gradient is <strong>two</strong> slopes — one saying which way to move <code>w</code>, one for <code>b</code>. For MSE with a straight line these come out clean (plain meaning first):</p>
+
+<ul>
+  <li><strong>Slope for <code>w</code></strong> = the average of <code>(prediction − actual) × x</code>. Read it as: if the line predicts too high especially on the far-right points (large <code>x</code>), tilt <code>w</code> downward.</li>
+  <li><strong>Slope for <code>b</code></strong> = the average of <code>(prediction − actual)</code>. Read it as: if the line sits too high everywhere, lower the whole line.</li>
+</ul>
+
+<p>Then the update rule from Lesson 09, applied to both at once:</p>
+
+<pre><code>w  ←  w  −  learning_rate × (slope for w)
+b  ←  b  −  learning_rate × (slope for b)</code></pre>
+
+<p>The <strong>learning rate</strong> is the step size — small (like 0.01) is slow but safe; too big and the steps overshoot and blow up (the divergence you saw in Lesson 09). Repeat the update a couple thousand times: each pass the line tilts and shifts a hair toward the dots and the loss drops, until it settles at the bottom — the line of best fit.</p>
+
+<pre><code> minutes                           minutes
+   |          . .  /                 |          . ./
+   |      . ./  .                    |      . ./ .
+   |   . /  .           many         |   . /.
+   | ./  .          steps of         | ./ .
+   |/______________  gradient  ---&gt;  |/______________
+   start: flat line     descent      end: best-fit line
+   (big loss)                        (smallest loss)</code></pre>
+
+<h3>One feature now, many features later</h3>
+
+<p>We're using a single input (ticket length), so the model is a line in 2-D. Real problems use many inputs at once — length <strong>and</strong> number of question marks <strong>and</strong> customer age — and then the model is <code>y = w₁x₁ + w₂x₂ + w₃x₃ + b</code>, a weight per input plus one bias. The picture becomes a flat sheet in higher dimensions instead of a line, but <strong>nothing else changes</strong>: same MSE loss, same gradient descent, just more weights to nudge. Master the one-input case and the many-input case is only bookkeeping. (Multiple features properly arrive in Chapter 6.)</p>
+
+<h3>A note on scaling</h3>
+
+<p>You'll see the code divide lengths by 10 before training. Gradient descent gets unstable when inputs are large: the slopes scale with <code>x</code>, so big <code>x</code> makes giant steps that overshoot. Shrinking the input to a friendly range (here 1–8 instead of 10–80) keeps the steps sane. This is <strong>feature scaling</strong>, a standard preprocessing step we cover properly in Lesson 21 — for now, just know it's why the code works in “tens of words.”</p>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>The lesson notebook (<code>lesson-notebooks/phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-14-linear-regression.ipynb</code>) builds the whole thing from scratch, no ML library doing the learning:</p>
+
+<ol>
+  <li><strong>The data</strong> — eight past tickets as <code>(length, minutes)</code>, plus a scaled copy of the lengths.</li>
+  <li><strong>The model</strong> — <code>predict_with(w, b, x)</code> returns <code>w × x + b</code>; we try a bad guess line to feel how wrong an untrained model is.</li>
+  <li><strong>The loss</strong> — <code>mean_squared_error(w, b)</code>, an explicit loop, scoring the guess line.</li>
+  <li><strong>The gradients</strong> — <code>compute_gradients(w, b)</code> returns both slopes; we print them at the flat start so you can see which way is downhill.</li>
+  <li><strong>The training loop</strong> — 2000 gradient-descent steps, printing the loss shrinking, ending in the trained <code>w</code> and <code>b</code>.</li>
+  <li><strong>Use it</strong> — predict minutes for brand-new ticket lengths (including one past the training range, to flag extrapolation).</li>
+  <li><strong>Plot</strong> — scatter the dots and draw the fitted line; save a PNG.</li>
+  <li><strong>Check</strong> — compare our gradient-descent line to <code>np.polyfit</code>'s exact line; they should nearly match.</li>
+</ol>
+
+<p>The code is written plainly — ordinary <code>for</code> loops with named variables, one idea per cell, a short comment per line — so it reads top to bottom on its own.</p>
+
+<div class="note">
+<p><strong>Verify-as-you-go note:</strong> the check cell uses <code>np.polyfit(x, y, 1)</code>, which returns coefficients <strong>highest-power-first</strong>, i.e. <code>[slope, intercept]</code> for a line. That's standard NumPy, but confirm the argument order and return shape against the current NumPy docs if anything looks off.</p>
+</div>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<p>Open the notebook in VS Code and run the cells top to bottom. Expected output, labelled as a <strong>prediction</strong> (your exact numbers will differ slightly; the <em>pattern</em> is the point):</p>
+
+<ol>
+  <li><strong>Data cell</strong> → a table of the eight tickets with <code>length</code>, <code>scaled(x)</code>, <code>minutes</code>, then <code>Number of tickets: 8</code>.</li>
+  <li><strong>Guess-line cell</strong> → a table showing the <code>w=3, b=0</code> line under-predicting most tickets (errors mostly negative — the line is too shallow and starts at zero).</li>
+  <li><strong>Loss cell</strong> → <code>MSE of the guess line (w=3.0, b=0.0):</code> a large number (predicted roughly <strong>220</strong>) — that shallow, floor-starting line is a bad fit.</li>
+  <li><strong>Gradients cell</strong> → at <code>w=0, b=0</code>, <code>slope for w:</code> about <strong>−300</strong> and <code>slope for b:</code> about <strong>−55</strong>, both negative, meaning “push both up.”</li>
+</ol>
+
+<p><strong>Training loop</strong> → about ten progress lines with the loss falling fast then levelling off, ending near:</p>
+
+<pre><code><span class="hi">Trained line: minutes = 4.893 * (length/10) + 5.607</span>
+Final loss: ~2.0</code></pre>
+
+<p class="footnote">(The exact <code>w</code>, <code>b</code>, and final loss will vary a little; <code>w</code> near 4.9 and <code>b</code> near 5.6 is the target.)</p>
+
+<p><strong>Predict cell</strong> →</p>
+
+<pre><code>A 15-word ticket -&gt; about 12.9 minutes to resolve
+A 55-word ticket -&gt; about 32.5 minutes to resolve
+A 100-word ticket -&gt; about 54.5 minutes to resolve</code></pre>
+
+<p><strong>Plot cell</strong> → <code>Saved: plots/lesson-14-line-of-best-fit.png</code>, then a scatter of eight dots with a red line running straight through their middle.</p>
+
+<p><strong>NumPy check</strong> → our line and NumPy's printed side by side, both about <code>w=4.89, b=5.61</code> — two different methods, the same best-fit line.</p>
+
+<div class="warn">
+<p>The whole lesson is in the training loop: starting from a flat line on the floor, gradient descent <em>discovered</em> the slope and intercept that fit the data, and the NumPy check confirms it found the genuinely optimal line. Real numbers shift run to run; the story — loss falling, <code>w</code>→~4.9, <code>b</code>→~5.6 — holds.</p>
+</div>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<div class="demo">
+<p>This lesson gives the assistant its <strong>first learned model</strong>. New file <code>resolution_time.py</code> trains a linear regression (by the same from-scratch gradient descent) on past <code>(length, minutes)</code> tickets, then exposes <code>predict_resolution_minutes(length_words)</code> — an estimate of how long a new ticket will take to resolve. <code>main.py</code> now runs this alongside the urgency detector, estimating resolution time for each sample ticket, and asserts that a longer ticket is estimated to take at least as long as a shorter one.</p>
+</div>
+
+<p>Note what changed philosophically: the urgency detector applies a rule we designed; <code>resolution_time.py</code> applies a rule <em>it learned from data</em>. That's the whole leap into real machine learning, and every model from here builds on it. It's still deliberately simple — one feature, a tiny dataset, a straight line — so it's the perfect place to have watched every moving part.</p>
+
+<p><strong>Predicted <code>python main.py</code> output</strong> (run from inside <code>customer-support-assistant/</code>), labelled a <strong>prediction</strong>:</p>
+
+<pre><code>Customer Support Assistant - current capabilities
+
+1) Ticket urgency detection
+   [urgent] (score 3) My payment failed twice and I need this resolved right now
+   [not urgent] (score -1) Do you have this item in a larger size
+
+2) Estimated resolution time (learned by linear regression)
+   ~11.0 min (11 words) My payment failed twice and I need this resolved right now
+   ~10.0 min (9 words) Do you have this item in a larger size
+
+<span class="hi">Self-check passed.</span></code></pre>
+
+<p>(The urgency scores in line 1 are illustrative — the real numbers come from the existing word-count model; the resolution estimates near 10–11 minutes are what the trained line predicts for 9–11-word tickets.) Running <code>python resolution_time.py</code> on its own prints the learned line and passes its own asserts. <code>requirements.txt</code> stays empty — this feature is pure standard-library Python.</p>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Forgetting linear regression can only draw a line.</strong> If the true relationship curves (say, resolution time flattens for very long tickets), a straight line will systematically miss — that's underfitting / high bias from Lesson 13. The fix is more features or a curve-capable model, not more gradient-descent steps.</li>
+  <li><strong>A learning rate that's too big.</strong> Large steps overshoot the valley and the loss explodes to <code>inf</code>/<code>nan</code> instead of shrinking. If you see the loss growing, shrink the learning rate first.</li>
+  <li><strong>Skipping feature scaling.</strong> Train on raw lengths (10–80) with the same learning rate and gradient descent likely diverges. Big inputs → big slopes → giant steps. Scaling the input to a small range is what keeps it stable.</li>
+  <li><strong>Trusting predictions far outside the training range.</strong> The model learned from 10–80-word tickets; asking it about a 500-word ticket is <strong>extrapolation</strong> — the line keeps going, but there's no data out there to say it should. Treat far-out predictions with suspicion.</li>
+  <li><strong>Confusing the two meanings of “bias.”</strong> The intercept <code>b</code> is called the bias (a constant offset). “High bias” in Lesson 13 means an underfitting model. Same word, unrelated ideas.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p><strong>Reach for linear regression when</strong> the thing you're predicting is a continuous number and you expect a roughly straight-line relationship with your inputs. It's the right <em>first</em> model for almost any number-prediction task: fast to train, impossible to overcomplicate, and — its best feature — completely <strong>interpretable</strong>. You can read each weight as “this much output per unit of this input” and explain the model to a non-technical colleague in one sentence.</p>
+
+<p><strong>The tradeoffs:</strong></p>
+
+<ul>
+  <li><strong>Strengths:</strong> simple, fast, needs little data, hard to overfit with few features, and every parameter has a plain meaning.</li>
+  <li><strong>Limits:</strong> it can <em>only</em> fit straight-line (linear) relationships. Real curves, thresholds, and interactions between features are beyond a plain line — you'd add engineered features or move to a more flexible model (trees, Lesson 16; neural nets, Phase 3).</li>
+  <li><strong>It predicts numbers, not categories.</strong> For “which bucket does this belong to?” (urgent vs not, spam vs not) you want its cousin <strong>logistic regression</strong> — which is the very next lesson.</li>
+</ul>
+
+<p>The honest rule: start with linear regression as your baseline. If a straight line is good enough, you're done and you have a model anyone can understand. If its errors stay stubbornly high, that's your signal the relationship is more complex — and now you know <em>why</em> you need something fancier.</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li>Linear regression predicts a number by fitting the single best straight line through the data, and a trained model is nothing more than two learned numbers — a slope (weight) and an intercept (bias).</li>
+  <li>“Best” is defined by a loss — mean squared error, the average squared gap between prediction and truth — and training means finding the weight and bias that make that loss as small as possible.</li>
+  <li>It learns by gradient descent from Lesson 09, now nudging two knobs at once: each step measures the slope of the loss for the weight and for the bias, then steps both a little downhill, repeated until the loss stops falling.</li>
+  <li>The same recipe (parameters + a loss + gradient descent) scales from one input to many and is the exact foundation that neural networks and modern AI are built on — linear regression is the simplest instance of the idea that runs through the whole field.</li>
+  <li>Our assistant now has its first truly learned capability: <code>resolution_time.py</code> estimates a ticket's resolution time from a rule the model discovered from data, not one a human wrote.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>A shop trains a linear regression to predict a product's <strong>shipping cost in dollars</strong> from its <strong>weight in kilograms</strong>. After training, the model is:</p>
+
+<blockquote><p><code>cost = 2.5 × weight + 4</code></p></blockquote>
+
+<p>Answer these:</p>
+
+<ol>
+  <li>In plain words, what do the <code>2.5</code> and the <code>4</code> each mean?</li>
+  <li>Predict the shipping cost for a 6 kg parcel.</li>
+  <li>The model was trained only on parcels between 1 kg and 10 kg. A customer asks about a 200 kg pallet and the formula says <code>cost = 2.5 × 200 + 4 = $504</code>. Why should you distrust that number even though the arithmetic is correct?</li>
+</ol>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>1) What the two numbers mean.</strong></p>
+
+<ul>
+  <li>The <strong><code>2.5</code> is the slope (weight):</strong> each extra kilogram adds <strong>$2.50</strong> to the shipping cost. It's the “dollars per kilogram” rate the model learned.</li>
+  <li>The <strong><code>4</code> is the intercept (bias):</strong> the baseline cost when weight is <code>0</code> — a fixed <strong>$4</strong> that applies before any per-kilogram charge (think handling/packaging). Read together: “$4 to start, plus $2.50 per kg.”</li>
+</ul>
+
+<p><strong>2) The 6 kg prediction.</strong><br>
+<code>cost = 2.5 × 6 + 4 = 15 + 4 = $19</code>. Since 6 kg sits comfortably inside the 1–10 kg training range, this is a prediction we can reasonably trust.</p>
+
+<p><strong>3) Why distrust the $504 for 200 kg.</strong><br>
+Because 200 kg is <strong>far outside the training range</strong> (1–10 kg) — this is <strong>extrapolation</strong>. The model only ever saw small parcels, so it learned a straight-line rate that fit <em>those</em>. There's no guarantee the real cost keeps rising at a flat $2.50/kg all the way to 200 kg: heavy freight often jumps to different pricing tiers, needs a pallet or a truck, or is capped — none of which the line can know, because no data out there taught it. The arithmetic is fine; the <em>assumption that the same straight line still applies</em> is the shaky part. The fix is to gather data in that range (or use a model/rule built for freight), not to trust the line blindly.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>You've built a model that predicts a <strong>number</strong>. Next comes its close cousin for predicting a <strong>category</strong>: <strong>Lesson 15 — Logistic regression</strong>, which takes the same weighted-sum idea, squashes it into a probability between 0 and 1, and turns that into a yes/no decision — the workhorse classifier you'll reach for first, and a much more principled replacement for the assistant's hand-written urgency rule.</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Lesson 15 — Logistic Regression: Predicting a Category</p>
+  <p>The same weighted-sum idea, squashed into a probability — the workhorse classifier you reach for first.</p>
+  <p><a href="lesson-15-logistic-regression.html">Continue to Lesson 15 →</a></p>
+</footer>
+
+<p class="footnote">Lesson 14 of the curriculum · Phase 2 (Classical Machine Learning) · Chapter 5 (Core Supervised Algorithms) · Lesson 1 of 5 in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>

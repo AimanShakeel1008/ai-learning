@@ -1,0 +1,386 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 17 — Gradient Boosting</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-16-decision-trees-random-forests.html">← Lesson 16 — Decision Trees and Random Forests</a>
+    <span class="disabled">Lesson 18 — kNN and SVM (coming next)</span>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 2 · Chapter 5 · Lesson 17</p>
+  <h1>Gradient Boosting</h1>
+  <p class="subtitle">Many weak models correcting each other — the method that dominates tabular data.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> <code>lesson-notebooks/phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-17-gradient-boosting.ipynb</code></p>
+  <p><strong>Prerequisites:</strong> Lesson 9 (gradient descent), Lesson 13 (overfitting), Lesson 14 (residuals, squared error, learning rate), Lesson 16 (decision trees, greedy splits, random forests)</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>Last lesson ended with a promise: the random forest builds many trees <em>independently</em> and lets them vote — and there is a second, stronger way to build a team of trees. This lesson keeps that promise. <strong>Gradient boosting</strong> builds its trees <em>in sequence</em>, and each new tree has exactly one job: fix the mistakes that all the previous trees, combined, are still making.</p>
+
+<p>That one change in team organization produces the family of models — <strong>XGBoost</strong>, <strong>LightGBM</strong>, and friends — that has dominated machine-learning competitions on tabular data (data that fits in a table: rows of tickets, orders, customers) for over a decade. When a data scientist at a real company faces a table of business data and wants the strongest classical model available, “try gradient boosting” is close to a reflex. If you only ever deeply understand two classical model families, make them linear models (Lessons 14–15) and boosted trees (this lesson).</p>
+
+<p>For our support assistant, this is also a preview of how its predictions — resolution time, urgency, category — would be built if we used industrial-strength tools. And there is a beautiful bonus: the word “gradient” in the name is not a coincidence. This lesson closes a loop that started in Lesson 9 — boosting <em>is</em> gradient descent, taken one small tree at a time.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p><strong>Editing an essay in passes.</strong></p>
+
+<p>You write a first draft of an essay in five minutes. It is rough — but it exists. Then an editor reads it and marks, in red pen, exactly what is still wrong: “this paragraph too vague,” “this claim unsupported.” You make a <em>revision pass</em> that fixes only what the red pen marked. Then the editor reads the <strong>new</strong> version and marks what is <em>still</em> wrong — a shorter list now. Another pass fixes those. After several passes, the essay is sharp, even though no single pass was brilliant.</p>
+
+<p>Mapping every piece:</p>
+
+<ul>
+  <li><strong>The rough first draft</strong> = the starting model: one boring average, predicted for everyone.</li>
+  <li><strong>The red-pen marks</strong> = the residuals: a precise list of what the current model still gets wrong, ticket by ticket.</li>
+  <li><strong>One revision pass</strong> = one weak tree, trained <em>on the red-pen marks</em> — not on the original assignment.</li>
+  <li><strong>Each pass reads the latest version</strong> = each tree is fitted to the errors left over <em>after</em> all previous trees — the work is sequential; pass 3 cannot be done before pass 2.</li>
+  <li><strong>A careful editor changes only 30% of what they could</strong> = the learning rate: apply each correction only partially, so no single pass over-commits to its own opinion.</li>
+  <li><strong>Knowing when to stop editing</strong> = the number of rounds: keep revising a finished essay and you start mangling good sentences — that is overfitting.</li>
+</ul>
+
+<p>Contrast with Lesson 16's forest: the forest was <strong>five people writing five separate essays and voting on the best sentences</strong>. Boosting is <strong>one essay, polished by many passes</strong>.</p>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<h3>3.1 The starting point: the most boring model alive</h3>
+
+<p>Boosting begins with a “model” that ignores its input completely: <strong>always predict the average of the training answers</strong>. If our 8 past tickets took on average 24.5 minutes, predict 24.5 minutes — for every ticket, sight unseen.</p>
+
+<p>Why the average and not some other number? Because we score models by <strong>squared error</strong> (Lessons 9 and 14), and among all single always-predicted numbers, the average is the one with the smallest total squared error. It is the best you can do without looking. Everything that comes after is about looking.</p>
+
+<h3>3.2 Residuals: the list of what is still wrong</h3>
+
+<p>The <strong>residual</strong> (met in Lesson 14) is <em>actual answer minus predicted answer</em>, one per training example. If a ticket actually took 8 minutes and we predicted 24.5, the residual is 8 − 24.5 = <strong>−16.5</strong>: we guessed 16.5 minutes too high. Positive residual = guessed too low; negative = too high.</p>
+
+<p>The residuals are not just a score — they are a complete, per-ticket <strong>to-do list</strong>: “on this ticket, move your prediction down by 16.5; on that one, up by 21.5.” Boosting's central move is to treat that to-do list as a <em>new training target</em>.</p>
+
+<h3>3.3 The weak learner: a decision stump</h3>
+
+<p>The corrections are made by deliberately tiny trees. A <strong>decision stump</strong> is a decision tree allowed exactly <strong>one question</strong> — one split, two leaves. Ours asks <em>“is the ticket length ≤ some threshold?”</em>, and each side answers with a single number.</p>
+
+<p>Why choose a weak piece on purpose? Because the plan is <em>many small corrections</em>. Each stump fixes a bit of what is wrong; whatever it misses stays in the residuals for the next stump. A strong model that could fix everything in one gulp would also swallow the noise in one gulp (Lesson 13's overfitting). Weak pieces added gradually are easy to keep under control. Boosting literature literally calls them <strong>weak learners</strong>.</p>
+
+<p>Fitting a stump is Lesson 16's greedy split search, refueled for regression:</p>
+
+<ol>
+  <li>Candidate thresholds = midpoints between neighbouring lengths (15, 25, …, 75).</li>
+  <li>Each threshold splits tickets into a left pile (≤) and right pile (&gt;).</li>
+  <li>Each side's answer = the <strong>average of its pile</strong> (best single number, same reason as 3.1).</li>
+  <li>Score = squared error left over. Lowest wins.</li>
+</ol>
+
+<p>Word question → number question; majority label + Gini → average + squared error. Same machine.</p>
+
+<h3>3.4 The boosting loop, worked with real numbers</h3>
+
+<p>Our notebook data (lengths in words → minutes to resolve — note the <em>jumps</em>, this is not a straight line):</p>
+
+<pre><code>length:  10  20  30  40  50  60  70  80
+minutes:  8  10  14  16  28  30  44  46</code></pre>
+
+<p><strong>Round 0.</strong> Average = 196 ÷ 8 = <strong>24.5</strong>. Residuals: −16.5, −14.5, −10.5, −8.5, +3.5, +5.5, +19.5, +21.5. Total squared error: <strong>1550.0</strong>.</p>
+
+<p><strong>Round 1.</strong> Fit a stump <em>to the residuals</em>. Trying every threshold, “length ≤ 45?” wins by a mile: its left pile's residuals average <strong>−12.5</strong> and its right pile's average <strong>+12.5</strong> (the data's biggest jump is between 40 and 50 words). Add the correction:</p>
+
+<pre><code>new prediction = old prediction + stump's correction
+left of 45:  24.5 + (−12.5) = 12.0 minutes
+right of 45: 24.5 + (+12.5) = 37.0 minutes</code></pre>
+
+<p>Total squared error: 1550 → <strong>300</strong>. One yes/no question removed 81% of the error.</p>
+
+<p><strong>Round 2.</strong> Recompute residuals against the NEW predictions: −4, −2, +2, +4, −9, −7, +7, +9. The biggest remaining structure is on the right side (70–80-word tickets are still 7–9 minutes underestimated). Best stump: “length ≤ 65?” → left −2.67, right +8.0. Error: 300 → <strong>129.3</strong>.</p>
+
+<p><strong>Round 3.</strong> Best stump: “length ≤ 45?” again, now with small values (+2.67 / −2.67) — it is <em>fine-tuning</em> a region it already corrected once. Error: 129.3 → <strong>72.4</strong>.</p>
+
+<p>Each round: <strong>(1)</strong> compute residuals, <strong>(2)</strong> fit a stump to them, <strong>(3)</strong> add its corrections to the model, <strong>(4)</strong> repeat. The final model is a <em>recipe</em>:</p>
+
+<pre><code>prediction(ticket) = 24.5                      <span class="c">&lt;- the average</span>
+                   + stump1(ticket)            <span class="c">&lt;- ±12.5 at the 45-word line</span>
+                   + stump2(ticket)            <span class="c">&lt;- fixes the right side</span>
+                   + stump3(ticket)            <span class="c">&lt;- fine-tuning</span>
+                   + ...</code></pre>
+
+<p>Notice what makes this <strong>sequential</strong>: stump 2's training target (the round-2 residuals) did not exist until stump 1 was built and applied. No tree can be trained before its predecessors. Forest trees are jurors voting in parallel; boosting trees are a relay team.</p>
+
+<h3>3.5 The learning rate: take smaller steps on purpose</h3>
+
+<p>Real boosting rarely applies a stump's full correction. It multiplies every correction by a small number — the <strong>learning rate</strong>, also called <strong>shrinkage</strong> (typical values 0.3, 0.1, or smaller):</p>
+
+<pre><code>new prediction = old prediction + learning_rate × correction</code></pre>
+
+<p>Why deliberately weaken your own corrections? Each correction was measured on the training tickets alone — partly real pattern, partly noise (Lesson 13). A small step means no single stump stamps its full opinion (noise included) onto the model. The real pattern is not lost: whatever a small step leaves unfixed is still sitting in the residuals, so later rounds measure it <em>again</em> and keep correcting it. Real structure gets repeatedly confirmed; one-off noise does not. The price: more rounds needed — which is why production boosted models use hundreds of small trees.</p>
+
+<p>This is the same care-versus-speed dial as gradient descent's learning rate in Lessons 9 and 14 — and that is no coincidence:</p>
+
+<h3>3.6 Why “gradient” boosting</h3>
+
+<p>Lesson 9: the <strong>gradient</strong> is the steepest-uphill direction on the error surface, and gradient descent means “step a little downhill, repeat.” Now look at what boosting does. For squared error, the direction each prediction should move to reduce its error fastest is <strong>exactly its residual</strong> — “you predicted 12, the answer is 16” means “move up by 4.” Fitting a stump to the residuals and adding a small multiple of it is therefore a <strong>gradient-descent step</strong> — except the step is taken by adding a whole small tree, instead of nudging a weight and a bias. Boosting is gradient descent where each “step” is a tree. (For losses other than squared error, libraries fit each tree to a generalized residual; the idea is identical.)</p>
+
+<h3>3.7 Where boosting overfits — and its knobs</h3>
+
+<p>A forest's extra trees are just extra independent opinions in an average — more trees is roughly always safer. Boosting's extra trees keep <strong>actively hunting whatever error remains</strong> — and once the real pattern is captured, the only thing left to hunt is noise. Boosting can drive training error to zero and keep “improving” while quietly getting worse on new data. Its overfitting knobs:</p>
+
+<ul>
+  <li><strong>number of rounds</strong> (more trees = more capacity),</li>
+  <li><strong>learning rate</strong> (smaller = more careful),</li>
+  <li><strong>depth of each tree</strong> (deeper = stronger pieces = more capacity).</li>
+</ul>
+
+<p>All tuned with a validation set (Lesson 12); the standard trick is <strong>early stopping</strong> — watch validation error each round, stop adding trees when it stops improving.</p>
+
+<h3>3.8 The real libraries</h3>
+
+<p>Nobody hand-rolls this in production. <strong>XGBoost</strong> and <strong>LightGBM</strong> are the famous stand-alone implementations; scikit-learn ships a histogram gradient-boosting model too. They run exactly the loop above, plus: trees a few levels deep instead of stumps, hundreds of rounds at small learning rates, random subsets of rows/columns per tree (the forest's tricks, borrowed), regularization penalties on the trees, early stopping, and serious speed engineering.</p>
+
+<div class="warn">
+<p>Library names and argument details change over time — treat any specific API in this lesson as something to verify against the official docs.</p>
+</div>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>Everything is built in the lesson notebook, from scratch, standard library + matplotlib only:</p>
+
+<p>Saved: <code>lesson-notebooks/phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-17-gradient-boosting.ipynb</code></p>
+
+<p>The notebook's arc: the jumpy 8-ticket dataset → round 0 (the average) and its residuals → <code>fit_stump</code> (greedy threshold search, scored by leftover squared error) → fitting the first stump <em>to the residuals</em> with every candidate's score printed → adding the correction and watching error fall 1550 → 300 → the full <code>train_boosted</code> loop (5 rounds, learning rate 1.0) → tracing predictions for unseen 33- and 66-word tickets stump by stump → retraining with learning rate 0.3 to see gentler steps → a plot of the model after 0/1/2/5 rounds → the forest-vs-boosting comparison and the XGBoost/LightGBM picture.</p>
+
+<div class="tryit">
+<p>Open the notebook in VS Code and run the cells top to bottom. The chart cell saves <code>plots/lesson-17-boosting-stages.png</code> next to the notebook. Matplotlib is the only non-standard-library import (already installed from Lesson 7).</p>
+</div>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<ol>
+  <li><strong>Data cell</strong> — prints the 8 (length → minutes) pairs; you can see the two jumps by eye.</li>
+  <li><strong>Round 0 cell</strong> — computes the mean (24.5), prints each ticket's residual, and the starting total squared error (1550).</li>
+  <li><strong>Stump-fitting cell</strong> — defines <code>fit_stump</code> and <code>stump_output</code>; prints nothing.</li>
+  <li><strong>First-stump cell</strong> — scores all 7 thresholds against the residuals and picks 45.</li>
+  <li><strong>Apply-correction cell</strong> — shows every ticket's prediction move from 24.5 to 12.0 or 37.0; error drops to 300.</li>
+  <li><strong>Boosting-loop cell</strong> — trains 5 rounds and prints one line per round; watch the corrections shrink and the error fall monotonically; then prints the final fit per ticket.</li>
+  <li><strong>Prediction cell</strong> — traces 33- and 66-word tickets through all 5 stumps, printing each stump's contribution and the running total.</li>
+  <li><strong>Learning-rate cell</strong> — retrains with learning rate 0.3 for 15 rounds; error falls more slowly per round, and the same threshold reappears in several rounds.</li>
+  <li><strong>Plot cell</strong> — draws the model after 0/1/2/5 rounds over the data and saves the PNG: a flat line becoming a staircase that hugs the points.</li>
+</ol>
+
+<div class="warn">
+<p><strong>Predicted output — a PREDICTION, not a verified run.</strong> Everything is deterministic, so your numbers should match closely, but trailing decimals may differ slightly, and rounds 3+ of the learning-rate-0.3 run below are approximate.</p>
+</div>
+
+<p>Round 0:</p>
+
+<pre><code>Round-0 model: always predict 24.5 minutes
+
+  length 10 | actual  8 | predicted 24.50 | residual -16.50
+  length 20 | actual 10 | predicted 24.50 | residual -14.50
+  length 30 | actual 14 | predicted 24.50 | residual -10.50
+  length 40 | actual 16 | predicted 24.50 | residual  -8.50
+  length 50 | actual 28 | predicted 24.50 | residual   3.50
+  length 60 | actual 30 | predicted 24.50 | residual   5.50
+  length 70 | actual 44 | predicted 24.50 | residual  19.50
+  length 80 | actual 46 | predicted 24.50 | residual  21.50
+
+<span class="hi">Total squared error of round 0: 1550.00</span></code></pre>
+
+<p>Fitting the first stump:</p>
+
+<pre><code>Scoring every candidate question against the residuals:
+  threshold   15: left avg  -16.50 | right avg   2.36 | leftover squared error  1238.86
+  threshold   25: left avg  -15.50 | right avg   5.17 | leftover squared error   909.33
+  threshold   35: left avg  -13.83 | right avg   8.30 | leftover squared error   631.47
+<span class="hi">  threshold   45: left avg  -12.50 | right avg  12.50 | leftover squared error   300.00</span>
+  threshold   55: left avg   -9.30 | right avg  15.50 | leftover squared error   396.80
+  threshold   65: left avg   -6.83 | right avg  20.50 | leftover squared error   429.33
+  threshold   75: left avg   -3.07 | right avg  21.50 | leftover squared error  1021.71
+
+Best question: 'is length &lt;= 45?'
+  yes -&gt; correct the prediction by -12.50 minutes
+  no  -&gt; correct the prediction by +12.50 minutes</code></pre>
+
+<p>The 5-round training loop (learning rate 1.0):</p>
+
+<pre><code>Training: 5 rounds, learning rate 1.0
+  round  1: split at 45 | left  -12.50 | right +12.50 | total squared error   300.00
+  round  2: split at 65 | left   -2.67 | right  +8.00 | total squared error   129.33
+  round  3: split at 45 | left   +2.67 | right  -2.67 | total squared error    72.44
+  round  4: split at 25 | left   -3.00 | right  +1.00 | total squared error    48.44
+<span class="hi">  round  5: split at 75 | left   -0.38 | right  +2.67 | total squared error    40.32</span>
+
+Final fit on the training tickets:
+  length 10 | actual  8 | boosted prediction  8.62
+  length 20 | actual 10 | boosted prediction  8.62
+  length 30 | actual 14 | boosted prediction 12.62
+  length 40 | actual 16 | boosted prediction 12.62
+  length 50 | actual 28 | boosted prediction 32.29
+  length 60 | actual 30 | boosted prediction 32.29
+  length 70 | actual 44 | boosted prediction 42.95
+  length 80 | actual 46 | boosted prediction 46.00</code></pre>
+
+<p>Predicting for new tickets:</p>
+
+<pre><code>Ticket of 33 words:
+  start with the round-0 average: 24.50
+  stump 1 (length &lt;= 45? yes) -&gt; -12.50 | running total 12.00
+  stump 2 (length &lt;= 65? yes) -&gt; -2.67 | running total 9.33
+  stump 3 (length &lt;= 45? yes) -&gt; +2.67 | running total 12.00
+  stump 4 (length &lt;= 25? no) -&gt; +1.00 | running total 13.00
+  stump 5 (length &lt;= 75? yes) -&gt; -0.38 | running total 12.62
+<span class="hi">  predicted resolution time: 12.6 minutes</span>
+
+Ticket of 66 words:
+  start with the round-0 average: 24.50
+  stump 1 (length &lt;= 45? no) -&gt; +12.50 | running total 37.00
+  stump 2 (length &lt;= 65? no) -&gt; +8.00 | running total 45.00
+  stump 3 (length &lt;= 45? no) -&gt; -2.67 | running total 42.33
+  stump 4 (length &lt;= 25? no) -&gt; +1.00 | running total 43.33
+  stump 5 (length &lt;= 75? yes) -&gt; -0.38 | running total 42.95
+<span class="hi">  predicted resolution time: 43.0 minutes</span></code></pre>
+
+<p>The learning-rate-0.3 run (first rounds exact, the rest approximate — read the true values from your own run):</p>
+
+<pre><code>Training: 15 rounds, learning rate 0.3
+  round  1: split at 45 | left  -12.50 | right +12.50 | total squared error   912.50
+  round  2: split at 65 | left   -5.58 | right +16.75 | total squared error   530.94
+  round  3: split at 45 | left   -7.08 | right  +7.08 | total squared error   326.71
+<span class="c">  ... (rounds 4-15: the error keeps falling every round, more gently than
+       the learning-rate-1.0 run; expect it well under 100 by round 15)</span></code></pre>
+
+<p>And the plot cell shows a black scatter of the 8 tickets with four staircase curves — flat (0 rounds), one step (1 round), two steps (2 rounds), and a staircase hugging every point (5 rounds) — saved to <code>plots/lesson-17-boosting-stages.png</code>.</p>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<div class="demo">
+<p><strong>No project change this lesson — on purpose.</strong> The assistant's resolution-time data (Lesson 14) was built to sit on a straight line, so its linear model already fits it well; bolting a from-scratch stump booster onto the project would be replacing a good model with a teaching prop.</p>
+</div>
+
+<p>Gradient boosting earns its keep on bigger, messier tables of features — and doing it justice means using a real library (scikit-learn/XGBoost-class tools), which arrive later in the course. When the assistant's models graduate to real libraries, boosted trees will be a serious candidate for its tabular predictions; today's lesson is the understanding that will make that upgrade a five-line change instead of magic.</p>
+
+<p>The project still runs exactly as before: <code>python main.py</code> from inside <code>customer-support-assistant/</code> exercises urgency, resolution time, and category routing, unchanged.</p>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Fitting each new tree to the answers instead of the residuals.</strong> Then every tree learns the same thing and adding them makes predictions absurdly large. The target of round <em>n</em> is what is <em>still wrong</em> after rounds 1 to <em>n−1</em> — that subtlety is the entire algorithm.</li>
+  <li><strong>Treating “more trees” as safe, like a forest.</strong> In a forest, extra trees just stabilize the average. In boosting, extra rounds add capacity and will eventually memorize noise. Boosting <em>needs</em> early stopping or a tuned round count; a forest mostly doesn't.</li>
+  <li><strong>Cranking the learning rate up to train faster.</strong> Big steps let individual trees stamp their noise into the model. The reliable recipe is the opposite: small learning rate + many rounds + early stopping.</li>
+  <li><strong>Using strong (deep) trees as the weak learner.</strong> Depth-8 trees each gulp big chunks of pattern-plus-noise, and boosting compounds them fast. Real setups keep trees shallow (commonly ~3–8 levels; our notebook uses depth 1) so control stays with the loop, not the pieces.</li>
+  <li><strong>Expecting smooth predictions.</strong> A sum of trees is a staircase: inputs between two thresholds all get identical predictions, and beyond the outermost threshold the prediction goes flat — same extrapolation blindness as Lesson 16's trees.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p><strong>Reach for gradient boosting when</strong> the data is a table of mixed features and you want the strongest classical accuracy available — it is the default “serious model” for tabular business problems (churn, fraud, pricing, our ticket predictions at scale), usually edging out random forests once tuned. Everything trees gave you carries over: no feature scaling needed, mixed feature types welcome.</p>
+
+<p><strong>The costs:</strong> it must be tuned (rounds, learning rate, depth — a forest is much more forgiving out of the box); it trains sequentially, so it is harder to speed up by throwing machines at it; a 300-tree sum is not human-readable the way Lesson 16's single printed tree was; and because it chases residuals, it will chase <em>mislabeled</em> examples too — noisy labels hurt boosting more than they hurt a forest. On tiny datasets (like our 8 tickets!) it happily overfits; and for text-heavy meaning problems, later phases' neural models take over. Honest default: try a random forest first as a robust baseline, then boosting when you want to squeeze out more accuracy and are willing to tune.</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li>Gradient boosting starts from one boring guess (the average) and repeatedly fits a small weak tree to the current residuals, adding a scaled copy of its corrections to the model, so the final model is the average plus a long sum of small corrections.</li>
+  <li>Each tree is trained on the errors left over after all previous trees, which makes boosting strictly sequential — the opposite of a random forest's independent trees voting in parallel.</li>
+  <li>For squared error, the residual is exactly the steepest-downhill direction for each prediction, so boosting is gradient descent in which every step is a whole small tree — that is what “gradient” in the name means.</li>
+  <li>The learning rate shrinks every correction so that no single tree can stamp its noise onto the model, at the price of needing many more rounds; rounds, learning rate, and tree depth are boosting's overfitting knobs, tuned with a validation set and early stopping.</li>
+  <li>In practice you use a library — XGBoost, LightGBM, or scikit-learn's histogram gradient boosting (verify current APIs against official docs) — and this family is usually the strongest classical choice on tabular data.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>Four past tickets: lengths <code>[10, 20, 30, 40]</code> words, resolution times <code>[10, 12, 30, 32]</code> minutes. By hand:</p>
+
+<ol>
+  <li>What is the round-0 model, its residuals, and its total squared error?</li>
+  <li>Candidate thresholds are 15, 25, and 35. Which stump wins round 1, and what are its left/right corrections? (You can reason it out before computing.)</li>
+  <li>With learning rate <strong>1.0</strong>, what are the new predictions and the new total squared error?</li>
+  <li>With learning rate <strong>0.5</strong>, what are they instead — and why might round 2 pick the <em>same</em> threshold again?</li>
+</ol>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>1. Round 0.</strong> Average = (10 + 12 + 30 + 32) ÷ 4 = <strong>21</strong>. Residuals = actual − 21: <strong>−11, −9, +9, +11</strong>. Total squared error = 121 + 81 + 81 + 121 = <strong>404</strong>.</p>
+
+<p><strong>2. Round 1.</strong> The data's one big jump is between 20 and 30 words, so “length ≤ 25?” should win. Checking all three:</p>
+
+<ul>
+  <li>Threshold 15: left = {−11} → avg −11, error 0; right = {−9, +9, +11} → avg 3.67, leftover error (−12.67)² + (5.33)² + (7.33)² ≈ 242.7. Total ≈ <strong>242.7</strong>.</li>
+  <li>Threshold 25: left = {−11, −9} → avg <strong>−10</strong>, error 1 + 1 = 2; right = {+9, +11} → avg <strong>+10</strong>, error 1 + 1 = 2. Total = <strong>4</strong>.</li>
+  <li>Threshold 35: mirror image of 15 → ≈ <strong>242.7</strong>.</li>
+</ul>
+
+<p>Winner: <strong>“length ≤ 25?” with corrections −10 (yes) and +10 (no)</strong>.</p>
+
+<p><strong>3. Learning rate 1.0.</strong> Predictions: 21 − 10 = <strong>11</strong> for the two short tickets, 21 + 10 = <strong>31</strong> for the two long ones. Residuals: −1, +1, −1, +1. Total squared error = <strong>4</strong> (down from 404 — one question removed 99% of the error, because this toy data is one clean step).</p>
+
+<p><strong>4. Learning rate 0.5.</strong> Corrections become ±5. Predictions: <strong>16, 16, 26, 26</strong>. Residuals: −6, −4, +4, +6. Total squared error = 36 + 16 + 16 + 36 = <strong>104</strong>. Round 2 would likely pick threshold 25 <em>again</em>: half of the jump is still unfixed, so the biggest remaining structure is still “short side too high, long side too low.” That is the learning-rate trade in miniature — each pass fixes less, but the still-unfixed part stays on the to-do list (the residuals) and gets corrected again on later passes.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>Chapter 5 closes with two classics that predict in completely different ways from everything so far: <strong>k-nearest neighbors</strong>, which stores the training data and answers by looking at the closest past examples, and <strong>support vector machines</strong>, which separate classes by drawing the widest possible gap between them (Lesson 18).</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Lesson 18 — k-Nearest Neighbors and Support Vector Machines</p>
+  <p>Predicting by looking at the closest examples, separating classes with the widest margin — and when these simple methods are still the right choice.</p>
+</footer>
+
+<p class="footnote">Lesson 17 of the curriculum — Phase 2, Chapter 5 (Core Supervised Algorithms), lesson 4 of 5 in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>

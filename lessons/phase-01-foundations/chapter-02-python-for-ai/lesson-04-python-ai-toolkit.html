@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 04 — The Python AI Toolkit, and How the Workflow Looks</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="../chapter-01-what-ai-is/chapter-01-summary.html">← Chapter 1 Summary</a>
+    <a class="next" href="lesson-05-numpy-arrays.html">Lesson 05 — NumPy Arrays →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 1 · Chapter 2 · Lesson 04</p>
+  <h1>The Python AI Toolkit, and How the Workflow Looks</h1>
+  <p class="subtitle">What the course's libraries are for, what a notebook and its kernel really are, and the experiment-and-iterate loop.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> this lesson page · <code>lesson-notebooks/phase-01-foundations/chapter-02-python-for-ai/lesson-04-python-ai-toolkit.ipynb</code></p>
+  <p><strong>Prerequisites:</strong> Lessons 01–03 (Chapter 1).</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>Chapter 1 explained <em>what</em> AI is and <em>why</em> it suddenly works. Starting now, this course shifts from ideas to hands-on tools. Before writing a single line of NumPy or pandas, it helps to know two things: what the handful of libraries used throughout this course are actually <em>for</em>, and what a notebook is, since almost every lesson from here on lives in one.</p>
+
+<p>Skipping this step causes real confusion later — hitting the word “DataFrame” in Lesson 06 with zero warning of what a library even is, or wondering why a notebook cell can “see” a variable from a cell written five minutes ago. This lesson removes both surprises up front, so every later lesson can move faster.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p>Picture two cooks. The first reinvents everything from raw ingredients every time — grinding their own flour, churning their own butter, distilling their own vanilla — before they can even start the actual recipe. The second walks into a stocked kitchen: flour already milled, butter already churned, vanilla already bottled by someone who spent years getting it right. Both cooks can end up with a cake. Only one of them gets there today, and only one of them has ingredients that were tested against thousands of other people's kitchens first.</p>
+
+<p>Libraries are the stocked kitchen. <code>math.sqrt</code>, NumPy, pandas, scikit-learn — each is an ingredient somebody already spent years perfecting, so this course's job is to teach you which ingredient to reach for, not how to mill your own flour.</p>
+
+<p>The notebook, in this same picture, is the cook's countertop rather than a sealed factory line: you set an ingredient down, taste it, adjust, taste again — all in view, all changeable one step at a time — instead of committing to a single unchangeable run of the whole recipe before finding out if it worked.</p>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<h3>What a library actually is</h3>
+
+<p><strong>Plain definition:</strong> a library is code someone else already wrote, tested, and packaged up, so you can <code>import</code> it and use it instead of writing that same code yourself from nothing.</p>
+
+<p><strong>Why it matters:</strong> writing your own version of something like a square root function is possible — it is a well-understood, centuries-old technique — but it means re-solving a problem that has already been solved, tested, and hardened against edge cases by many other people first. That effort is exactly what a library hands you for free.</p>
+
+<p><strong>Tiny concrete example:</strong> this lesson's notebook writes a hand-rolled square-root function using <strong>Newton's method</strong> — the technique of starting with a rough guess and repeatedly averaging it with <code>x / guess</code> until the guess stops changing much. It gives the same answer as Python's built-in <code>math.sqrt</code> for a normal case like <code>sqrt(2)</code>. But the hand-rolled version was never tested against zero, negative numbers, or huge inputs — <code>math.sqrt</code> was, decades ago, by many other people hitting those exact cases in their own code first. That gap between “looks correct on one example” and “has survived contact with the real world” is the entire reason libraries exist.</p>
+
+<p><strong>The technical piece:</strong> every library this course will use follows the same shape — someone solved a hard, narrow problem once, carefully, and packaged it behind a simple function name so you never have to re-solve it:</p>
+
+<ul>
+  <li><strong>NumPy</strong> — fast math on big grids of numbers, called <strong>arrays</strong>. Lesson 05 covers this in full.</li>
+  <li><strong>pandas</strong> — loading and working with data shaped like a spreadsheet: rows and columns. Lesson 06.</li>
+  <li><strong>Matplotlib</strong>, often paired with <strong>Seaborn</strong> on top of it — turning columns of numbers into a chart you can actually look at and judge. Lesson 07. <em>(Verify exact current function names against Seaborn's own documentation before relying on them elsewhere — plotting library APIs do shift between versions.)</em></li>
+  <li><strong>scikit-learn</strong> — ready-made classical machine learning algorithms: the kind covered across Phase 2.</li>
+  <li><strong>PyTorch</strong> — the framework for building and training deep learning models, i.e. neural networks, covered from Phase 3 onward. <em>(TensorFlow/Keras is a genuinely used alternative you will see named again around Lesson 35 — verify which one any given source is actually using, since both remain in active, real-world use.)</em></li>
+  <li><strong>Hugging Face Transformers</strong> — a library for loading and running language models that are already trained, instead of training one from nothing. Relevant from Phase 4 onward.</li>
+  <li><strong>LangChain / LlamaIndex</strong> — frameworks for wiring a language model together with your own data and tools, covered from Phase 6 onward. <em>(Flag this pair hardest for verification — their exact APIs change unusually often, even between minor versions. Always check current docs before trusting a specific function name from any source, including this course.)</em></li>
+</ul>
+
+<p>None of these get installed yet. <code>customer-support-assistant/requirements.txt</code> stays empty until the lesson that first genuinely imports one — Lesson 05, for NumPy. The goal of this lesson is only the map: knowing what each name is <em>for</em>, so none of them are a surprise when a later lesson starts using them for real.</p>
+
+<h3>What a notebook actually is</h3>
+
+<p><strong>Plain definition:</strong> a notebook is a single document made of <strong>cells</strong> — small blocks that are either <strong>markdown</strong> (formatted text and explanation) or <strong>code</strong> (actual Python that can be run).</p>
+
+<p><strong>Why it matters:</strong> a notebook is not just “a file with some formatting.” What makes it genuinely different from an ordinary <code>.py</code> script is what runs behind it: a <strong>kernel</strong> — the name for the one live Python process that stays running behind the whole notebook and remembers every variable from every cell you have already run, in the order you ran them, not necessarily the order they appear on the page.</p>
+
+<p><strong>Tiny concrete example:</strong> this lesson's notebook defines <code>favorite_number = 7</code> in one cell, then uses it in a later cell as <code>doubled = favorite_number * 2</code>, printing <code>14</code>. Go back, change the first cell to <code>favorite_number = 21</code>, and re-run <em>only</em> that one cell. Then re-run the <code>doubled</code> cell again — without touching its code at all — and it now prints <code>42</code>. Nothing about the <code>doubled</code> cell changed; only what the kernel remembered about <code>favorite_number</code> changed.</p>
+
+<p><strong>Why this matters for how this course works:</strong> an ordinary Python script (a <code>.py</code> file) has no memory between runs — change one line, and you must re-run the <em>entire file</em> from the top to see the effect. A notebook lets you change one small assumption — one number, one filtering rule, one training example — and re-run just the cells downstream of it, seeing the new result in seconds. Real AI work is mostly this exact loop, repeated many times: try something small, look at the actual result, adjust, try again. That loop is called the <strong>experiment-and-iterate workflow</strong>, and a notebook's cell-by-cell memory is what makes it fast enough to actually be useful, instead of a slow, all-or-nothing re-run every single time.</p>
+
+<h3>Two code formats, two jobs</h3>
+
+<p>This course uses two different kinds of Python file, and they are not interchangeable:</p>
+
+<pre><code>lesson-notebooks/...lesson-04....ipynb           <span class="c">&lt;- for THIS lesson: read, predict, run cell by cell</span>
+customer-support-assistant/ticket_urgency.py     <span class="c">&lt;- for the PROJECT: plain, clean, runnable code</span>
+customer-support-assistant/notebooks/ticket_urgency.ipynb   <span class="c">&lt;- companion notebook for that same feature</span></code></pre>
+
+<p>Every lesson's own notebook is where new ideas get tried out cell by cell, with the explanation living in markdown cells around the code. The project's <code>.py</code> files, by contrast, are ordinary clean Python with no notebook-style explanation baked in as comments — they are what actually runs when you type <code>python main.py</code>. This lesson does not touch the project, so no <code>.py</code> file changes here, but the distinction matters from here on: notebooks are for learning and experimenting, <code>.py</code> files are for the one running assistant.</p>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>The notebook for this lesson has two small, self-contained parts, using nothing beyond Python's own standard library — no installs needed yet.</p>
+
+<p>Open it here: <code>lesson-notebooks/phase-01-foundations/chapter-02-python-for-ai/lesson-04-python-ai-toolkit.ipynb</code></p>
+
+<ol>
+  <li><strong>Part 1 (why libraries exist):</strong> a hand-rolled square-root function using Newton's method, compared directly against Python's built-in <code>math.sqrt</code>, to make concrete what a library actually buys you over writing something yourself.</li>
+  <li><strong>Part 2 (what a notebook is):</strong> a <code>favorite_number</code> variable defined in one cell and used in a later cell, demonstrating that the kernel remembers a cell's variables even after you move on to write new cells below it — and that changing and re-running just the first cell changes the second cell's output with no edit to the second cell at all.</li>
+</ol>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<p>Walking through the notebook top to bottom:</p>
+
+<p><strong>Part 1 — the sqrt comparison.</strong> <code>my_sqrt(2)</code> starts with a guess of <code>1.0</code> and applies the Newton's-method averaging step 10 times. By hand: guess after step 1 is <code>1.5</code>, after step 2 is about <code>1.41667</code>, after step 3 is about <code>1.41421569</code> — already extremely close to the true value after just three steps, since Newton's method converges fast. By 10 steps it has settled at full floating-point precision, matching <code>math.sqrt(2)</code> exactly.</p>
+
+<p><strong>Prediction</strong> of the printed lines:</p>
+
+<pre><code>1.4142135623730951
+1.4142135623730951</code></pre>
+
+<p><strong>Part 2 — the kernel-memory demo.</strong> Running the two cells in order, top to bottom, for the first time:</p>
+
+<pre><code>7
+14</code></pre>
+
+<p>Then, per the notebook's instructions: edit the first cell to <code>favorite_number = 21</code>, re-run only that cell, then re-run the second cell unchanged. Its predicted output the second time is:</p>
+
+<pre><code><span class="hi">42</span></code></pre>
+
+<div class="warn">
+<p>This is a prediction based on tracing through the logic by hand, not a verified run — open the notebook and confirm both the first pass and the “change and re-run” step described above.</p>
+</div>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<div class="demo">
+<p>This lesson is about the tools and the workflow this course uses, not a new capability meant to be implemented in the assistant right now, so there is no new <code>.py</code> file and no change to <code>main.py</code> this lesson. The project stays exactly as it was after Lesson 1 — still fully runnable with <code>python main.py</code> from inside <code>customer-support-assistant/</code>.</p>
+</div>
+
+<p>The connection forward is direct, though: every library named in Section 3 will, in the coming lessons, replace or extend a piece of the assistant currently held together with plain Python — starting with NumPy in Lesson 05, and reaching all the way to <code>ticket_urgency.py</code> itself being rebuilt on real machine learning once Phase 2 begins.</p>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Installing every library mentioned in this lesson right now.</strong> Nothing needs installing yet — <code>requirements.txt</code> stays empty until a lesson's code genuinely imports something, starting with NumPy in Lesson 05.</li>
+  <li><strong>Treating “notebook” and “kernel” as the same thing.</strong> The notebook is the document on screen; the kernel is the separate running process behind it that actually holds the variables in memory. Restarting the kernel wipes all of that memory even though the notebook file itself, and everything written in it, stays on disk untouched.</li>
+  <li><strong>Assuming cells must be run strictly top to bottom.</strong> They can technically be run in any order, and the kernel only remembers what has actually been <em>run</em>, not what merely appears above on the page — but this course always runs cells top to bottom in order, since that keeps the notebook's story easy to follow and avoids the confusing edge cases that come from running cells out of order.</li>
+  <li><strong>Forgetting that a changed cell does not retroactively change cells that already ran.</strong> In the demo, printing the <code>doubled</code> cell a second time only shows <code>42</code> because you re-ran it <em>after</em> changing <code>favorite_number</code> — the first <code>14</code> that already printed does not change on its own.</li>
+  <li><strong>Confusing a library with the specific version of it installed.</strong> Library APIs (exact function names and arguments) genuinely do shift between versions, which is exactly why lessons touching NumPy, pandas, Matplotlib/Seaborn, scikit-learn, PyTorch, Hugging Face Transformers, and especially LangChain/LlamaIndex carry an explicit reminder to verify against current docs.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p>Reach for a library instead of hand-rolling something the moment the problem is well-known and general — square roots, array math, spreadsheet-shaped data, standard ML algorithms — since someone has almost certainly already solved it more carefully than a one-off version would. Hand-rolling still has its place: this lesson's <code>my_sqrt</code> was worth writing once, specifically to see <em>why</em> the library version is trusted, not to replace it. The tradeoff of notebooks against plain scripts runs the other way: a notebook's cell-by-cell memory is fantastic for exploring and explaining an idea, exactly what this course needs, but that same flexibility (cells runnable out of order, hidden state left over from a cell you already deleted) is a real source of confusing bugs in bigger, longer-lived programs — which is exactly why the actual customer-support assistant lives in plain <code>.py</code> files, not notebooks, once a feature graduates from “being explored” to “part of the project.”</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li>A library is code someone else already wrote, tested, and hardened against real-world edge cases, so importing it is almost always better than re-solving the same problem alone.</li>
+  <li>This course's toolkit is NumPy (arrays), pandas (tables), Matplotlib/Seaborn (plots), scikit-learn (classical ML), PyTorch (deep learning), Hugging Face Transformers (pretrained language models), and LangChain/LlamaIndex (LLM app frameworks) — each mapped to the phase that will actually teach it.</li>
+  <li>A notebook is cells (markdown or code) running against a kernel, which is the one live process that remembers every variable from every cell already run, in the order it was actually run.</li>
+  <li>That memory is what makes the experiment-and-iterate workflow fast: change one small piece, re-run just the cells affected by it, and see the new result immediately instead of re-running an entire program from the top.</li>
+  <li>Lesson notebooks (all explanation, cell by cell) and the project's <code>.py</code> files (plain, clean, no baked-in explanation) serve two different jobs and are never meant to be interchangeable.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>The notebook's <code>doubled</code> cell computes <code>favorite_number * 2</code>. Suppose that, instead of editing the <code>favorite_number = 7</code> cell and re-running it, you only edited the <em>markdown</em> cell just above it — fixing a typo in the explanation — and re-ran that markdown cell. What would <code>doubled</code> print this time, and why?</p>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p>It would still print <code>14</code>. Markdown cells contain only formatted text — they hold no Python code, so running one does not touch the kernel's memory of any variable at all. The kernel only updates its memory of <code>favorite_number</code> when a <em>code</em> cell that assigns it is actually run. Re-running a markdown cell changes nothing about what <code>favorite_number</code> currently equals in the kernel, so <code>doubled</code> still reflects whatever value was set the last time the <code>favorite_number = ...</code> code cell itself was run.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>Lesson 05 gets hands-on with the first real library of this course: NumPy, and the habit of thinking in arrays instead of loops — the mental model that makes almost everything in the rest of this course click into place.</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Lesson 05 — NumPy Arrays</p>
+  <p>The first real library of the course: thinking in arrays instead of loops.</p>
+  <p><a href="lesson-05-numpy-arrays.html">Continue to Lesson 05 →</a></p>
+</footer>
+
+<p class="footnote">Lesson 4 of 113 — Phase 1, Chapter 2, Lesson 1 of 4 in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>

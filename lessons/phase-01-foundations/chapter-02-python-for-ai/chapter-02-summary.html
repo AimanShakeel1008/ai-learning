@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 2 Summary — Python for AI</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#learned">1 · What we learned</a>
+    <a href="#map">2 · How the ideas connect</a>
+    <a href="#story">3 · The story so far</a>
+    <a href="#lessons">4 · Lessons in this chapter</a>
+    <a href="#comingback">5 · Ideas that come back</a>
+    <a href="#selfcheck">6 · Self-check</a>
+    <a href="#challenge">7 · Chapter challenge</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-07-seeing-data-with-plots.html">← Lesson 07 — Seeing Data with Plots</a>
+    <a class="next" href="../chapter-03-math-you-actually-need/lesson-08-linear-algebra-intuition.html">Lesson 08 — Linear Algebra Intuition →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 1 · Chapter 2 · Summary</p>
+  <h1>Python for AI</h1>
+  <p class="subtitle">Chapter 2 complete (Lessons 4–7) — the toolkit every later lesson leans on.</p>
+</header>
+
+<section id="learned">
+<h2><span class="secno">1</span>What we learned, and what we added to the assistant</h2>
+
+<p>This chapter built the toolkit every later lesson leans on: a map of the libraries this whole course uses and the notebook workflow of writing code, predicting its output, and iterating (Lesson 4); NumPy arrays and the vectorized, no-loop way AI math actually gets done (Lesson 5); pandas DataFrames and the select-filter-clean pattern that almost all real data work follows (Lesson 6); and the handful of plots — histogram, bar chart, scatter plot, box plot — that reveal what a printed table of the same numbers hides (Lesson 7).</p>
+
+<p>Every lesson in this chapter was theory-and-tool-building rather than a new assistant capability, by design — a lesson only touches the project when it teaches something meant to be implemented right now, and this chapter was entirely about learning the tools Phase 2 is about to put to real use. <code>customer-support-assistant/</code> is unchanged since Lesson 1: it still holds exactly the one feature built in Chapter 1, <code>ticket_urgency.py</code>, the toy word-counting classifier waiting to be rebuilt with real machine learning.</p>
+</section>
+
+<section id="map">
+<h2><span class="secno">2</span>How the chapter's ideas connect</h2>
+
+<pre><code>Python AI toolkit <span class="c">(Lesson 4)</span>
+ └── NumPy: numbers laid out as arrays, operated on all at once <span class="c">(Lesson 5)</span>
+      └── pandas: labeled tables built on top of NumPy arrays,
+           mixing types column by column <span class="c">(Lesson 6)</span>
+           └── matplotlib: turns any of the above into a picture,
+                so spread, balance, and relationships are SEEN,
+                not just computed <span class="c">(Lesson 7)</span></code></pre>
+
+<p>Each library in this chapter is built on the one before it: pandas' speed comes from NumPy arrays running underneath each column; matplotlib's plots in Lesson 7 draw directly from NumPy arrays and pandas Series and DataFrames without any conversion step. The thread underneath all four lessons is the same one first named in Lesson 5: doing something to <em>every</em> value in a collection at once (vectorization), instead of writing a loop, is both faster and the standard way this is done throughout the rest of the course.</p>
+</section>
+
+<section id="story">
+<h2><span class="secno">3</span>The story so far: how the assistant has grown</h2>
+
+<p>The assistant itself did not grow this chapter — it still has exactly the one capability from Chapter 1: guessing <code>urgent</code> or <code>not urgent</code> from a support ticket's text, using word counts learned from 8 examples. What grew instead is everything <em>behind</em> the assistant: the tools needed to load, inspect, clean, and visually check real data before Phase 2 rebuilds that toy classifier into something trained on many real examples. Lesson 7's bar chart, in particular, previewed a very concrete next step — checking whether Phase 2's training data is balanced across ticket categories before trusting any accuracy number it produces.</p>
+</section>
+
+<section id="lessons">
+<h2><span class="secno">4</span>Lessons in this chapter</h2>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Lesson</th><th>Core idea</th><th>Key tool / term</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>04 — The Python AI toolkit, and how the workflow looks</td><td>AI code is written and run one small experiment at a time in a notebook, predicting output before checking it, with a handful of libraries doing almost all the heavy lifting</td><td>Notebook, kernel, library</td></tr>
+    <tr><td>05 — NumPy and thinking in arrays</td><td>Arrays hold same-typed numbers together and support vectorized operations — one instruction applied to every element at once, without a loop</td><td>Array, shape, vectorization, boolean mask</td></tr>
+    <tr><td>06 — pandas for handling data</td><td>A DataFrame is a labeled table built on NumPy arrays, with tools to select, filter, and clean real, messy data</td><td>DataFrame, Series, index, <code>.loc</code>/<code>.iloc</code>, NaN</td></tr>
+    <tr><td>07 — Seeing your data with plots</td><td>Four plots — histogram, bar chart, scatter plot, box plot — each answer a different question a printed table hides</td><td>matplotlib, histogram, bar chart, scatter plot, box plot</td></tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section id="comingback">
+<h2><span class="secno">5</span>Ideas that come back later, and where</h2>
+
+<ul>
+  <li><strong>Vectorization (Lesson 5)</strong> underlies performance everywhere numbers are processed in bulk, most directly when PyTorch tensors are introduced in Phase 3, Chapter 12 (Lessons 34–35) — a tensor is, at heart, a NumPy array with automatic gradients added.</li>
+  <li><strong>Boolean masks (Lesson 5, reused in Lesson 6)</strong> are the exact same pattern used to split data into training and test sets in Lesson 12, and to slice out specific rows during evaluation throughout Phase 2.</li>
+  <li><strong>DataFrames, missing values, and cleaning (Lesson 6)</strong> return as the explicit subject of Lesson 19 (cleaning data and handling missing values) and Lesson 20 (feature engineering), once there is a real dataset to clean rather than a 6-row example.</li>
+  <li><strong>Class imbalance, first seen as an uneven bar chart in Lesson 7</strong>, is named and properly addressed with real techniques in Lesson 21 (scaling, imbalance, and data leakage).</li>
+  <li><strong>Looking at data before modeling (Lesson 7)</strong> becomes a formal, required step of the machine learning pipeline in Lesson 11, right at the start of Phase 2.</li>
+</ul>
+</section>
+
+<section id="selfcheck">
+<h2><span class="secno">6</span>Self-check</h2>
+
+<p>Before moving to Chapter 3, you should be able to answer all five of these without looking back at the lessons:</p>
+
+<ol>
+  <li>What does it mean to “vectorize” an operation, and why is it typically faster than writing a loop over the same data?</li>
+  <li>What is the difference between a pandas Series and a DataFrame, and what decides which one a selection returns?</li>
+  <li>Why does a numeric pandas column silently change from whole numbers to decimals the moment one value in it is missing?</li>
+  <li>Given a new dataset, which plot would you reach for to check whether its categories are balanced, and which would you reach for to check whether two of its numeric columns are related?</li>
+  <li>Name one thing a box plot shows that a plain histogram of the same column, with all groups mixed together, cannot.</li>
+</ol>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">7</span>Chapter challenge</h2>
+
+<p>You are handed a raw Python list of 500 customer order amounts (plain numbers) and a separate list of each order's region (<code>north</code>, <code>south</code>, <code>east</code>, <code>west</code>). Using only ideas from this chapter, describe, in plain words, the sequence of steps you would take — and which specific tool from which lesson each step uses — before you would feel ready to start building anything with this data.</p>
+
+<details>
+<summary>Click to reveal a sample answer</summary>
+<div class="details-body">
+
+<p>First, combine the two raw lists into one pandas DataFrame (Lesson 6) with columns <code>amount</code> and <code>region</code>, so each order's amount and region stay paired together as a proper table instead of two separate, easy-to-misalign lists. Then look at it with <code>.head()</code>, <code>.shape</code>, and <code>.info()</code> (Lesson 6) to confirm the row count, column types, and whether either column has missing values — checking <code>.isna()</code> and deciding whether to <code>.fillna(...)</code> or <code>.dropna()</code> (Lesson 6) if anything is missing.</p>
+
+<p>Next, check category balance with a bar chart of <code>region.value_counts()</code> (Lesson 7) — if one region has far more orders than the others, that imbalance needs to be kept in mind for anything trained on this data later. Then check the <code>amount</code> column's own spread with a histogram (Lesson 7), looking for outliers — a few absurdly large orders sitting apart from the rest that might be data-entry mistakes worth double-checking rather than real orders. Finally, draw a box plot of <code>amount</code> grouped <code>by='region'</code> (Lesson 7) to see whether typical order size actually differs by region, which a single mixed-together histogram of all 500 orders could not show. Only after all of that — a clean table, checked for gaps, checked for balance, checked for outliers, and checked for group differences — would this data be ready for any further work.</p>
+
+</div>
+</details>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Chapter 3 — The Math You Actually Need</p>
+  <p>Lesson 08 starts with linear algebra intuition: vectors, matrices, and the dot product, in plain language.</p>
+  <p><a href="../chapter-03-math-you-actually-need/lesson-08-linear-algebra-intuition.html">Continue to Lesson 08 →</a></p>
+</footer>
+
+<p class="footnote">Chapter 2 of 44 complete — Phase 1, Chapter 2 of 3 in this phase.</p>
+
+</main>
+</div>
+</body>
+</html>

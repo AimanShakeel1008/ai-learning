@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 10 — Probability and Statistics Intuition</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-09-calculus-intuition.html">← Lesson 09 — Calculus Intuition</a>
+    <a class="next" href="chapter-03-summary.html">Chapter 3 Summary →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 1 · Chapter 3 · Lesson 10</p>
+  <h1>Probability and Statistics Intuition</h1>
+  <p class="subtitle">Every answer an AI gives is a bet — how to read belief, spread, and uncertainty as numbers.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> this lesson page · <code>lesson-notebooks/phase-01-foundations/chapter-03-math-you-actually-need/lesson-10-probability-statistics-intuition.ipynb</code></p>
+  <p><strong>Prerequisites:</strong> Lesson 05 (NumPy — boolean masks and <code>.mean()</code> do all the counting here), Lesson 07 (histograms — the tool for seeing a distribution), Lesson 09 (the squaring-the-misses idea returns inside the standard deviation).</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>Every answer our assistant will ever give is a bet. When Phase 2's classifier reads a ticket and says “billing,” what it actually computes underneath is closer to “billing: 0.81, shipping: 0.13, product: 0.06.” When a language model in Phase 5 writes a reply, it literally produces a probability for every possible next word and samples one. There is no version of modern AI without probability — it is not a bolt-on feature, it is the native language the systems think in.</p>
+
+<p>This lesson gives you the three tools you need to read that language: <strong>probability</strong> (how strongly to believe something), <strong>distributions with mean and spread</strong> (what a whole pile of values looks like, not just its average), and <strong>uncertainty</strong> (why a model's confidence number matters as much as its answer). None of it needs formulas beyond counting, and all of it comes back constantly — in evaluation metrics, in temperature settings, in monitoring models for drift.</p>
+
+<p>There is also a defensive reason to learn this now. The most common ways people get fooled by AI systems — trusting a result from ten examples, comparing two things by their averages alone, believing a model because it <em>sounded</em> confident — are all probability mistakes. One lesson of intuition inoculates against years of them.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p>A weather forecaster says “70% chance of rain tomorrow.”</p>
+
+<ul>
+  <li><strong>The 70% is a strength of belief, not a promise.</strong> The forecaster is not saying it will rain, and not saying it won't. They are saying: given everything known today, days that look like tomorrow end up rainy about 7 times in 10. That is all a probability ever is — a fraction of the time, used as a degree of confidence.</li>
+  <li><strong>New evidence updates the number.</strong> At dawn, dark clouds roll in — the forecaster bumps the 70% to 90%. Nothing about the sky's plans changed; the <em>information</em> changed. That updating-on-evidence move is conditional probability, and it is exactly what a classifier does when it reads the words in a ticket.</li>
+  <li><strong>One day proves nothing.</strong> If it stays dry tomorrow, the forecaster wasn't “wrong” — 30% of such days are dry. You can only judge a forecaster over many days: of all the days they said 70%, did about 70% actually turn out rainy? Judging over the long run instead of a single case is the statistics half of this lesson.</li>
+  <li><strong>A good forecaster tells you their uncertainty; a bad one just shouts “RAIN.”</strong> The whole value of the forecast is the number attached to it. We will hold our assistant to the forecaster's standard: every answer comes with an honest confidence.</li>
+</ul>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<p><strong>Probability: belief as a number.</strong> A <strong>probability</strong> is a number between 0 and 1 that measures how strongly to believe something, where 0 means “impossible,” 1 means “certain,” and 0.5 means “could go either way.” It exists because words like “probably” and “unlikely” are too vague to compute with — machines (and honest humans) need a scale. The cleanest way to get one is counting: in the notebook's pile of 10 tickets, 5 are about shipping, 3 about billing, 2 about product. Pick a ticket at random and the probability it is shipping is <code>5/10 = 0.5</code>. Written <code>P(shipping) = 0.5</code>, read “the probability of shipping is 0.5.” Two facts come free from counting: probabilities never leave the 0-to-1 range, and the probabilities of all the possibilities together add up to exactly 1 (<code>0.5 + 0.3 + 0.2 = 1.0</code>) — every ticket has to be <em>something</em>.</p>
+
+<p><strong>Conditional probability: evidence updates belief.</strong> Before reading a ticket, the best guess for “billing?” is the base rate, <code>0.3</code>. Now you peek and see the word <em>refund</em>. Among only the tickets containing “refund” — there are 3 in the pile — 2 are billing. So the updated belief is <code>2/3 ≈ 0.667</code>, more than double the base rate. A probability recomputed <em>inside</em> the group where the evidence holds is called a <strong>conditional probability</strong>, written <code>P(billing | refund)</code> — the vertical bar reads “given.” This little idea is the entire logic of classification: a classifier's whole job is to estimate <code>P(category | the words in the ticket)</code>, and Phase 2's models are machinery for doing that estimate well when there are thousands of words instead of one. One trap to plant a flag on now: <code>P(billing | refund)</code> and <code>P(refund | billing)</code> are different questions with different answers. Mixing them up is one of the most common reasoning errors in existence.</p>
+
+<p><strong>The long run: why small samples lie.</strong> A probability describes the long run, not any single handful. If <code>P(shipping) = 0.5</code> truly, a day with 10 tickets can easily bring 3 shipping tickets, or 7 — nothing is broken. The observed fraction only settles onto the true probability as the count grows. The notebook simulates this: with 10 draws the fractions wobble badly, with 100 they are close-ish, with 100,000 they sit within a whisker of <code>0.5 / 0.3 / 0.2</code>. The formal name for this settling is the <strong>law of large numbers</strong>, and its practical lesson runs the whole course: <em>never trust a conclusion drawn from a few examples</em> — not a model that got 9 of 10 test tickets right, not a prompt that worked three times in a row.</p>
+
+<p><strong>Randomness you can rerun: the seed.</strong> The notebook makes its random draws with <code>np.random.default_rng(42)</code>. The <code>42</code> is a <strong>seed</strong> — a fixed starting point for the random-number generator. The draws are still statistically fair, but rerunning the notebook produces the <em>same</em> draws every time. This exists because science you cannot reproduce is not science: when a result depends on random draws, fixing the seed lets you (or anyone) rerun and get identical numbers. Every ML library has this knob, and forgetting it is why “it worked yesterday” haunts beginners.</p>
+
+<p><strong>Mean and spread: two numbers that summarize a pile.</strong> The <strong>mean</strong> is the balance point of a pile of values — add them up, divide by the count; Lesson 05's <code>.mean()</code>. But the mean alone can badly mislead, because two very different piles can share one. The notebook's two agents both average a 4.0 rating: agent A's ratings are <code>[3, 4, 4, 4, 5]</code>, agent B's are <code>[1, 2, 4, 6, 7]</code>. Same mean, utterly different experience for customers. The number that separates them is the <strong>standard deviation</strong> — plainly, the <em>typical distance of a value from the mean</em>. It exists because “how consistent is this?” needs a number just as much as “what's typical?” does. Worked example on agent A: distances from the mean are <code>[-1, 0, 0, 0, 1]</code>; square them (so below and above both count, and big misses count extra — the same squaring move as Lesson 09's loss) to get <code>[1, 0, 0, 0, 1]</code>; average the squares: <code>2/5 = 0.4</code>; take the square root to return to rating units: <code>√0.4 ≈ 0.632</code>. Agent B, same recipe: squared distances <code>[9, 4, 0, 4, 9]</code>, average <code>5.2</code>, square root <code>≈ 2.280</code>. B's ratings typically sit more than two full points from the mean; A's sit within about six-tenths. Any time someone reports an average — model accuracy, response time, rating — your reflex should be: <em>and the spread?</em></p>
+
+<p><strong>Distributions: the whole shape.</strong> Mean and spread are two summary numbers, but sometimes you need the full picture of where values land — that picture is the <strong>distribution</strong>. It exists because different shapes demand different decisions even at the same mean: a tight bump means “promise customers the average,” a wide or lopsided shape means “the average is a lie for many customers.” The tool for seeing it is Lesson 07's histogram. The notebook simulates 5,000 ticket resolution times that cluster around 24 hours with typical wobble 5 hours, and the histogram comes out bell-shaped: a big hump in the middle, thinning symmetrically into rare tails. That particular shape has a name — the <strong>normal distribution</strong> (the “bell curve”) — and it appears everywhere in nature and data because quantities built from many small independent influences tend toward it. Not everything is bell-shaped (incomes are not, ticket <em>counts per customer</em> are not), which is precisely why you look before assuming.</p>
+
+<pre><code> number of tickets
+   |                 *  *  *
+   |              *          *
+   |            *              *
+   |          *                  *
+   |        *                      *
+   |     *                            *
+   +--*----------------|------------------*----  hours
+      9               24                  39
+                     mean
+        most values land near the middle;
+        far-out values exist but are rare</code></pre>
+
+<p><strong>Uncertainty: the model's honesty channel.</strong> Everything a model outputs is a bet, and a well-built system reports the bet's strength. The notebook's final demo is a keyword classifier that, instead of naming one category, reports a probability for <em>every</em> category — each category's share of the keyword matches found in the ticket. A ticket reading “my package is late and tracking shows no delivery update” matches four shipping words and nothing else: <code>shipping 1.00, billing 0.00, product 0.00</code> — act on it. A ticket reading “i was charged for a broken item” matches one billing word and one product word: <code>0.50 / 0.50</code> — the classifier is announcing “my top guess is a coin flip,” and the right system response is to route that ticket to a human rather than act. This confidence-threshold pattern — act when sure, escalate when not — is one of the most important patterns in applied AI, and it becomes a real guardrail in our assistant in Phase 8.</p>
+
+<p><strong>Confidence is not correctness.</strong> One caution before anyone falls in love with that <code>1.00</code>: it means “every matched word pointed one way,” which is the <em>word tally's</em> certainty, not a guarantee about the world. A customer demanding a refund because their delivery was late will match mostly shipping words — high confidence, and yet the action they need is a billing action. Models inherit this exact failure at scale: a model can be confidently wrong. There is a name for the property you actually want — a model is <strong>calibrated</strong> if, of all the answers it gives with 70% confidence, about 70% turn out correct (the forecaster's standard from Section 2). Measuring and improving calibration comes back in the evaluation lessons of Phase 11.</p>
+
+<p><strong>Why uncertainty is built into everything AI does.</strong> Three separate reasons, all permanent. The <em>data</em> is a sample: a model trained on last year's tickets has seen a wobbly small-sample slice of the world, never the world itself. The <em>inputs</em> are ambiguous: “i was charged for a broken item” genuinely supports two readings, and no amount of cleverness removes that. And for language models, the <em>mechanism itself</em> is probabilistic: they generate by sampling from a probability distribution over next words, which is why the same prompt can give different answers twice (and why the temperature dial in Phase 5 exists — it reshapes that distribution). Uncertainty is not a flaw to be engineered away; it is a property to be measured, reported, and designed around.</p>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>Saved as a notebook: <code>lesson-notebooks/phase-01-foundations/chapter-03-math-you-actually-need/lesson-10-probability-statistics-intuition.ipynb</code>. It builds the 10-ticket pile and counts the three category probabilities, computes <code>P(billing | refund)</code> by masking and counting, simulates 10 / 100 / 100,000 ticket draws with a seeded generator to watch the wobble shrink, computes mean and standard deviation for the two same-mean agents, draws and saves the bell-shaped histogram of 5,000 simulated resolution times (PNG into <code>plots/</code>, like Lesson 07), and ends with the keyword classifier that outputs per-category probabilities and an honest 50/50 on an ambiguous ticket.</p>
+
+<p>It uses only NumPy and matplotlib, both already installed since Lessons 05 and 07. Nothing version-sensitive is used; as always, if a call looks different in your version, trust the official documentation over this notebook.</p>
+
+<div class="tryit">
+<p>How to run it: open the notebook in VS Code (or Jupyter) and run the cells top to bottom, one at a time.</p>
+</div>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<p><strong>1.</strong> The counting cell prints the three category probabilities, which sum to 1. <strong>(Prediction:)</strong></p>
+
+<pre><code>P(shipping) = 0.5
+P(billing) = 0.3
+P(product) = 0.2</code></pre>
+
+<p><strong>2.</strong> The evidence cell shows the belief in “billing” jumping once the word “refund” is seen. <strong>(Prediction:)</strong></p>
+
+<pre><code>P(billing) = 0.3
+tickets containing 'refund': 3
+<span class="hi">P(billing | contains 'refund') = 0.667</span></code></pre>
+
+<p><strong>3.</strong> The long-run cell draws 10, 100, and 100,000 tickets. The exact digits below are illustrative — the <em>pattern</em> is the prediction: big wobble at 10, small at 100, tiny at 100,000. Because the seed is fixed, your own numbers will repeat exactly every time <em>you</em> rerun it. <strong>(Prediction — pattern, not exact digits:)</strong></p>
+
+<pre><code>n =     10: shipping 0.600, billing 0.300, product 0.100
+n =    100: shipping 0.520, billing 0.290, product 0.190
+n = 100000: shipping 0.500, billing 0.301, product 0.199</code></pre>
+
+<p><strong>4.</strong> The mean-and-spread cell separates the two same-mean agents. <strong>(Prediction:)</strong></p>
+
+<pre><code>agent A: ratings = [3, 4, 4, 4, 5], mean = 4.0, spread (std) = 0.632
+agent B: ratings = [1, 2, 4, 6, 7], mean = 4.0, spread (std) = 2.280</code></pre>
+
+<p><strong>5.</strong> The distribution cell prints a sample mean very close to 24 and std very close to 5 (e.g. <code>mean = 23.97 hours</code>, <code>std = 4.96 hours</code> — last digits will differ), then shows a bell-shaped blue histogram with a dashed line at the mean, and saves it to <code>plots/lesson-10-resolution-times.png</code>. <strong>(Prediction: a bell-shaped figure appears under the cell and the PNG file exists afterward.)</strong></p>
+
+<p><strong>6.</strong> The uncertainty cell prints one confident verdict and one honest coin flip. <strong>(Prediction:)</strong></p>
+
+<pre><code>'my package is late and tracking shows no delivery update'
+  probabilities: shipping 1.00, billing 0.00, product 0.00
+  best guess: shipping (confidence 100%)
+
+'i was charged for a broken item'
+  probabilities: shipping 0.00, billing 0.50, product 0.50
+<span class="hi">  best guess: billing (confidence 50%)</span>  <span class="c">← an honest coin flip: escalate, don't act</span></code></pre>
+
+<div class="warn">
+<p>Cells 1, 2, 4, and 6 are deterministic arithmetic and should match exactly. Cells 3 and 5 involve random draws: the pattern is guaranteed, the exact digits are not (though with the fixed seeds, your machine will reproduce its own digits identically on every rerun).</p>
+</div>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<div class="demo">
+<p>Nothing to build this lesson — it closes Chapter 3's intuition trilogy, so the project stays untouched and <code>python main.py</code> behaves exactly as it did after Lesson 01.</p>
+</div>
+
+<p>But this lesson names what Phase 2 will actually construct: the real ticket classifier we build there computes <code>P(category | words)</code> and outputs per-category probabilities, exactly like this notebook's toy but learned from data instead of counted from a keyword list. And the “act when confident, escalate to a human when not” pattern from the last cell is written down here on purpose — it returns as a real guardrail when the assistant becomes an agent in Phase 8.</p>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Flipping the conditional.</strong> <code>P(billing | refund)</code> and <code>P(refund | billing)</code> are different questions. “Most billing tickets mention refunds” does not mean “most refund-mentioning tickets are billing” — the base rates decide, and confusing the two directions is a famous, consequential error.</li>
+  <li><strong>Trusting a handful.</strong> Ten draws wobbling between 0.3 and 0.7 around a true 0.5 is <em>normal</em>. Any conclusion — “the model is 90% accurate,” “this prompt always works” — drawn from a few examples is noise until the count grows.</li>
+  <li><strong>Reporting a mean without its spread.</strong> Two agents, both 4.0 — one steady, one chaotic. Averages compress away exactly the information that often matters most. Always ask for (or compute) the spread and, when it matters, look at the whole histogram.</li>
+  <li><strong>Reading confidence as correctness.</strong> A 100% from a word counter means “all the evidence I can see points one way,” not “I am right.” Models are the same, just subtler: high confidence and wrongness coexist. Calibration — does 70% confidence win 70% of the time? — is the real test.</li>
+  <li><strong>Expecting randomness to repeat without a seed.</strong> Rerun random code without a fixed seed and the numbers change; with one, they repeat. Half of “it worked yesterday” mysteries in ML are unseeded randomness.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p>You will use this lesson's reflexes more often than almost any formula in the course: <em>what's the base rate? how big was the sample? what's the spread? how confident was the model, and is that confidence calibrated?</em> Those four questions apply to every model evaluation, every A/B comparison, every “look, it worked!” demo. The tradeoffs are about depth, not whether to use it: counting-based probability is exact but only feasible on small, fully-known piles — real models estimate these probabilities from data, which introduces its own error; summary numbers (mean, std) are cheap but lossy, and the histogram is the honest fallback; and confidence thresholds trade coverage for safety — route more tickets to humans and you make fewer mistakes but automate less. Where to set that dial is a business decision informed by probability, not a probability question alone.</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li>A probability is a number from 0 to 1 measuring strength of belief, and for a known pile of examples it is literally a fraction obtained by counting.</li>
+  <li>Evidence updates probability: a conditional probability like <code>P(billing | refund)</code> is the same fraction recomputed inside just the group where the evidence holds, and estimating it well is the entire job of a classifier.</li>
+  <li>Probabilities describe the long run, so small samples wobble and prove little, while large samples settle onto the truth — never trust conclusions drawn from a handful of examples.</li>
+  <li>The mean says what is typical and the standard deviation says how far values typically stray from it, and a mean quoted without its spread can hide exactly what matters.</li>
+  <li>Every AI output is a bet with a confidence attached, that confidence is not a guarantee of correctness, and well-designed systems act when confident and escalate to a human when not.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>Answer from the ideas above without running anything, then check yourself against the hidden answer:</p>
+
+<ol>
+  <li>A store's 20 recent tickets: 12 shipping and 8 billing. The word “charged” appears in 3 of the shipping tickets and 6 of the billing tickets. A new ticket arrives containing “charged.” Which category should you bet on, and with what probability?</li>
+  <li>Two shipping partners both average 3.0 days delivery. Partner A's standard deviation is 0.2 days; partner B's is 2.0 days. The store wants to promise “delivered within 4 days.” Which partner makes that promise safe, and what exactly does the mean alone hide?</li>
+  <li>The notebook's classifier gave 100% confidence on the shipping ticket. Invent a ticket that this classifier would get <em>wrong with high confidence</em>, and explain why its 100% was never a guarantee.</li>
+</ol>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>1.</strong> Count inside the group where the evidence holds. Tickets containing “charged”: <code>3 + 6 = 9</code>. Of those, 6 are billing. So <code>P(billing | charged) = 6/9 = 2/3 ≈ 0.667</code> — bet on billing, with about 67% confidence. Notice the pull of the base rate: even though billing tickets are the minority overall (8 of 20, so <code>P(billing) = 0.4</code>), the evidence more than flips the odds. And notice the flipped conditional is different: <code>P(charged | billing) = 6/8 = 0.75</code> — a different question with a different answer.</p>
+
+<p><strong>2.</strong> Partner A. “Typically 3.0 days, typically straying 0.2 days” means essentially all of A's deliveries land near 3 days — a 4-day promise has huge margin. B also averages 3.0, but typically strays 2.0 days: deliveries at 5, 6, or 7 days are routine for B, so the 4-day promise breaks constantly. The mean alone hides the <em>consistency</em> — it tells you where the pile balances, not how widely it sprawls, and the promise is broken by the sprawl, not the balance point.</p>
+
+<p><strong>3.</strong> Any ticket whose <em>vocabulary</em> belongs to one category while its <em>need</em> belongs to another. Example: <code>"i want a refund because my package delivery was late and tracking never updated"</code> — it matches four shipping words (package, delivery, late, tracking) against one billing word (refund), so the classifier says shipping with 80% confidence; make it <code>"my package delivery was late and tracking never updated"</code> after the customer's refund demand got paraphrased away, and it says shipping at 100% — yet the action the customer needs is a refund, a billing action. The 100% was never a guarantee because it only measures the word tally: “of the keywords I matched, what fraction point each way.” It knows nothing about intent, sarcasm, or words outside its list. That is exactly the sense in which real models can be <em>confidently wrong</em>, and why calibration — checking whether 100%-confidence answers are actually right 100% of the time — has to be measured, not assumed.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>That completes Chapter 3 — the chapter summary comes next, and after it the course changes gear: Phase 2 begins, where Lesson 11 lays out the end-to-end machine learning pipeline and we start building the assistant's first <em>real</em>, learned ticket classifier.</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Chapter 3 Summary — The Math You Actually Need</p>
+  <p>The chapter's idea map, a self-check, and the boss challenge — then Phase 2 begins.</p>
+  <p><a href="chapter-03-summary.html">Continue to the Chapter 3 Summary →</a></p>
+</footer>
+
+<p class="footnote">Lesson 10 of 113 — Phase 1 (Foundations), Chapter 3 (The Math You Actually Need), last of three lessons in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,542 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 16 — Decision Trees and Random Forests</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-15-logistic-regression.html">← Lesson 15 — Logistic Regression</a>
+    <a class="next" href="lesson-17-gradient-boosting.html">Lesson 17 — Gradient Boosting →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 2 · Chapter 5 · Lesson 16</p>
+  <h1>Decision Trees and Random Forests</h1>
+  <p class="subtitle">A model that learns which yes/no questions to ask — and a forest of them that votes.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> <code>lesson-notebooks/phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-16-decision-trees-random-forests.ipynb</code> · <code>customer-support-assistant/ticket_category.py</code> · <code>customer-support-assistant/notebooks/ticket_category.ipynb</code></p>
+  <p><strong>Files updated:</strong> <code>customer-support-assistant/main.py</code></p>
+  <p><strong>Prerequisites:</strong> Lesson 11 (the ML pipeline and the ticket-category task), Lesson 13 (overfitting), Lessons 14–15 (what “training” and “loss” mean)</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>The last two lessons taught models that learn <strong>numbers</strong>: linear regression learned a slope and an intercept, logistic regression learned a weight and a bias. Both draw <em>straight lines</em> through the data. But lots of real-world knowledge is not line-shaped — it is <strong>rule-shaped</strong>. “If the ticket mentions a refund, it is a billing issue. Otherwise, if it mentions a package, it is a shipping issue.” Humans reason like this constantly.</p>
+
+<p>A <strong>decision tree</strong> is a model that learns rules like that on its own, just by looking at examples. No human writes the rules. The model figures out two things by itself: <em>which</em> yes/no questions are worth asking, and <em>in what order</em> to ask them.</p>
+
+<p>There is also a stronger version called a <strong>random forest</strong>: instead of one tree, you train many trees and let them vote on the answer. This simple trick works remarkably well. In fact, when your data looks like a spreadsheet (rows of examples, columns of facts about each one), tree-based models are usually the best tool for the job — even today, and often better than neural networks. That is why real ML engineers still use them all the time. Next lesson covers gradient boosting, another tree-based method in the same family.</p>
+
+<p>For our assistant this lesson is a milestone: back in Lesson 11 we promised a model that predicts a ticket's <strong>category</strong> — which team should handle it. Today we build it for real. The assistant now routes tickets to shipping, billing, or account support with a genuinely learned decision tree.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p>Think of the game <strong>20 Questions</strong>. You are guessing what object your friend is thinking of, and you may only ask yes/no questions.</p>
+
+<p>A bad player asks random questions: “Is it a spoon? Is it a giraffe?” — each answer eliminates almost nothing. A good player asks the question that <strong>splits the remaining possibilities most evenly and cleanly</strong>: “Is it alive?” — whatever the answer, half the world disappears. Then, <em>given</em> that answer, they pick the next most informative question, and so on, until only one answer is left.</p>
+
+<p>Map the pieces:</p>
+
+<ul>
+  <li>The object your friend is thinking of → the ticket's true category</li>
+  <li>Each yes/no question → one test on the ticket (“does it contain the word <em>refund</em>?”)</li>
+  <li>Picking the most informative question first → choosing the split with the lowest impurity</li>
+  <li>Narrowing down step by step → walking down the tree's branches</li>
+  <li>The final guess → the leaf's prediction</li>
+</ul>
+
+<p>A random forest is the same game played by a <strong>panel of players</strong>, each of whom learned from a slightly different set of past games and is allowed a slightly different set of questions — then the panel votes on the final answer.</p>
+
+<p>Why is a panel safer than one player? Because of what we can call a <em>blind spot</em>: <strong>a wrong rule someone learned without knowing it is wrong, because of the particular examples they happened to learn from</strong>. Say one player only ever saw games where the answer to “Is it alive?” being yes meant the object was an animal — so they learned the rule “alive means animal”. That rule is wrong (a tree is alive too), but the player cannot know that, because nothing they saw ever contradicted it. Our ticket tree will do exactly this later in the lesson: it learns “contains <em>delivery</em> means shipping”, because in its training tickets the word “delivery” only ever appeared in a shipping ticket — and it then misroutes a billing ticket about a wrongly charged delivery fee.</p>
+
+<p>Here is the key point: every player has <em>some</em> wrong rule like this, but because each player learned from <strong>different</strong> past games, they have <strong>different</strong> wrong rules. On any given question, maybe one player is fooled — but the others, who never learned that particular wrong rule, are not, and they outvote the fooled one. For the <em>panel</em> to get it wrong, most players would have to have learned the <em>same</em> wrong rule from <em>different</em> experiences. That is far less likely than one player learning it. This is exactly why the forest votes.</p>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<h3>3.1 A tree is a flowchart the data writes</h3>
+
+<p>A <strong>decision tree</strong> is a flowchart of yes/no questions. To classify a ticket, you start at the top question, answer it, follow the yes-branch or the no-branch, answer the next question, and keep going until you reach an end point that states a category. The standard vocabulary (the tree metaphor is used everywhere):</p>
+
+<ul>
+  <li><strong>node</strong> — one question box</li>
+  <li><strong>root</strong> — the first question, at the top</li>
+  <li><strong>branch</strong> — the yes-path or no-path leaving a question</li>
+  <li><strong>leaf</strong> — an end point that asks nothing and just gives a prediction</li>
+  <li><strong>depth</strong> — how many questions deep a path goes</li>
+</ul>
+
+<p>Here is the actual tree our assistant learns in this lesson (nobody wrote it — the data chose every question):</p>
+
+<pre><code>contains "refund"?
+  yes: predict billing
+  no:  contains "package"?
+    yes: predict shipping
+    no:  contains "delivery"?
+      yes: predict shipping
+      no:  predict account</code></pre>
+
+<p>The only thing a human supplied was the <strong>menu</strong> of questions the tree was <em>allowed</em> to ask — a list of candidate words (“refund”, “charged”, “package”, “delivery”, “order”, “password”, “account”, “login”, “help”). Which of them to use, and in what order, the tree worked out from 12 labelled tickets.</p>
+
+<h3>3.2 Gini impurity: measuring how mixed a pile is</h3>
+
+<p>To pick good questions, the tree needs to <em>measure messiness</em>.</p>
+
+<p><strong>Plain definition:</strong> take a pile of labelled tickets and draw two at random. The chance that their labels <strong>disagree</strong> is the pile's impurity.</p>
+
+<p><strong>Why it exists:</strong> remember what a question does — it takes one mixed pile of tickets and splits it into two smaller piles. A <em>good</em> question leaves those two piles better sorted (more “same label together”) than the pile we started with. But “better sorted” is a feeling, and a program cannot compare feelings. So we turn messiness into a <strong>number</strong>. Once messiness is a number, picking the best question becomes a simple job: try every question, measure how much messiness is left after each one, and keep the question that leaves the smallest number.</p>
+
+<p><strong>Tiny worked example, one small step at a time.</strong> Take a pile of 4 tickets: 2 shipping and 2 billing.</p>
+
+<ul>
+  <li><strong>Step 1 — find each label's share of the pile.</strong> A <em>share</em> just means: the number of tickets with that label, divided by the total number of tickets in the pile.
+    <ul>
+      <li>shipping: 2 out of 4 → share = 2/4 = 0.5</li>
+      <li>billing: 2 out of 4 → share = 2/4 = 0.5</li>
+    </ul>
+  </li>
+  <li><strong>Step 2 — find the chance that two random picks land on the SAME label.</strong> Imagine you pick one ticket at random, note its label, put it back, and pick again. What is the chance both picks are shipping? The first pick is shipping with chance 0.5, the second pick is shipping with chance 0.5, so both are shipping with chance 0.5 × 0.5 = 0.25. <strong>This is why the share gets squared</strong> — “squared” is just “the chance of getting that label twice in a row.”
+    <ul>
+      <li>both picks shipping: 0.5 × 0.5 = 0.25</li>
+      <li>both picks billing: 0.5 × 0.5 = 0.25</li>
+    </ul>
+  </li>
+  <li><strong>Step 3 — add those up to get the chance the two picks AGREE.</strong> 0.25 + 0.25 = 0.5. So half the time, two random picks from this pile have the same label.</li>
+  <li><strong>Step 4 — flip it to get the chance they DISAGREE.</strong> Chances of “agree” and “disagree” must add up to 1, so: 1 − 0.5 = <strong>0.5</strong>. That is the pile's impurity.</li>
+</ul>
+
+<p>Written as one formula, those four steps are:</p>
+
+<blockquote><p>1 − (1/2)² − (1/2)² = 1 − 0.25 − 0.25 = <strong>0.5</strong></p></blockquote>
+
+<p>Now check that the number behaves the way “messiness” should:</p>
+
+<ul>
+  <li><strong>A perfectly sorted pile</strong> (all 4 tickets shipping): shipping's share is 4/4 = 1. Two random picks are <em>always</em> both shipping, so they can never disagree. The formula agrees: 1 − 1² = <strong>0</strong>. Impurity 0 means “nothing left to sort.”</li>
+  <li><strong>Our full training pile</strong> (4 shipping, 4 billing, 4 account — each share 1/3): the chance of agreeing is (1/3)² + (1/3)² + (1/3)² = 3/9 = 1/3, so the chance of disagreeing is 1 − 1/3 = <strong>0.667</strong>. High number, very mixed pile — exactly what we would say by eye.</li>
+</ul>
+
+<p>One-sentence summary of all of the above: <strong>Gini impurity answers “if I grab two tickets at random from this pile, how likely are they to have different labels?” — 0 when the pile is perfectly sorted, and bigger the more mixed it is.</strong></p>
+
+<p><strong>Technical name:</strong> this is <strong>Gini impurity</strong>. In symbols: impurity = 1 − Σ pᵢ², where pᵢ is the share of the pile belonging to label i, and Σ means “add this up over every label”. Squaring a share gives the chance that <em>two</em> random draws both land on that label; adding those up gives the chance the two draws <em>agree</em>; subtracting from 1 flips it to the chance they <em>disagree</em>. Zero means perfectly sorted; bigger means messier.</p>
+
+<p class="footnote">(You may also meet <strong>entropy</strong>, an alternative messiness measure from information theory. It ranks splits almost identically in practice; Gini is the common default because it is cheaper to compute.)</p>
+
+<h3>3.3 Scoring a question</h3>
+
+<p>A question splits a pile into a <strong>YES pile</strong> and a <strong>NO pile</strong>. Its score is the <strong>weighted average of the two piles' Gini impurities</strong> — each pile counts in proportion to its size. Lower is better.</p>
+
+<p>Worked example on our 12 tickets, for <em>contains "refund"?</em>:</p>
+
+<ul>
+  <li>YES pile: 4 tickets, all billing → Gini 0.0</li>
+  <li>NO pile: 8 tickets, 4 shipping + 4 account → Gini 0.5</li>
+  <li>score = (4/12) × 0.0 + (8/12) × 0.5 = <strong>0.333</strong></li>
+</ul>
+
+<p>Compare <em>contains "order"?</em> — “order” appears in one shipping ticket and one billing ticket:</p>
+
+<ul>
+  <li>YES pile: 2 tickets, 1 shipping + 1 billing → Gini 0.5</li>
+  <li>NO pile: 10 tickets, 3 shipping + 3 billing + 4 account → Gini 0.66</li>
+  <li>score = (2/12) × 0.5 + (10/12) × 0.66 = <strong>0.633</strong></li>
+</ul>
+
+<p>So “refund” (score 0.333) is a much better question than “order” (score 0.633) — remember, lower is better. The weighting matters: a question that purifies a tiny pile but leaves a huge messy one has barely helped, and the size-weighting makes the huge pile dominate the score. One edge case: a word that appears in <em>none</em> (or <em>all</em>) of a pile's tickets splits nothing and is skipped.</p>
+
+<h3>3.4 Growing the tree: greed plus recursion</h3>
+
+<p>The algorithm, in full:</p>
+
+<ol>
+  <li>Score every question on the menu against the current pile. Keep the best (lowest score).</li>
+  <li>Split the pile into the YES pile and the NO pile.</li>
+  <li>Treat each side as a brand-new, smaller problem, and repeat from step 1.</li>
+  <li>Stop and place a <strong>leaf</strong> when: the pile is <strong>pure</strong> (Gini 0), or the <strong>depth limit</strong> is reached, or <strong>no question splits the pile</strong> at all. A leaf predicts the <strong>majority label</strong> of the tickets that landed in it.</li>
+</ol>
+
+<p>Step 3 is <strong>recursion</strong> — a function calling itself on smaller pieces of the same problem. Step 1 makes the algorithm <strong>greedy</strong>: it picks the question that looks best <em>right now</em> and never reconsiders, even if a less-obvious first question would have set up a cleverer second question. Greedy is not guaranteed optimal, but it is fast and works well, and it is how every real tree library grows trees.</p>
+
+<h4>The full trace: growing our whole tree, node by node</h4>
+
+<p>Let's grow the actual tree, doing every calculation in the open. First, number the 12 training tickets and note which menu words each one contains — that is all the tree can see:</p>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>#</th><th>Ticket (shortened)</th><th>Menu words it contains</th><th>Label</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>T1</td><td>Where is my <strong>package</strong> it has not arrived</td><td>package</td><td>shipping</td></tr>
+    <tr><td>T2</td><td>My <strong>order</strong> says delivered but no <strong>package</strong> came</td><td>package, order</td><td>shipping</td></tr>
+    <tr><td>T3</td><td>The <strong>delivery</strong> is late and tracking has not updated</td><td>delivery</td><td>shipping</td></tr>
+    <tr><td>T4</td><td>My <strong>package</strong> arrived damaged and crushed</td><td>package</td><td>shipping</td></tr>
+    <tr><td>T5</td><td>I was <strong>charged</strong> twice for my <strong>order</strong> please <strong>refund</strong> me</td><td>charged, order, refund</td><td>billing</td></tr>
+    <tr><td>T6</td><td>I want a <strong>refund</strong> for this purchase</td><td>refund</td><td>billing</td></tr>
+    <tr><td>T7</td><td>Why was I <strong>charged</strong> extra fees I want a <strong>refund</strong></td><td>charged, refund</td><td>billing</td></tr>
+    <tr><td>T8</td><td>Requesting a <strong>refund</strong> because the discount was not applied</td><td>refund</td><td>billing</td></tr>
+    <tr><td>T9</td><td>My <strong>login</strong> is not working after the update</td><td>login</td><td>account</td></tr>
+    <tr><td>T10</td><td>I forgot my <strong>password</strong> and the reset email never comes</td><td>password</td><td>account</td></tr>
+    <tr><td>T11</td><td>Please <strong>help</strong> me change the email on my <strong>account</strong></td><td>help, account</td><td>account</td></tr>
+    <tr><td>T12</td><td>My <strong>account</strong> is locked and I need to reset my <strong>password</strong></td><td>account, password</td><td>account</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>NODE A — the root.</strong> Pile: all 12 tickets (4 shipping, 4 billing, 4 account). Gini = 1 − 3 × (1/3)² = <strong>0.667</strong>. Now score all 9 questions. For each question: put the tickets that contain the word in the YES pile, the rest in the NO pile, compute each pile's Gini, and take the size-weighted average.</p>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Question</th><th>YES pile</th><th>Gini yes</th><th>NO pile</th><th>Gini no</th><th>Score</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>refund?</strong></td><td>T5 T6 T7 T8 = 4 billing</td><td>0.0</td><td>8 left: 4 ship + 4 acct</td><td>0.5</td><td>(4/12)×0.0 + (8/12)×0.5 = <strong>0.333</strong> ← winner</td></tr>
+    <tr><td>charged?</td><td>T5 T7 = 2 billing</td><td>0.0</td><td>10 left: 4 ship + 2 bill + 4 acct</td><td>0.64</td><td>(2/12)×0.0 + (10/12)×0.64 = 0.533</td></tr>
+    <tr><td>package?</td><td>T1 T2 T4 = 3 ship</td><td>0.0</td><td>9 left: 1 ship + 4 bill + 4 acct</td><td>0.593</td><td>(3/12)×0.0 + (9/12)×0.593 = 0.444</td></tr>
+    <tr><td>delivery?</td><td>T3 = 1 ship</td><td>0.0</td><td>11 left: 3 ship + 4 bill + 4 acct</td><td>0.661</td><td>(1/12)×0.0 + (11/12)×0.661 = 0.606</td></tr>
+    <tr><td>order?</td><td>T2 T5 = 1 ship + 1 bill</td><td>0.5</td><td>10 left: 3 ship + 3 bill + 4 acct</td><td>0.66</td><td>(2/12)×0.5 + (10/12)×0.66 = 0.633</td></tr>
+    <tr><td>password?</td><td>T10 T12 = 2 acct</td><td>0.0</td><td>10 left: 4 ship + 4 bill + 2 acct</td><td>0.64</td><td>0.533</td></tr>
+    <tr><td>account?</td><td>T11 T12 = 2 acct</td><td>0.0</td><td>10 left: 4 ship + 4 bill + 2 acct</td><td>0.64</td><td>0.533</td></tr>
+    <tr><td>login?</td><td>T9 = 1 acct</td><td>0.0</td><td>11 left: 4 ship + 4 bill + 3 acct</td><td>0.661</td><td>0.606</td></tr>
+    <tr><td>help?</td><td>T11 = 1 acct</td><td>0.0</td><td>11 left: 4 ship + 4 bill + 3 acct</td><td>0.661</td><td>0.606</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>One “Gini no” worked fully, so you can check the rest the same way — “charged?”, NO pile of 10 tickets (4 shipping, 2 billing, 4 account): shares are 0.4, 0.2, 0.4, so Gini = 1 − 0.4² − 0.2² − 0.4² = 1 − 0.16 − 0.04 − 0.16 = <strong>0.64</strong>.</p>
+
+<p>Notice something important in this table: <strong>almost every question makes a perfectly pure YES pile</strong> (Gini 0.0). Purity alone is not enough — what separates the winner is <em>size</em>. “refund” pulls <strong>four</strong> tickets into its pure pile, “delivery” only one, so “refund” leaves far less messiness behind overall. That is exactly what the size-weighting is for. “refund” wins with 0.333. YES side (T5 T6 T7 T8) is pure billing → <strong>leaf: billing</strong>. NO side is not pure → grow a node there.</p>
+
+<p><strong>NODE B — the “no refund” pile.</strong> Pile: T1 T2 T3 T4 (shipping) + T9 T10 T11 T12 (account). Gini = 1 − (1/2)² − (1/2)² = <strong>0.5</strong>. Re-score the whole menu <em>against this smaller pile</em> — the scores all change, because the pile changed:</p>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Question</th><th>YES pile</th><th>Gini yes</th><th>NO pile</th><th>Gini no</th><th>Score</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>refund?</td><td>nobody left contains it</td><td>—</td><td>—</td><td>—</td><td>skipped</td></tr>
+    <tr><td>charged?</td><td>nobody left contains it</td><td>—</td><td>—</td><td>—</td><td>skipped</td></tr>
+    <tr><td><strong>package?</strong></td><td>T1 T2 T4 = 3 ship</td><td>0.0</td><td>5 left: T3 + 4 acct</td><td>0.32</td><td>(3/8)×0.0 + (5/8)×0.32 = <strong>0.200</strong> ← winner</td></tr>
+    <tr><td>delivery?</td><td>T3 = 1 ship</td><td>0.0</td><td>7 left: 3 ship + 4 acct</td><td>0.490</td><td>(1/8)×0.0 + (7/8)×0.490 = 0.429</td></tr>
+    <tr><td>order?</td><td>T2 = 1 ship</td><td>0.0</td><td>7 left: 3 ship + 4 acct</td><td>0.490</td><td>0.429</td></tr>
+    <tr><td>password?</td><td>T10 T12 = 2 acct</td><td>0.0</td><td>6 left: 4 ship + 2 acct</td><td>0.444</td><td>(2/8)×0.0 + (6/8)×0.444 = 0.333</td></tr>
+    <tr><td>account?</td><td>T11 T12 = 2 acct</td><td>0.0</td><td>6 left: 4 ship + 2 acct</td><td>0.444</td><td>0.333</td></tr>
+    <tr><td>login?</td><td>T9 = 1 acct</td><td>0.0</td><td>7 left: 4 ship + 3 acct</td><td>0.490</td><td>0.429</td></tr>
+    <tr><td>help?</td><td>T11 = 1 acct</td><td>0.0</td><td>7 left: 4 ship + 3 acct</td><td>0.490</td><td>0.429</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Two lessons hide in this table. First, “refund” and “charged” are <strong>skipped</strong>: every remaining ticket answers “no”, so asking would split nothing (this also shows the tree never reuses a question by accident — once a word's tickets are gone, the question dies naturally). Second, “order” scored a terrible 0.633 at the root but a decent 0.429 here — <strong>the same question has a different value on a different pile</strong>, which is why the tree re-scores everything at every node. “package” wins with 0.200. YES side (T1 T2 T4) is pure shipping → <strong>leaf: shipping</strong>. NO side is not pure → grow again.</p>
+
+<p><strong>NODE C — the “no refund, no package” pile.</strong> Pile: T3 (shipping) + T9 T10 T11 T12 (account). Gini = 1 − (1/5)² − (4/5)² = 1 − 0.04 − 0.64 = <strong>0.32</strong>. Re-score once more (refund, charged, package, and order are all skipped now — nobody left contains them):</p>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Question</th><th>YES pile</th><th>Gini yes</th><th>NO pile</th><th>Gini no</th><th>Score</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>delivery?</strong></td><td>T3 = 1 ship</td><td>0.0</td><td>T9 T10 T11 T12 = 4 acct</td><td>0.0</td><td>(1/5)×0.0 + (4/5)×0.0 = <strong>0.000</strong> ← perfect split</td></tr>
+    <tr><td>password?</td><td>T10 T12 = 2 acct</td><td>0.0</td><td>3 left: T3 + T9 + T11 = 1 ship + 2 acct</td><td>0.444</td><td>(2/5)×0.0 + (3/5)×0.444 = 0.267</td></tr>
+    <tr><td>account?</td><td>T11 T12 = 2 acct</td><td>0.0</td><td>3 left: T3 + T9 + T10 = 1 ship + 2 acct</td><td>0.444</td><td>0.267</td></tr>
+    <tr><td>login?</td><td>T9 = 1 acct</td><td>0.0</td><td>4 left: T3 + 3 acct</td><td>0.375</td><td>(1/5)×0.0 + (4/5)×0.375 = 0.300</td></tr>
+    <tr><td>help?</td><td>T11 = 1 acct</td><td>0.0</td><td>4 left: T3 + 3 acct</td><td>0.375</td><td>0.300</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>“delivery” scores a perfect 0.000 — both sides come out pure — so both children become leaves and the growing stops everywhere (stopping rule 1: pure piles).</p>
+
+<p><strong>The finished tree, with every ticket's landing place:</strong></p>
+
+<pre><code>NODE A — all 12 tickets (4 ship, 4 bill, 4 acct), Gini 0.667
+ask: contains "refund"?   <span class="c">(score 0.333 — best of 9)</span>
+├─ yes → T5 T6 T7 T8 — all billing, Gini 0        → <span class="hi">LEAF: predict billing</span>
+└─ no  → NODE B — T1 T2 T3 T4 T9 T10 T11 T12, Gini 0.5
+         ask: contains "package"?   <span class="c">(score 0.200 — best of the 7 usable)</span>
+         ├─ yes → T1 T2 T4 — all shipping, Gini 0  → <span class="hi">LEAF: predict shipping</span>
+         └─ no  → NODE C — T3 T9 T10 T11 T12, Gini 0.32
+                  ask: contains "delivery"?   <span class="c">(score 0.000 — a perfect split)</span>
+                  ├─ yes → T3 — shipping, Gini 0    → <span class="hi">LEAF: predict shipping</span>
+                  └─ no  → T9 T10 T11 T12 — all account, Gini 0 → <span class="hi">LEAF: predict account</span></code></pre>
+
+<p>Every leaf is pure, so every training ticket is classified correctly: training accuracy 12/12. (And now you can see precisely what the depth-2 version in the next section does: it cuts the tree off at NODE C, turning that whole 5-ticket pile into one leaf that predicts its majority label, <code>account</code> — 4 of its 5 tickets — and sacrifices T3.)</p>
+
+<h3>3.5 The suspicious branch: trees overfit eagerly</h3>
+
+<p>Look again at that last split: the “delivery” branch exists to rescue <strong>exactly one training ticket</strong>. That should make you suspicious. Is “delivery → shipping” a real pattern, or did the tree just memorize one ticket's quirk?</p>
+
+<p>This is the tree version of Lesson 13's warning. <strong>Left unlimited, a tree will keep splitting until every leaf is pure — which is memorization by construction.</strong> Every noisy, mislabelled, or one-off ticket gets its own private branch. Perfect training accuracy, poor generalization: the classic high-variance overfit.</p>
+
+<p>The main defense is the <strong>depth limit</strong> (<code>max_depth</code>). Rebuild our tree with depth limit 2 and the “delivery” branch is not allowed to exist; the leftover pile (1 shipping + 4 account) becomes a leaf predicting <code>account</code>. Training accuracy drops to 11/12 — and that can easily be the <em>better</em> model on new tickets, because it stopped carving branches for individuals. Depth is the tree's bias-variance knob: too shallow underfits, too deep overfits. (Real libraries offer more pruning knobs — minimum tickets per leaf, minimum improvement per split — all serving the same purpose: stop growing before you memorize.)</p>
+
+<h3>3.6 Trees are unstable — the random forest fixes that</h3>
+
+<p>Trees have a second weakness: <strong>instability</strong>. Change a couple of training tickets and the best root question can flip — and since every later split depends on the earlier ones, the whole tree can come out different. One tree is one opinion formed by a chain of greedy choices.</p>
+
+<p>The fix: <strong>train many slightly-different trees and let them vote.</strong> This is a <strong>random forest</strong>. The trees are made different on purpose, in two ways:</p>
+
+<ol>
+  <li><strong>Bootstrap sampling.</strong> Each tree trains not on the original 12 tickets but on 12 tickets <strong>drawn at random with replacement</strong> — some tickets appear twice, some not at all. Each tree sees a slightly different version of history. (Drawing with replacement is a <em>bootstrap sample</em>; training on resamples and combining the results is called <strong>bagging</strong> — “bootstrap aggregating”.)</li>
+  <li><strong>Random question menus.</strong> Each tree may only use a random subset of the candidate questions. This stops every tree from grabbing the same dominant first split and forces the forest to find <em>different</em> routes to the answer. (Real forests re-draw the subset at every split; our lesson code draws one menu per tree to stay short — same idea.)</li>
+</ol>
+
+<p><strong>Why voting works:</strong> every tree makes mistakes, but because each saw different data and different questions, they make <em>different</em> mistakes. In the vote, the errors point in different directions and largely cancel, while the true signal — which all of them partly captured — adds up. It is the same reason averaging many noisy measurements gives a better answer than trusting one measurement, and the same reason a panel of judges is more reliable than a single judge. In the bias-variance words from Lesson 13: averaging many high-variance trees removes most of the variance without adding much bias. That is why a forest usually does better than even its best single tree, and why forests need much less careful depth-tuning than a single tree does.</p>
+
+<p>The cost: a forest of 100 trees takes 100 times the computing work, and you lose the single tree's biggest advantage — you can no longer print one small flowchart and <em>read</em> the model's reasoning.</p>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>Saved: <code>lesson-notebooks/phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-16-decision-trees-random-forests.ipynb</code></p>
+
+<p>The notebook builds everything from scratch, in plain Python with no external libraries:</p>
+
+<ol>
+  <li>12 labelled tickets (4 shipping, 4 billing, 4 account) and a 9-word question menu</li>
+  <li><code>tokenize</code> / <code>has_word</code> — the yes/no questions</li>
+  <li><code>gini</code> — the messiness score, demonstrated on a pure pile, a 50/50 pile, and the full pile</li>
+  <li><code>split_quality</code> — a question's weighted-Gini score, walked through for “refund”, “order”, and “delivery”</li>
+  <li><code>best_word</code> — try every question, keep the lowest score (the full score table is printed)</li>
+  <li><code>build_tree</code> — recursion plus the three stopping rules; <code>format_tree</code> prints the learned flowchart</li>
+  <li><code>predict</code> — walks a ticket down the tree; training accuracy 12/12</li>
+  <li>Four unseen tickets, including one deliberately designed to fool the tree</li>
+  <li>A depth-2 rebuild showing the overfitting knob in action (11/12 on training, one memorized branch gone)</li>
+  <li><code>bootstrap_sample</code>, <code>build_forest</code>, <code>forest_predict</code> — a 5-tree random forest that votes</li>
+</ol>
+
+<div class="tryit">
+<p>Open the notebook in VS Code and run the cells top to bottom, one at a time. The forest cells use Python's built-in <code>random</code> module with a fixed seed, so re-running the whole notebook from the top reproduces the same forest.</p>
+</div>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<p>What would happen, step by step:</p>
+
+<ol>
+  <li>The data cell prints 4 tickets per category — a balanced three-way pile.</li>
+  <li>The Gini cell prints <code>0.0</code> for the pure pile, <code>0.5</code> for the 50/50 pile, <code>0.667</code> for the full pile.</li>
+  <li>The scoring cell shows “refund” splitting off a perfectly pure billing pile (score 0.333) while “order” barely helps (0.633).</li>
+  <li>The best-question table ranks all nine words; “refund” wins the root.</li>
+  <li><code>build_tree</code> grows the refund → package → delivery tree shown in Section 3, and <code>predict</code> scores 12/12 on training data.</li>
+  <li>The unseen-ticket cell routes three tickets correctly and misroutes the trap (“The delivery fee was charged to the wrong card” → shipping, though it is really billing).</li>
+  <li>The depth-2 rebuild prints the smaller tree, reports the one training ticket it now misses (11/12).</li>
+  <li>The forest cells print a bootstrap sample (with visible repeats), two of the five trees (asking different questions), and majority votes on two test tickets.</li>
+</ol>
+
+<div class="warn">
+<p><strong>Expected output — a PREDICTION, not verified.</strong> Key cells (the deterministic ones) below; real output can differ in small ways.</p>
+</div>
+
+<pre><code>Scores at the root (lower = better):
+<span class="hi">  refund: 0.333</span>
+  charged: 0.533
+  package: 0.444
+  delivery: 0.606
+  order: 0.633
+  password: 0.533
+  account: 0.533
+  login: 0.606
+  help: 0.606
+
+<span class="hi">Best first question: refund</span></code></pre>
+
+<pre><code>The learned tree:
+contains "refund"?
+  yes: predict billing
+  no:  contains "package"?
+    yes: predict shipping
+    no:  contains "delivery"?
+      yes: predict shipping
+      no:  predict account</code></pre>
+
+<pre><code>  [shipping] My package never arrived and tracking is stuck
+  [billing] I was charged for an order I cancelled please refund me
+  [account] I cannot reset my password on my account
+<span class="hi">  [shipping] The delivery fee was charged to the wrong card</span>  <span class="c">← the trap: really a billing ticket</span></code></pre>
+
+<p>The forest cells' <em>exact</em> printed trees and vote counts depend on the random draws (even with the fixed seed, treat every number above as a prediction). The <strong>decisions</strong> on the two clear test tickets should come out shipping and billing; if a vote count differs from what you expected, that is normal.</p>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<div class="demo">
+<p>This lesson delivers the capability we framed in Lesson 11: <strong>ticket category routing</strong>.</p>
+</div>
+
+<ul>
+  <li><strong>New module — <code>customer-support-assistant/ticket_category.py</code>:</strong> a decision-tree classifier trained at import time on 12 labelled tickets, exposing <code>predict_category(text)</code> → <code>"shipping"</code> / <code>"billing"</code> / <code>"account"</code>. Pure standard library, fully deterministic, and the learned tree can be printed with <code>format_tree</code>. Its <code>__main__</code> block prints the tree, routes three demo tickets, and <code>assert</code>s both the demo routings and 12/12 training accuracy — run <code>python ticket_category.py</code> any time as a regression check.</li>
+  <li><strong>New companion notebook — <code>customer-support-assistant/notebooks/ticket_category.ipynb</code>:</strong> the same feature, cell by cell, for reading and experimenting.</li>
+  <li><strong>Updated — <code>customer-support-assistant/main.py</code>:</strong> now imports <code>predict_category</code> and demonstrates capability 3 alongside urgency detection and resolution-time estimation, with three new <code>assert</code>s.</li>
+</ul>
+
+<p>The project keeps a <strong>single tree</strong>, not a forest: with 12 training tickets a forest adds randomness without real benefit, and the single tree stays printable and fully traceable. The forest lives in the lesson notebook; a later lesson (scikit-learn, Chapter 9) upgrades this feature in place.</p>
+
+<p><code>requirements.txt</code> stays empty — still standard library only. Predicted output of <code>python main.py</code> (run from inside <code>customer-support-assistant/</code>), <strong>a prediction — the probability and minute numbers especially will differ a little</strong>:</p>
+
+<pre><code>Customer Support Assistant - current capabilities
+
+1) Ticket urgency detection (learned by logistic regression)
+   [urgent] (P(urgent)=0.93) My payment failed twice and I need this resolved right now
+   [not urgent] (P(urgent)=0.05) Do you have this item in a larger size
+
+2) Estimated resolution time (learned by linear regression)
+   ~11.0 min (11 words) My payment failed twice and I need this resolved right now
+   ~10.0 min (9 words) Do you have this item in a larger size
+
+3) Ticket category routing (learned by a decision tree)
+   [shipping] Where is my package it has been two weeks
+   [billing] I was charged twice and want a refund
+   [account] I cannot log in please reset my password
+
+<span class="hi">Self-check passed.</span></code></pre>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Letting a tree grow without limits.</strong> An unlimited tree reaches pure leaves by memorizing individual examples. Perfect training accuracy from a deep tree is a warning sign, not a victory. Always cap depth (or leaf size) and check against held-out data.</li>
+  <li><strong>Reading feature questions as understanding.</strong> The tree asks about <em>exact words</em>. “The delivery fee was charged to the wrong card” goes to shipping because of one word. And “delivered” ≠ “delivery” — a ticket saying “not delivered” does not trigger the delivery question at all.</li>
+  <li><strong>Forgetting the default path.</strong> Every “none of the above” ticket slides down the no-branches into one leaf (here: <code>account</code>). A gift-wrapping question would be routed to account support — the tree has no “I don't know” option unless you build one.</li>
+  <li><strong>Trusting one tree's structure too much.</strong> Tiny data changes can reshuffle the whole tree. If you retrain and the tree looks different, that is instability, not a bug — and it is exactly why forests exist.</li>
+  <li><strong>Assuming the forest fixes everything.</strong> A forest averages away variance (noise-chasing), not bias. If the features themselves are too weak — like our 9-word menu — a hundred trees vote confidently on the same missing information.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p><strong>Reach for trees/forests when:</strong> your data is a table of mixed features (numbers, categories, yes/no flags); features live on wildly different scales (trees don't care — no feature scaling needed, unlike Lesson 14's gradient descent); relationships are rule-like rather than line-like; or you need a model a human can read (single tree) or a strong low-effort baseline (forest). On tabular business data, forests and gradient boosting are usually the first serious models to try.</p>
+
+<p><strong>Costs and limits:</strong> single trees are unstable and overfit eagerly; forests fix both but cost more compute and lose readability. Tree splits are axis-aligned yes/no cuts, so smooth linear trends need many steps to approximate — logistic/linear regression handles those more gracefully with two numbers. And for raw text, word-presence questions are shallow; better text features (Chapter 6) and, eventually, models that read meaning (Phase 4+) go deeper. For calibrated probabilities, logistic regression (Lesson 15) is still the cleaner tool — a leaf's majority share is a cruder confidence than a sigmoid's output.</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li>A decision tree classifies by walking an example through a flowchart of yes/no questions, and it learns both which questions to ask and in what order purely from labelled data.</li>
+  <li>Gini impurity measures how mixed a pile of labels is (the chance two random draws disagree), and each split greedily minimizes the size-weighted impurity of the two piles it creates.</li>
+  <li>An unlimited tree will grow a private branch for every quirky example and reach perfect training accuracy by memorization, so the depth limit is the tree's main bias-variance knob.</li>
+  <li>A random forest trains many trees on bootstrap samples with restricted question menus and takes a majority vote, which cancels the trees' individual, differently-directed errors and slashes variance.</li>
+  <li>Our assistant now routes tickets to shipping, billing, or account support with a learned, printable decision tree — the ticket-category capability promised in Lesson 11.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>You are given 6 labelled tickets and a menu of just two candidate questions: <em>contains "return"?</em> and <em>contains "broken"?</em></p>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>#</th><th>Ticket</th><th>Label</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>I want to return these shoes</td><td>returns</td></tr>
+    <tr><td>2</td><td>How do I return a gift</td><td>returns</td></tr>
+    <tr><td>3</td><td>Please help me return my order</td><td>returns</td></tr>
+    <tr><td>4</td><td>The zipper is broken after one day</td><td>product</td></tr>
+    <tr><td>5</td><td>My blender arrived broken</td><td>product</td></tr>
+    <tr><td>6</td><td>I want to return this broken toy</td><td>returns</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>(a) Compute the Gini impurity of the full 6-ticket pile. (b) Score both candidate questions (weighted Gini). (c) Which question should the root ask, and what does the finished tree look like?</p>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>(a) The full pile.</strong> 4 returns + 2 product. Shares: 4/6 = 2/3 and 2/6 = 1/3.</p>
+
+<blockquote><p>Gini = 1 − (2/3)² − (1/3)² = 1 − 4/9 − 1/9 = 4/9 ≈ <strong>0.444</strong></p></blockquote>
+
+<p><strong>(b) Score each question.</strong></p>
+
+<p><em>Contains "return"?</em> — tickets 1, 2, 3, 6 say yes (note ticket 6 contains both words):</p>
+
+<ul>
+  <li>YES pile: {1, 2, 3, 6} = 4 returns → Gini = 1 − 1² = 0.0</li>
+  <li>NO pile: {4, 5} = 2 product → Gini = 0.0</li>
+  <li>score = (4/6) × 0.0 + (2/6) × 0.0 = <strong>0.0</strong></li>
+</ul>
+
+<p><em>Contains "broken"?</em> — tickets 4, 5, 6 say yes:</p>
+
+<ul>
+  <li>YES pile: {4, 5, 6} = 2 product + 1 returns → Gini = 1 − (2/3)² − (1/3)² = 4/9 ≈ 0.444</li>
+  <li>NO pile: {1, 2, 3} = 3 returns → Gini = 0.0</li>
+  <li>score = (3/6) × 0.444 + (3/6) × 0.0 = <strong>0.222</strong></li>
+</ul>
+
+<p><strong>(c) The root asks "return".</strong> Its score (0.0) beats “broken” (0.222). Both resulting piles are already pure, so both children are leaves and the tree is a single question:</p>
+
+<pre><code>contains "return"?
+  yes: predict returns
+  no:  predict product</code></pre>
+
+<p>The interesting ticket is #6: it mentions “broken”, but the customer <em>wants a return</em> — and the “return” split classifies it correctly, while a root split on “broken” would have polluted its yes-pile with it. The impurity arithmetic detected that automatically: that is exactly what the weighted-Gini score is for.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>The forest made its trees independently and averaged them. Lesson 17 — <strong>gradient boosting</strong> — builds trees <em>in sequence</em>, each new tree trained to correct the mistakes of the ones before it. That one change produces the family of models (XGBoost, LightGBM) that dominates tabular-data competitions to this day.</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Lesson 17 — Gradient Boosting</p>
+  <p>Many weak models correcting each other: why boosting wins on tabular data, and what XGBoost and LightGBM actually do.</p>
+  <p><a href="lesson-17-gradient-boosting.html">Continue to Lesson 17 →</a></p>
+</footer>
+
+<p class="footnote">Lesson 16 of 113 — Phase 2 (Classical Machine Learning), Chapter 5 (Core Supervised Algorithms), lesson 3 of 5 in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>

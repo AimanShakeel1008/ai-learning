@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 07 — Seeing Your Data With Plots</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-06-pandas-basics.html">← Lesson 06 — pandas Basics</a>
+    <a class="next" href="chapter-02-summary.html">Chapter 2 Summary →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 1 · Chapter 2 · Lesson 07</p>
+  <h1>Seeing Your Data With Plots</h1>
+  <p class="subtitle">Histogram, bar chart, scatter, and box plot — the four pictures to draw before trusting any dataset.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> this lesson page · <code>lesson-notebooks/phase-01-foundations/chapter-02-python-for-ai/lesson-07-seeing-data-with-plots.ipynb</code></p>
+  <p><strong>Prerequisites:</strong> Lesson 06 — pandas for handling data.</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>Lesson 06 built the habit of looking at a table before touching it: <code>.head()</code>, <code>.shape</code>, <code>.info()</code>. Those tools describe a table in words and numbers. They still miss things that jump out the moment the same data is drawn as a picture — a handful of outliers, a lopsided category count, two numbers that quietly move together (or, just as usefully, that don't move together at all).</p>
+
+<p>This is not decoration before the “real” work of modeling. Every experienced practitioner looks at their data visually before training anything, because a model trained on data with a hidden problem — one wildly imbalanced category, one outlier skewing an average, a data-entry mistake sitting off in a corner of a scatter plot — will confidently learn the wrong thing, and the resulting bug is far harder to catch after the fact than it would have been in a five-second look at a chart beforehand. Phase 2's first real classifier depends on the exact category-balance question this lesson's bar chart raises.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p>Imagine a doctor given a patient's raw vital-sign readings as a printed list of a thousand numbers — versus the same numbers drawn as a heart-rate line over time. Reading the list, a single dangerous spike buried on line 743 is easy to miss. On the line chart, that spike is the first thing anyone's eye lands on. The numbers are identical in both cases; only the picture makes the important thing impossible to miss. That is the entire job of the plots in this lesson: same data, arranged so the eye does the finding instead of a person scanning digits one at a time.</p>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<h3>Why a picture beats a table, mechanically</h3>
+
+<p>A printed table asks a reader to hold many numbers in their head at once and compare them mentally — slow, and reliably error-prone past a handful of rows. A plot instead uses position, height, or spread on a page, which human vision parses almost instantly and in parallel: a bar noticeably taller than its neighbors, a dot sitting apart from a cluster of others, a box shifted higher than the box beside it. The underlying data never changes; a plot is a different way of routing the same numbers through a part of the brain that is much faster at this particular kind of comparison.</p>
+
+<h3>matplotlib and pyplot</h3>
+
+<p><strong>Plain definition:</strong> <strong>matplotlib</strong> is Python's standard plotting library — code that turns numbers into pictures like bars, dots, and lines. Its most common interface is called <strong>pyplot</strong>, always imported under the nickname <code>plt</code>.</p>
+
+<p><strong>Why it matters:</strong> without a plotting library, drawing even a simple bar chart by hand would mean manually computing pixel positions — matplotlib handles the drawing, scaling, and labeling, leaving just the choice of what to plot and how to describe it.</p>
+
+<p><strong>Tiny concrete example:</strong> <code>plt.hist(data, bins=5)</code> builds a histogram in one line; <code>plt.show()</code> displays whatever has been built up by the plotting calls before it, the conventional way to reveal a finished plot in a notebook.</p>
+
+<p><strong>Technical name:</strong> <code>matplotlib.pyplot</code>, imported as <code>plt</code>.</p>
+
+<h3>The histogram — one column's shape</h3>
+
+<p><strong>Plain definition:</strong> a <strong>histogram</strong> splits a column of numbers into equal-width buckets, called <strong>bins</strong>, and draws a bar for each bucket as tall as the count of values that landed inside it.</p>
+
+<p><strong>Why it matters:</strong> it shows a column's spread at a glance — clustered together, spread evenly, or with an <strong>outlier</strong>, a value sitting far outside where the rest of the data lives.</p>
+
+<p><strong>Tiny concrete example:</strong> this lesson's twelve ticket-text lengths, sorted, are <code>30, 37, 37, 38, 38, 39, 39, 40, 43, 46, 47, 59</code>. Eleven of the twelve sit between 30 and 47; one, <code>59</code>, sits well beyond the rest. A histogram of this column draws a tall cluster of bars in the middle of the range and one short, isolated bar out past a gap — the outlier is visible as empty space on the chart, not just as a number that happens to be bigger.</p>
+
+<h3>The bar chart — comparing category counts</h3>
+
+<p><strong>Plain definition:</strong> a <strong>bar chart</strong> draws one bar per category, as tall as how many rows belong to it.</p>
+
+<p><strong>Why it matters:</strong> it is the fastest way to catch <strong>class imbalance</strong> — one category vastly outnumbering another in the data. A classifier trained on imbalanced data can learn to mostly guess the biggest category and still score deceptively well by a simple accuracy count, while barely learning the smaller categories at all (the full fix comes in Lesson 21; for now, the point is just learning to <em>see</em> the imbalance).</p>
+
+<p><strong>Tiny concrete example:</strong> <code>df['category'].value_counts()</code> on this lesson's 12 tickets gives <code>billing: 6, product: 3, shipping: 3</code> — billing alone is half the data. Plotted as a bar chart, one bar stands twice as tall as the other two, an imbalance easy to miss reading three numbers in a row but impossible to miss as two very different bar heights.</p>
+
+<h3>The scatter plot — do two numbers move together?</h3>
+
+<p><strong>Plain definition:</strong> a <strong>scatter plot</strong> draws one dot per row, placed left-to-right by one number and up-down by a second number.</p>
+
+<p><strong>Why it matters:</strong> it reveals whether two numeric columns tend to rise and fall together, move in opposite directions, or show no relationship at all — the last of which is itself a useful, real finding, not a failed experiment.</p>
+
+<p><strong>Tiny concrete example:</strong> plotting this lesson's ticket <code>length</code> against <code>satisfaction_rating</code> gives points including <code>(59, 2)</code>, <code>(47, 5)</code>, and <code>(30, 2)</code> — a long ticket with a low rating, a fairly long ticket with the top rating, and a short ticket with a low rating. The dots scatter with no visible upward or downward drift, which means length and satisfaction do not appear related in this data — worth knowing <em>before</em> building anything that assumes otherwise.</p>
+
+<h3>The box plot — comparing spread across groups</h3>
+
+<p><strong>Plain definition:</strong> a <strong>box plot</strong> summarizes one column's spread per group, with a box spanning the middle half of the values, a line marking the <strong>median</strong> (the middle value once sorted), and thin “whisker” lines reaching to the lowest and highest values in that group.</p>
+
+<p><strong>Why it matters:</strong> it compares several groups' spread side by side in one picture, instead of computing min, max, and median by hand for each group separately.</p>
+
+<p><strong>Tiny concrete example:</strong> this lesson's ratings, grouped by category: <code>billing</code> is <code>2, 3, 2, 4, 3, 2</code> (median 2.5, narrow), <code>product</code> is <code>4, 5</code> (median 4.5, narrow and high), <code>shipping</code> is <code>1, 5, 1</code> (median 1, but stretching from the very bottom to the very top of the scale). Drawn as three boxes side by side, shipping's whiskers visibly stretch the farthest — flagging it as the least consistent customer experience of the three categories, a pattern easy to miss reading eleven ratings in a row but obvious as three shapes side by side.</p>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>The notebook builds a 12-row support-ticket table (extending Lesson 06's 6-row version) and draws all four plots above from it, using only pandas and matplotlib.</p>
+
+<p>Open it here: <code>lesson-notebooks/phase-01-foundations/chapter-02-python-for-ai/lesson-07-seeing-data-with-plots.ipynb</code></p>
+
+<div class="tryit">
+<p>matplotlib needs to be installed to run it. From a terminal, in whatever Python environment the notebook's kernel uses: <code>pip install matplotlib</code></p>
+<p class="footnote">(Verify this install command still matches current matplotlib documentation if anything looks unfamiliar — package install commands are usually very stable, but it costs nothing to check.)</p>
+</div>
+
+<ol>
+  <li>Import pandas and <code>matplotlib.pyplot as plt</code>, create a <code>plots/</code> folder next to the notebook with <code>os.makedirs("plots", exist_ok=True)</code>, then build a 12-ticket DataFrame with <code>text</code>, <code>category</code>, and <code>satisfaction_rating</code> (one still missing, as in Lesson 06), plus <code>length</code> and <code>exclamations</code> columns computed with the same vectorized <code>.str</code> operations from last lesson.</li>
+  <li>Draw a histogram of <code>length</code> with <code>plt.hist(..., bins=5)</code>, labelled with a title and axis labels, then save it with <code>plt.savefig("plots/lesson-07-histogram-length.png")</code> before <code>plt.show()</code>.</li>
+  <li>Count tickets per <code>category</code> with <code>.value_counts()</code>, plot those counts as a bar chart, and save it the same way.</li>
+  <li>Drop the one missing rating with <code>.dropna(subset=['satisfaction_rating'])</code> (Lesson 06's tool, used here because the next two plots need real numbers in both places), scatter-plot <code>length</code> against <code>satisfaction_rating</code>, and save it.</li>
+  <li>Draw a box plot of <code>satisfaction_rating</code> grouped <code>by='category'</code>, clearing pandas' default title with <code>plt.suptitle("")</code> so only the chosen title remains, and save it.</li>
+</ol>
+
+<div class="note">
+<p>Each <code>plt.savefig(...)</code> call must come <em>before</em> <code>plt.show()</code> — once a plot is shown, matplotlib clears its internal drawing surface, so a <code>savefig</code> call placed after <code>plt.show()</code> would save a blank image instead of the chart just drawn.</p>
+</div>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<p>Plots are pictures, so the “expected output” below describes the shape of each picture rather than an exact pixel image — treat every description as a <strong>prediction</strong> of the pattern, not a verified render.</p>
+
+<p><strong>Step 2 — building the table.</strong> Prints the <code>ticket_id</code>, <code>category</code>, <code>satisfaction_rating</code>, and <code>length</code> columns for all 12 rows; row 5 (ticket 5) shows <code>NaN</code> for its rating, same as Lesson 06's missing-value row.</p>
+
+<p><strong>Step 2 (plot) — histogram of <code>length</code>.</strong> Prediction: a cluster of tall bars covering roughly 37–47 characters, then a gap, then one short, isolated bar out around 59 characters — the one long ticket sitting apart from the other eleven.</p>
+
+<p><strong>Step 3 — bar chart of category counts.</strong> Prediction (printed counts):</p>
+
+<pre><code>category
+<span class="hi">billing     6</span>
+product     3
+shipping    3
+Name: count, dtype: int64</code></pre>
+
+<p class="footnote">(The exact column header text above — <code>Name: count, dtype: int64</code> — reflects a recent pandas <code>.value_counts()</code> convention; verify this against the installed pandas version if it looks different.)</p>
+
+<p>Prediction (chart): three bars — <code>billing</code> roughly twice as tall as <code>product</code> and <code>shipping</code>, which are roughly equal to each other.</p>
+
+<p><strong>Step 4 — scatter plot of <code>length</code> vs. <code>satisfaction_rating</code>.</strong> Prediction: eleven dots (the twelfth, missing-rating row dropped) scattered across the plot with no visible upward or downward trend — long tickets appear at both high and low ratings, and so do short ones.</p>
+
+<p><strong>Step 5 — box plot of <code>satisfaction_rating</code> by <code>category</code>.</strong> Prediction: three boxes side by side. <code>billing</code>'s box sits low-to-middle and narrow (around 2 to 3). <code>product</code>'s box sits high and narrow (around 4 to 5). <code>shipping</code>'s whiskers stretch from the bottom of the scale to the top (1 to 5) — visibly the widest spread of the three.</p>
+
+<div class="warn">
+<p>This is a prediction based on tracing through matplotlib and pandas' documented behavior by hand, not a verified run — open the notebook, run <code>pip install matplotlib</code> if needed, and run the cells top to bottom to confirm.</p>
+</div>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<div class="demo">
+<p>Like Lessons 04, 05, and 06, this lesson is about the tool itself — learning to see a table's shape, balance, relationships, and group differences — not a new capability meant to be implemented in the assistant right now. <code>ticket_urgency.py</code> is unchanged; there is no new project <code>.py</code> file, no change to <code>main.py</code>, and no change to <code>customer-support-assistant/requirements.txt</code> this lesson, since today's matplotlib import lives only in this lesson's notebook.</p>
+</div>
+
+<p>The connection forward is direct: once Phase 2 starts building a real classifier on the assistant's ticket data, the very first step after loading the data will be exactly these four plots — checking category balance with a bar chart before training, exactly as demonstrated here, is standard practice precisely because of the imbalance problem explained in Section 3.</p>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Skipping straight to modeling without ever plotting the data.</strong> An outlier, an imbalance, or a data-entry error found <em>after</em> training wastes far more time than the minute it takes to draw four basic plots first.</li>
+  <li><strong>Choosing too few or too many histogram bins.</strong> Too few bins hides real structure by lumping everything into one or two bars; too many bins makes noise look like meaningful shape. There is no single correct number — trying a couple of different bin counts is normal practice.</li>
+  <li><strong>Reading a scatter plot with no visible pattern as “the code is broken.”</strong> No relationship between two columns is a legitimate, useful finding, not an error — it says something real about the data.</li>
+  <li><strong>Forgetting that <code>.dropna()</code> (like <code>.fillna()</code>) returns a new table.</strong> The scatter and box plot cells in this lesson deliberately use <code>df_clean = df.dropna(...)</code>, reassigning the result — using plain <code>df.dropna(...)</code> without reassigning would silently leave the original missing value in place.</li>
+  <li><strong>Not labeling axes and titles.</strong> An unlabeled bar chart or scatter plot forces a reader to guess what the numbers even represent — always set <code>plt.title(...)</code>, <code>plt.xlabel(...)</code>, and <code>plt.ylabel(...)</code>.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p>Reach for these four plots as a near-automatic first step on any new dataset, before writing a single line of modeling code — the cost is a few minutes; the payoff is catching problems that are far more expensive to discover later. The tradeoff is mostly about which plot fits which question: a histogram and box plot both describe spread, but a histogram looks at one column alone while a box plot compares that column split across groups; a bar chart counts categories, while a scatter plot relates two numeric columns to each other. Picking the wrong one for the question at hand (for example, a scatter plot to compare category counts) simply won't answer it — matching the plot to the question, as laid out in Section 3, is the actual skill here, more than any specific matplotlib syntax.</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li>A histogram shows one numeric column's spread and flags outliers as bars sitting apart from the rest.</li>
+  <li>A bar chart counts rows per category and is the fastest way to catch class imbalance before it silently damages a later model.</li>
+  <li>A scatter plot shows whether two numeric columns move together, move oppositely, or show no relationship at all — and “no relationship” is a real, useful answer.</li>
+  <li>A box plot compares one column's spread across several groups at once, using a box for the middle half of the values and whiskers reaching to the extremes.</li>
+  <li>Looking at data visually before modeling it catches problems — outliers, imbalance, unexpected relationships — that a printed table of the same numbers reliably hides.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>A dataset of 1,000 customer orders has an <code>order_amount</code> column and a <code>region</code> column (<code>north</code>, <code>south</code>, <code>east</code>, <code>west</code>). Which one plot from this lesson would best answer each of these two questions, and why?</p>
+
+<ol>
+  <li>“Are there any orders with a suspiciously huge amount compared to the rest?”</li>
+  <li>“Do orders from one region tend to be larger than orders from another?”</li>
+</ol>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>Question 1</strong> calls for a <strong>histogram</strong> of <code>order_amount</code>. It shows the whole column's spread in one picture, so a handful of unusually huge orders would show up as isolated bars sitting apart from the main cluster — exactly the outlier-spotting job a histogram is built for.</p>
+
+<p><strong>Question 2</strong> calls for a <strong>box plot</strong> of <code>order_amount</code>, grouped <code>by='region'</code>. It draws one box per region side by side, so a region with a noticeably higher or lower box (and its median line) immediately stands out against the others — a direct group-to-group spread comparison, which is what a box plot is for and a plain histogram of the whole column (with regions all mixed together) could not show on its own.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>Lesson 08 begins Chapter 3 — the math actually needed for AI, in plain language — starting with linear algebra intuition: what a vector and a matrix really are, the dot product, and why almost everything in AI comes down to vectors and matrices.</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Chapter 2 Summary — Python for AI</p>
+  <p>The chapter's idea map, the toolkit at a glance, a self-check, and the boss challenge.</p>
+  <p><a href="chapter-02-summary.html">Continue to the Chapter 2 Summary →</a></p>
+</footer>
+
+<p class="footnote">Lesson 7 of 113 — Phase 1, Chapter 2, Lesson 4 of 4 in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>

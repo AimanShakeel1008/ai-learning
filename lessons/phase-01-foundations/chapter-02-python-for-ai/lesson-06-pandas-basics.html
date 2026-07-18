@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 06 — pandas for Handling Data</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-05-numpy-arrays.html">← Lesson 05 — NumPy Arrays</a>
+    <a class="next" href="lesson-07-seeing-data-with-plots.html">Lesson 07 — Seeing Data with Plots →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 1 · Chapter 2 · Lesson 06</p>
+  <h1>pandas for Handling Data</h1>
+  <p class="subtitle">Spreadsheet-shaped data in Python: the DataFrame, selecting, filtering, and patching the gaps.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> this lesson page · <code>lesson-notebooks/phase-01-foundations/chapter-02-python-for-ai/lesson-06-pandas-basics.ipynb</code></p>
+  <p><strong>Prerequisites:</strong> Lesson 05 — NumPy and thinking in arrays.</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>Lesson 05 built the array mental model: numbers laid out together, operated on all at once. Real data, though, is rarely just numbers — it is a table: rows of examples, columns of named properties, mixed types, and gaps where something wasn't recorded. <strong>pandas</strong> is the library built for exactly that table shape, on top of the same array ideas from last lesson.</p>
+
+<p>This is not a side skill. Every AI project in this course, starting with Phase 2's first real classifier, begins the same way: load the data into a table, look at it, select the pieces that matter, filter out what doesn't belong, and patch up the gaps — all <em>before</em> any model gets touched. Experienced practitioners often say most of the real work in a machine learning project is data work, not model work, and this lesson is the first hands-on look at why that is true.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p>Picture a filing cabinet versus a spreadsheet. A filing cabinet (a plain Python list) holds folders in order, but finding “every folder from March” means pulling out and checking each folder by hand, one at a time. A spreadsheet (a pandas DataFrame) has named columns — a “Date” column, a “Category” column — so finding every March row is a matter of asking the whole sheet a question at once (“show me rows where Date starts with March”) instead of checking folders one by one. pandas is that spreadsheet, built for Python, with the speed of Lesson 05's arrays running underneath it.</p>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<h3>The DataFrame: pandas' table</h3>
+
+<p><strong>Plain definition:</strong> a <strong>DataFrame</strong> is a table of rows and columns, like a spreadsheet, where every column can hold its own type of data.</p>
+
+<p><strong>Why it matters:</strong> a NumPy array (Lesson 05) requires every single element to be the same type — great for pure numbers, useless for a support ticket that has a numeric id, a text message, and a text category all in one row. A DataFrame lifts that restriction column by column: one column of whole numbers, one of text, one of decimals, all living in the same table, each column internally still fast like a NumPy array.</p>
+
+<p><strong>Tiny concrete example:</strong> this lesson's notebook builds a DataFrame of 6 support tickets from a Python dictionary — <code>{"ticket_id": [1, 2, ...], "text": [...], "category": [...], "satisfaction_rating": [...]}</code> — where each dictionary key becomes a column name and each value is the list of that column's entries, one per row.</p>
+
+<p><strong>The technical name:</strong> the whole table is a <strong>DataFrame</strong>; one column (or one row) pulled out on its own is called a <strong>Series</strong> — a labeled 1D array, carrying its row labels along with it.</p>
+
+<h3>The index: row labels</h3>
+
+<p><strong>Plain definition:</strong> the <strong>index</strong> is the label attached to each row, shown on the left whenever a DataFrame prints.</p>
+
+<p><strong>Why it matters:</strong> a plain Python list only ever knows a row by its position (item 0, item 1, ...). pandas gives every row an actual label, separate from its position, which stays attached to that row even after the table is filtered, sorted, or rearranged — this is exactly what makes <code>.loc</code> (label-based lookup) and <code>.iloc</code> (position-based lookup) two genuinely different tools, covered below.</p>
+
+<p><strong>Tiny concrete example:</strong> build a DataFrame without specifying anything about row labels, and pandas assigns <code>0, 1, 2, 3, 4, 5</code> automatically — a <strong>RangeIndex</strong>. Later, an index can be set to something meaningful, like <code>ticket_id</code>, so a row can be looked up by its actual id instead of counting rows from the top.</p>
+
+<h3>Selecting: one bracket versus two</h3>
+
+<p><strong>Plain definition:</strong> selecting means pulling out only the columns (or rows) needed, out of a larger table.</p>
+
+<p><strong>Why it matters:</strong> real tables often have far more columns than any one task needs. Selecting just the relevant ones keeps code readable and avoids dragging unrelated data through calculations that don't need it.</p>
+
+<p><strong>Tiny concrete example:</strong> <code>df['category']</code> (single brackets, one name) returns a Series — one column. <code>df[['text', 'category']]</code> (double brackets, a list of names) returns a smaller DataFrame — several columns. The outer bracket always means “select from <code>df</code>”; whether a plain name or a list goes inside decides whether the answer comes back as a Series or a DataFrame.</p>
+
+<p>For rows, <code>.iloc[i]</code> selects by position (like list indexing — the “3rd row,” whatever its label happens to be), and <code>.loc[label]</code> selects by the row's actual index label (the row <em>labeled</em> <code>3</code>, wherever it now sits). With the default index these give the same row; they diverge the moment a table's rows have been filtered or its index has been set to something else.</p>
+
+<h3>Filtering with a boolean mask, again</h3>
+
+<p><strong>Plain definition:</strong> filtering a DataFrame keeps only the rows that match some condition.</p>
+
+<p><strong>Why it matters:</strong> this is the single most common thing done to real data — “show me only the shipping tickets,” “show me only the urgent ones.” pandas reuses the exact boolean-mask pattern from Lesson 05: build a <code>True</code>/<code>False</code> answer for every row with a comparison, then use that answer to keep only the matching rows.</p>
+
+<p><strong>Tiny concrete example:</strong> <code>df['category'] == 'shipping'</code> compares every row's category to <code>'shipping'</code> at once, returning a Series of <code>True</code>/<code>False</code>, one per row. <code>df[mask]</code> then keeps only the rows marked <code>True</code>. No loop, no <code>if</code> statement, written by hand.</p>
+
+<h3>Missing values: NaN, isna, fillna, dropna</h3>
+
+<p><strong>Plain definition:</strong> a <strong>missing value</strong> is a gap in the data — something that was never recorded for that row. pandas represents a missing <em>number</em> with the special value <strong>NaN</strong> (“Not a Number”).</p>
+
+<p><strong>Why it matters:</strong> real data almost always has gaps — a skipped survey question, a sensor that failed to report, a form field left blank. A model cannot do arithmetic on “nothing,” so every gap has to be found and handled — either filled in with a reasonable stand-in value, or the row removed entirely — before the data is usable.</p>
+
+<p><strong>Tiny concrete example:</strong> this lesson's tickets include one satisfaction rating written as <code>None</code> because that customer never rated their ticket. Because a numeric column can't hold “missing” as a whole number, pandas silently upgrades the <em>entire</em> <code>satisfaction_rating</code> column to decimals (<code>float64</code>) to make room for <code>NaN</code> — this is why <code>2</code> prints as <code>2.0</code>. <code>.isna()</code> finds the gap (another boolean mask); <code>.fillna(df['satisfaction_rating'].mean())</code> fills it with the average of the other ratings (reusing Lesson 05's <code>.mean()</code>, rather than guessing a number that was never actually given); <code>.dropna()</code> removes the row with the gap entirely. Both <code>.fillna(...)</code> and <code>.dropna()</code> return a <strong>new</strong> table — the original <code>df</code> is untouched unless the result is reassigned back to it.</p>
+
+<h3>Vectorized string operations</h3>
+
+<p><strong>Plain definition:</strong> a <strong>vectorized string operation</strong> applies one text operation to an entire text column at once, using pandas' <code>.str</code> accessor.</p>
+
+<p><strong>Why it matters:</strong> exactly the same speed and no-loop argument from Lesson 05, now for text instead of numbers — a real dataset might have a text column with a million rows, and computing something like “how long is this message” one row at a time in a Python loop would be far slower than letting pandas do it internally.</p>
+
+<p><strong>Tiny concrete example:</strong> <code>df['text'].str.len()</code> computes the character length of every ticket's text in a single call; <code>df['text'].str.count('!')</code> counts <code>!</code> characters in every ticket the same way. Assigning either to <code>df['length'] = ...</code> adds it as a brand-new column.</p>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>The notebook for this lesson builds a 6-row DataFrame of support tickets, then walks through looking at it, selecting from it, filtering it, cleaning a missing value, and adding a new column — using only pandas (which itself depends on NumPy).</p>
+
+<p>Open it here: <code>lesson-notebooks/phase-01-foundations/chapter-02-python-for-ai/lesson-06-pandas-basics.ipynb</code></p>
+
+<div class="tryit">
+<p>To run it, pandas needs to be installed first (NumPy comes along with it automatically, since pandas depends on it). From a terminal, in whatever Python environment the notebook's kernel uses: <code>pip install pandas</code></p>
+<p class="footnote">(Verify this install command still matches current pandas documentation if anything looks unfamiliar — package install commands are usually very stable, but it costs nothing to check.)</p>
+</div>
+
+<ol>
+  <li>Import pandas under its standard nickname, <code>pd</code>.</li>
+  <li>Build a 6-row DataFrame from a dictionary of ticket id, text, category, and satisfaction rating (one rating is <code>None</code>, since that customer never responded).</li>
+  <li>Look at the table with <code>.head(3)</code>, <code>.shape</code>, and <code>.info()</code>.</li>
+  <li>Select the <code>category</code> column alone (a Series), then <code>text</code> and <code>category</code> together (a DataFrame), noting the single-bracket-versus-double-bracket difference.</li>
+  <li>Select the first row two ways: <code>.iloc[0]</code> (by position) and <code>.loc[0]</code> (by label).</li>
+  <li>Build a boolean mask for <code>category == 'shipping'</code> and use it to filter the table down to just the shipping tickets.</li>
+  <li>Find the missing rating with <code>.isna()</code>, fill it with the column's mean using <code>.fillna(...)</code>, and drop the row with <code>.dropna()</code> — noting none of this changes <code>df</code> itself unless reassigned.</li>
+  <li>Add two new columns, <code>length</code> and <code>exclamations</code>, computed with vectorized <code>.str.len()</code> and <code>.str.count('!')</code>.</li>
+</ol>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<p>Walking through the notebook top to bottom. Real pandas output includes precise column-width spacing that is easy to get slightly wrong by hand — treat the layout below as a close approximation of the real thing, not a pixel-exact copy, and expect small spacing differences when actually run.</p>
+
+<p><strong>Step 2 — building the table.</strong></p>
+
+<pre><code>   ticket_id                                                text  category  satisfaction_rating
+0          1  My payment failed twice and I need this resol...   billing                   2.0
+1          2           Do you have this item in a larger size?   product                   4.0
+2          3        Where is my order, it has not arrived yet!!  shipping                   1.0
+3          4            Thanks for the quick delivery, love it!  shipping                   5.0
+4          5    The app keeps crashing when I try to check out   product                   NaN
+5          6             Can I get a refund for a damaged item?   billing                   3.0</code></pre>
+
+<p class="footnote">(Note row 0's <code>text</code> is cut short with <code>...</code> — pandas truncates long text columns in <em>display only</em> after a default width, commonly 50 characters; the underlying data is not affected. This default is a display setting, <code>pd.options.display.max_colwidth</code>, and is worth confirming against the installed pandas version if the exact cutoff ever matters.)</p>
+
+<p><strong>Step 3 — head, shape, info.</strong></p>
+
+<pre><code>   ticket_id                                                text  category  satisfaction_rating
+0          1  My payment failed twice and I need this resol...   billing                   2.0
+1          2           Do you have this item in a larger size?   product                   4.0
+2          3        Where is my order, it has not arrived yet!!  shipping                   1.0
+(6, 4)
+&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 6 entries, 0 to 5
+Data columns (total 4 columns):
+ #   Column               Non-Null Count  Dtype
+---  ------               --------------  -----
+ 0   ticket_id            6 non-null      int64
+ 1   text                 6 non-null      object
+ 2   category             6 non-null      object
+<span class="hi"> 3   satisfaction_rating  5 non-null      float64</span>
+dtypes: float64(1), int64(1), object(2)
+memory usage: 320.0+ bytes</code></pre>
+
+<p class="footnote">(The exact <code>memory usage</code> figure depends on the environment and pandas version — treat that one line as illustrative, not exact.)</p>
+
+<p><strong>Step 4 — selecting columns.</strong></p>
+
+<pre><code>0     billing
+1     product
+2    shipping
+3    shipping
+4     product
+5     billing
+Name: category, dtype: object
+&lt;class 'pandas.core.series.Series'&gt;
+                                                text  category
+0  My payment failed twice and I need this resol...   billing
+1           Do you have this item in a larger size?   product
+2        Where is my order, it has not arrived yet!!  shipping
+3            Thanks for the quick delivery, love it!  shipping
+4    The app keeps crashing when I try to check out   product
+5             Can I get a refund for a damaged item?   billing
+&lt;class 'pandas.core.frame.DataFrame'&gt;</code></pre>
+
+<p><strong>Step 5 — <code>.iloc[0]</code> versus <code>.loc[0]</code>.</strong> Both select the same row here, since the index is still the default <code>0..5</code>. Prediction (printed twice, identically):</p>
+
+<pre><code>ticket_id                                                               1
+text                    My payment failed twice and I need this resol...
+category                                                          billing
+satisfaction_rating                                                  2.0
+Name: 0, dtype: object</code></pre>
+
+<p><strong>Step 6 — filtering.</strong></p>
+
+<pre><code>0    False
+1    False
+2     True
+3     True
+4    False
+5    False
+Name: category, dtype: bool
+   ticket_id                                          text  category  satisfaction_rating
+2          3  Where is my order, it has not arrived yet!!  shipping                   1.0
+3          4      Thanks for the quick delivery, love it!  shipping                   5.0</code></pre>
+
+<p><strong>Step 7 — missing values.</strong></p>
+
+<pre><code>0    2.0
+1    4.0
+2    1.0
+3    5.0
+4    NaN
+5    3.0
+Name: satisfaction_rating, dtype: float64
+0    False
+1    False
+2    False
+3    False
+4     True
+5    False
+Name: satisfaction_rating, dtype: bool
+0    2.0
+1    4.0
+2    1.0
+3    5.0
+<span class="hi">4    3.0</span>
+5    3.0
+Name: satisfaction_rating, dtype: float64
+   ticket_id                                                text  category  satisfaction_rating
+0          1  My payment failed twice and I need this resol...   billing                   2.0
+1          2           Do you have this item in a larger size?   product                   4.0
+2          3        Where is my order, it has not arrived yet!!  shipping                   1.0
+3          4            Thanks for the quick delivery, love it!  shipping                   5.0
+5          6             Can I get a refund for a damaged item?   billing                   3.0
+(6, 4)</code></pre>
+
+<p class="footnote">(Row 4, the one with the missing rating, is gone from the <code>.dropna()</code> output — but <code>df.shape</code> still prints <code>(6, 4)</code> afterward, because <code>.dropna()</code> returned a new table without changing <code>df</code> itself.)</p>
+
+<p><strong>Step 8 — new columns.</strong></p>
+
+<pre><code>                                                text  length  exclamations
+0  My payment failed twice and I need this resol...      59             1
+1           Do you have this item in a larger size?      39             0
+2        Where is my order, it has not arrived yet!!      43             2
+3            Thanks for the quick delivery, love it!      39             1
+4    The app keeps crashing when I try to check out      46             0
+5             Can I get a refund for a damaged item?      38             0
+(6, 6)</code></pre>
+
+<div class="warn">
+<p>This is a prediction based on tracing through pandas' documented behavior by hand, not a verified run — open the notebook, run <code>pip install pandas</code> if needed, and run the cells top to bottom to confirm.</p>
+</div>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<div class="demo">
+<p>This lesson, like Lessons 04 and 05, is about the tool itself — the DataFrame mental model — not a new capability meant to be implemented in the assistant right now. <code>ticket_urgency.py</code> still stays exactly as it is, a plain-Python word-counting classifier, until Phase 2 rebuilds it on real machine learning. So there is no new project <code>.py</code> file, no change to <code>main.py</code>, and no change to <code>customer-support-assistant/requirements.txt</code> this lesson — that file only gains a line once the <em>project's own code</em> imports something new, and today's pandas import lives only in this lesson's notebook.</p>
+</div>
+
+<p>The connection forward is direct: once Phase 2 starts training a real classifier on many tickets at once, the training data will be loaded and cleaned as a pandas DataFrame exactly like the one built today — <code>text</code>, <code>category</code>, and derived numeric columns like <code>length</code> and <code>exclamations</code> are the first hint of what a real feature table for the assistant will look like.</p>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Expecting <code>.fillna(...)</code> or <code>.dropna()</code> to change the table in place.</strong> They return a new table by default; without reassigning (<code>df = df.dropna()</code>) or passing <code>inplace=True</code>, the original <code>df</code> is untouched — a very common source of “why didn't my missing values go away” confusion.</li>
+  <li><strong>Confusing single brackets and double brackets.</strong> <code>df['col']</code> is a Series; <code>df[['col']]</code> (even with just one name) is a DataFrame. They can look deceptively similar but behave differently in later operations.</li>
+  <li><strong>Assuming <code>.loc</code> and <code>.iloc</code> are interchangeable.</strong> They agree only when the index happens to match row position, which is true for a fresh default index and stops being true the moment rows are filtered, sorted, or given a custom index.</li>
+  <li><strong>Reading <code>NaN</code> as the same thing as the text <code>"None"</code>.</strong> <code>NaN</code> is a special <em>numeric</em> placeholder pandas uses internally for missing numbers; it only appears this way in numeric columns, and is not the literal string <code>"None"</code> even though <code>None</code> is often what gets typed in to create it.</li>
+  <li><strong>Trusting a printed table's truncated text as the full data.</strong> pandas' default display width cuts long strings off with <code>...</code> when printing — the underlying value is untouched; only the on-screen preview is shortened.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p>Reach for pandas the moment data has more than one property per example — a support ticket with text, a category, and a rating is already a table, not a flat list. For a single column of plain numbers with nothing else attached, a NumPy array (Lesson 05) is lighter and faster. The tradeoff: pandas adds real overhead and a large API surface compared to a bare NumPy array, but that cost buys labels, mixed types, and the selecting/filtering/cleaning tools this lesson covered — tools that become close to mandatory the moment real, messy data enters the picture, which is true for almost every AI project past the very first toy example.</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li>A pandas DataFrame is a labeled table of rows and columns where each column can hold its own type, built on top of NumPy arrays underneath.</li>
+  <li>Selecting a single column with <code>df['col']</code> returns a Series; selecting a list of columns with <code>df[['col1', 'col2']]</code> returns a DataFrame — the number of brackets controls which one comes back.</li>
+  <li><code>.loc</code> selects rows by their index label and <code>.iloc</code> selects rows by position — they agree only when the index still matches row position.</li>
+  <li>Filtering a DataFrame reuses the exact boolean-mask pattern from NumPy: build a <code>True</code>/<code>False</code> Series with a comparison, then index with it to keep only matching rows.</li>
+  <li>Missing numeric values show up as <code>NaN</code>; <code>.isna()</code> finds them, <code>.fillna(...)</code> replaces them, and <code>.dropna()</code> removes their rows — none of which change the original table unless the result is reassigned.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>Given a DataFrame <code>orders</code> with columns <code>order_id</code>, <code>amount</code>, and <code>is_returned</code> (<code>True</code>/<code>False</code>), write, in plain words, the two-step process to get a DataFrame containing only the orders that were <strong>not</strong> returned and had an <code>amount</code> greater than <code>50</code>. (Hint: a boolean mask can combine two conditions with <code>&amp;</code> for “and.”)</p>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p>Step one: build a combined boolean mask comparing both conditions at once — <code>mask = (orders['amount'] &gt; 50) &amp; (orders['is_returned'] == False)</code>. Each condition alone produces its own <code>True</code>/<code>False</code> Series; wrapping each side in parentheses and combining them with <code>&amp;</code> (pandas' vectorized “and,” applied element by element, not Python's plain <code>and</code> keyword) produces one final mask that is <code>True</code> only where <em>both</em> conditions hold for that row.</p>
+
+<p>Step two: use that mask to filter — <code>orders[mask]</code> — which keeps only the rows where the combined mask is <code>True</code>, i.e. orders over 50 that were not returned. The parentheses around each condition matter: without them, Python tries to evaluate <code>&amp;</code> before the comparisons, which raises an error.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>Lesson 07 covers seeing data with plots — why looking at data visually, before modeling it, catches problems numbers alone can hide, and the handful of plot types that matter most.</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Lesson 07 — Seeing Data with Plots</p>
+  <p>Why looking at data visually catches problems numbers alone can hide — and the four plot types that matter most.</p>
+  <p><a href="lesson-07-seeing-data-with-plots.html">Continue to Lesson 07 →</a></p>
+</footer>
+
+<p class="footnote">Lesson 6 of 113 — Phase 1, Chapter 2, Lesson 3 of 4 in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>

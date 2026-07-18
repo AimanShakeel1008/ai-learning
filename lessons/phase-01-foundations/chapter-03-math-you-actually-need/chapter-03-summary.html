@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 3 Summary — The Math You Actually Need, in Plain Language</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#learned">1 · What we learned</a>
+    <a href="#map">2 · How the ideas connect</a>
+    <a href="#story">3 · The story so far</a>
+    <a href="#lessons">4 · Lessons in this chapter</a>
+    <a href="#comingback">5 · Ideas that come back</a>
+    <a href="#selfcheck">6 · Self-check</a>
+    <a href="#challenge">7 · Chapter challenge</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-10-probability-statistics-intuition.html">← Lesson 10 — Probability &amp; Statistics</a>
+    <a class="next" href="../../phase-02-classical-machine-learning/chapter-04-the-machine-learning-workflow/lesson-11-end-to-end-ml-pipeline.html">Lesson 11 — The End-to-End ML Pipeline →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 1 · Chapter 3 · Summary</p>
+  <h1>The Math You Actually Need, in Plain Language</h1>
+  <p class="subtitle">Chapter 3 complete (Lessons 08–10) — vectors, slopes, and bets.</p>
+</header>
+
+<section id="learned">
+<h2><span class="secno">1</span>What we learned, and what we added to the assistant</h2>
+
+<p>This chapter delivered the three pieces of math the whole course runs on, each as intuition first and symbols second: <strong>linear algebra</strong> (data and model knobs as vectors and matrices, with the dot product as the one operation to internalize), <strong>calculus</strong> (the derivative as a slope you can measure by nudging, and gradient descent as the universal learning recipe), and <strong>probability and statistics</strong> (belief as a fraction, evidence updating it, distributions with mean and spread, and confidence as the model's honesty channel).</p>
+
+<p>We added nothing to the assistant — deliberately. All three lessons were intuition-building for machinery we have not built yet, so <code>customer-support-assistant/</code> is unchanged since Lesson 01 and <code>python main.py</code> still runs the toy urgency classifier exactly as before. That drought ends now: Phase 2 uses everything in this chapter to replace the toy with a real learned classifier.</p>
+</section>
+
+<section id="map">
+<h2><span class="secno">2</span>How the chapter's ideas connect</h2>
+
+<p>One sentence: <strong>a model is a pile of numbers (linear algebra) adjusted to reduce a wrongness score (calculus) so that its outputs are trustworthy bets (probability).</strong></p>
+
+<ul>
+  <li>Lesson 08 gave the <em>nouns</em>: a ticket becomes a vector of numbers; a batch of tickets becomes a matrix; a model's scoring is a dot product of features against weights.</li>
+  <li>Lesson 09 gave the <em>verb</em>: those weights don't get hand-picked — a loss function scores how wrong they are, the gradient says which way each weight should move, and gradient descent walks them downhill until the loss flattens.</li>
+  <li>Lesson 10 gave the <em>reading glasses</em>: what the trained model outputs is a probability per category, small evaluation samples wobble, means need their spreads, and confidence must be read as a bet, never a guarantee.</li>
+</ul>
+
+<p>The three meet in a single object next phase: a classifier whose input is a vector, whose training is gradient descent, and whose output is a probability distribution over categories.</p>
+</section>
+
+<section id="story">
+<h2><span class="secno">3</span>The story of the assistant so far</h2>
+
+<p>The assistant still has one capability: the Lesson 01 word-counting urgency classifier with hand-picked weights, demonstrated and self-checked by <code>main.py</code>. Chapter 2 gave us the tools to inspect data (NumPy, pandas, plots); Chapter 3 explained the machinery that will make hand-picked weights obsolete. The assistant enters Phase 2 unchanged — and leaves its first chapter there with a real, learned ticket-category classifier.</p>
+</section>
+
+<section id="lessons">
+<h2><span class="secno">4</span>Lessons in this chapter</h2>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Lesson</th><th>Core idea</th><th>Key tool / term</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>08 — Linear algebra intuition</td><td>Data and models are vectors and matrices; the dot product measures weighted agreement and scores a whole batch at once</td><td>vector, matrix, dot product, <code>np.dot</code> / <code>@</code></td></tr>
+    <tr><td>09 — Calculus intuition</td><td>Learning = measure wrongness, find each knob's downhill direction, step, repeat; step size decides converge vs. diverge</td><td>loss (MSE), derivative/slope, gradient, gradient descent, learning rate</td></tr>
+    <tr><td>10 — Probability &amp; statistics intuition</td><td>Belief is a fraction, evidence updates it, small samples wobble, means need spreads, and every model output is a bet with a confidence</td><td>probability, conditional probability, distribution, mean, standard deviation, calibration</td></tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section id="comingback">
+<h2><span class="secno">5</span>Ideas that come back later, and where</h2>
+
+<ul>
+  <li><strong>The dot product</strong> is the single most reused operation in the course: it is the core of a neuron (Lesson 31), of attention scores between words (Lessons 43–44), and of embedding similarity search in RAG (Lessons 42, 63).</li>
+  <li><strong>Gradient descent + a loss function</strong> is how <em>everything</em> trains: linear and logistic regression (Lessons 14–15), neural networks via backpropagation (Lesson 32), and the fine-tuning of language models (Phase 7).</li>
+  <li><strong><code>P(category | evidence)</code></strong> is exactly what logistic regression computes (Lesson 15), and “probability over possible outputs” is literally how a language model generates text, one token at a time (Lesson 47), reshaped by the temperature dial (Lesson 53).</li>
+  <li><strong>The learning rate and divergence</strong> return the moment we train anything for real — reading a loss curve and adjusting the learning rate is a daily skill from Phase 2 onward (Lessons 14, 33).</li>
+  <li><strong>Mean, spread, and small-sample wobble</strong> are the backbone of honest evaluation (Lessons 22–23), of judging AI systems where there is no single right answer (Lessons 98–99), and of noticing model drift in production (Lesson 105).</li>
+</ul>
+</section>
+
+<section id="selfcheck">
+<h2><span class="secno">6</span>Self-check</h2>
+
+<ol>
+  <li>A ticket has features <code>[2, 1, 3]</code> and the weights are <code>[3, 1.5, 0]</code>. What is the score, and what did each number contribute? <em>(Lesson 08 — dot product.)</em></li>
+  <li>Why does a matrix-vector multiplication score many tickets “at once,” and what shape rule must the matrix and vector obey? <em>(Lesson 08.)</em></li>
+  <li>The slope of the loss at your current weight is <code>−8</code>. Which direction do you step, what line of code performs the step, and what happens to step sizes as you near the valley floor? <em>(Lesson 09.)</em></li>
+  <li>Your training loss reads <code>12 → 30 → 85 → 240</code>. What is almost certainly wrong, and what is the first fix to try? <em>(Lesson 09 — divergence, shrink the learning rate.)</em></li>
+  <li>Overall, 30% of tickets are billing, but among tickets containing “refund,” 67% are. A model reads a refund ticket and outputs “billing: 0.51.” Should the system act automatically or escalate — and what property would you check before ever trusting that 0.51 as meaningful? <em>(Lesson 10 — thresholds and calibration.)</em></li>
+</ol>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">7</span>Chapter challenge</h2>
+
+<p>The store's four latest tickets have urgent-word counts <code>x = [1, 0, 3, 2]</code> and true urgencies <code>y = [3, 1, 7, 5]</code>. The model predicts <code>w · x + b</code> per ticket (one weight <code>w</code>, one baseline <code>b</code>).</p>
+
+<ol>
+  <li><strong>Linear algebra:</strong> with <code>w = 2, b = 1</code>, compute all four predictions in one matrix-style sweep (write the arithmetic out per ticket) and compare them to <code>y</code>.</li>
+  <li><strong>Calculus:</strong> with those predictions, what is the mean squared error loss, and — without computing any slope — what does that loss value alone tell you about where <code>(w=2, b=1)</code> sits in the loss valley? What would gradient descent do from here?</li>
+  <li><strong>Probability:</strong> the finished classifier reads a new ticket and outputs <code>urgent: 0.55, not urgent: 0.45</code>. The store auto-escalates tickets it deems urgent. Using this chapter's ideas, argue what the system should do with this ticket, and name the two distinct reasons a 0.55 must not be treated as “the model is right 55 times out of 100” until something has been verified.</li>
+</ol>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>1.</strong> Predictions are <code>2 × x + 1</code> per ticket:</p>
+
+<pre><code>ticket 1: 2×1 + 1 = 3   (truth 3) ✓
+ticket 2: 2×0 + 1 = 1   (truth 1) ✓
+ticket 3: 2×3 + 1 = 7   (truth 7) ✓
+ticket 4: 2×2 + 1 = 5   (truth 5) ✓</code></pre>
+
+<p>In matrix form this is one matrix-vector multiplication plus the baseline: stack each ticket as a row <code>[x_i, 1]</code> into a 4×2 matrix, multiply by the vector <code>[w, b] = [2, 1]</code>, and all four predictions drop out at once — Lesson 08's “score the whole batch in one sweep.”</p>
+
+<p><strong>2.</strong> Every miss is <code>prediction − truth = 0</code>, every square is <code>0</code>, so the mean squared error is <code>0.0</code> — the floor of the valley, since squared error cannot go below zero. That single number tells you <code>(w=2, b=1)</code> is a minimum: there is nowhere downhill left to go. Gradient descent from here does nothing, and for the right reason — at a valley bottom the ground is flat, every slope in the gradient is <code>0</code>, and the update <code>w − learning_rate × 0</code> leaves both knobs unchanged. (Lesson 09's two-knob run found exactly this point, <code>w = 2, b = 1</code>, on its own.)</p>
+
+<p><strong>3.</strong> Escalate to a human (or otherwise handle it as unsure), don't auto-act: 0.55 is barely better than a coin flip, and auto-escalation has real costs when wrong, so a sensible confidence threshold (say, “act only above 0.8”) sends this one to a person. The two reasons 0.55 isn't yet “right 55 times in 100”: first, <strong>calibration</strong> — that reading is only meaningful if, historically, the model's 55%-confidence answers actually turn out right about 55% of the time, which must be measured, never assumed (a word tally can output 100% and be wrong). Second, <strong>small-sample wobble</strong> — even a perfectly calibrated 0.55 can only be verified over <em>many</em> such tickets; on any handful, the observed fraction of correct calls will wobble far from 0.55 without anything being wrong. Confidence is a bet; calibration says whether the bookmaker is honest, and the long run is the only place bets can be judged.</p>
+
+</div>
+</details>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Phase 2 — Classical Machine Learning</p>
+  <p>Lesson 11 lays out the end-to-end machine learning pipeline, and the assistant's first real learned classifier begins.</p>
+  <p><a href="../../phase-02-classical-machine-learning/chapter-04-the-machine-learning-workflow/lesson-11-end-to-end-ml-pipeline.html">Continue to Lesson 11 →</a></p>
+</footer>
+
+<p class="footnote">Chapter 3 of Phase 1 complete — Lessons 08–10. Next: Phase 2 — Classical Machine Learning, Chapter 4 (The Machine Learning Workflow).</p>
+
+</main>
+</div>
+</body>
+</html>

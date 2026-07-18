@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 13 — Overfitting, Underfitting, and the Bias-Variance Idea</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-12-train-validation-test-sets.html">← Lesson 12 — Train, Validation, and Test Sets</a>
+    <a class="next" href="chapter-04-summary.html">Chapter 4 Summary →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 2 · Chapter 4 · Lesson 13</p>
+  <h1>Overfitting, Underfitting, and the Bias-Variance Idea</h1>
+  <p class="subtitle">Memorising vs. truly learning — and the train-vs-validation gap that tells them apart.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> this lesson page · <code>lesson-notebooks/phase-02-classical-machine-learning/chapter-04-the-machine-learning-workflow/lesson-13-overfitting-underfitting-bias-variance.ipynb</code></p>
+  <p><strong>Project change:</strong> none — this is a theory-and-demo lesson. It names the failure mode (overfitting) that every real model we build from Lesson 14 onward must guard against.</p>
+  <p><strong>Prerequisites:</strong> Lesson 12 (train/validation/test split — the gap we use here), Lesson 09 (loss / mean squared error, gradient descent), Lesson 10 (noise, seeds, spread), Lesson 07 (plots).</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>Lesson 12 taught you to hide data so you get an honest score. This lesson is about <em>what that honest score reveals</em>. When a model does well on its training data but badly on new data, it has <strong>overfit</strong> — it memorised instead of learning. When it does badly on both, it has <strong>underfit</strong> — it was too simple to catch the real pattern at all. Almost every disappointing model in the real world is one of these two.</p>
+
+<p>Here's the sharp point: the training score alone can't tell you which is happening, or even that anything is wrong. A memorising model shows a beautiful training score right up until it fails in production. The only way to <em>see</em> the problem is to compare the training score with the held-out (validation) score — the exact split we built last lesson. The size of the <strong>gap</strong> between them is a diagnostic tool you'll use for the rest of your AI life.</p>
+
+<p>For our customer-support assistant, this is the difference between “92% accurate in my notebook” and “92% accurate on next week's real tickets.” Only the second one keeps customers happy, and only understanding overfitting gets you there.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p>Think about three students preparing for a driving test.</p>
+
+<ul>
+  <li><strong>The under-prepared student</strong> barely studied and can't do much of anything — they fail the practice drives <em>and</em> the real test. They're <strong>underfitting</strong>: too little learned to handle either. In model terms, <strong>high bias</strong>.</li>
+  <li><strong>The genuinely skilled student</strong> learned to actually drive — reading the road, judging speed. They do well on practice drives <em>and</em> on the real test, because the skill transfers. This is the <strong>just-right</strong> model.</li>
+  <li><strong>The rote memoriser</strong> memorised the exact route of one specific practice course — every pothole, every turn, in order. On that one course they look flawless. Put them on any new road and they fall apart, because they learned the <em>course</em>, not <em>driving</em>. They're <strong>overfitting</strong>: memorising the training route, including its quirks. In model terms, <strong>high variance</strong>.</li>
+</ul>
+
+<p>Map it: the practice course = <strong>training data</strong>, a brand-new road = <strong>validation/test data</strong>, “memorising the exact route including potholes” = fitting the <strong>noise</strong>, and “learning to actually drive” = capturing the <strong>signal</strong>. A great training score with a poor new-road score is the memoriser's signature — and exactly what the train-vs-validation gap detects.</p>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<h3>Signal versus noise</h3>
+
+<p><strong>Plain definition — signal:</strong> the real, repeating pattern in the data, the thing that will still be true for the next customer.<br>
+<strong>Plain definition — noise:</strong> the random, one-off wobble in each data point that won't repeat — a customer's mood, a fluke, measurement error.</p>
+
+<p><strong>Why it matters:</strong> every real dataset is <em>signal + noise</em> mixed together. A good model should learn the signal and ignore the noise. The trouble is the model can't see a label saying “this part is noise” — it just sees points. If we let it, a flexible-enough model will happily bend to fit the noise too, and that's overfitting.</p>
+
+<p><strong>Tiny concrete example:</strong> suppose satisfaction really does follow a gentle hump as tickets get longer (<code>signal = 3 + 1.2x − 0.15x²</code>). One customer at <code>x = 4</code> <em>should</em> sit near <code>3 + 4.8 − 2.4 = 5.4</code>, but their actual rating came in at <code>6.1</code> — that extra <code>+0.7</code> is noise, personal to them. A model that twists itself to pass exactly through <code>6.1</code> has learned that one customer's mood, which tells it nothing about the next customer.</p>
+
+<h3>Underfitting = too simple = high bias</h3>
+
+<p><strong>Plain definition:</strong> the model is too simple to capture even the real pattern, so it does poorly everywhere — on training data <em>and</em> on new data.</p>
+
+<p><strong>What it looks like in numbers:</strong> training error <strong>high</strong>, validation error <strong>high</strong>, and the two are close together (small gap, both bad).</p>
+
+<p><strong>Tiny example:</strong> trying to describe a hump-shaped pattern with a straight line. No straight line can bend into a hump, so it's wrong on nearly every point, whether that point was in training or not.</p>
+
+<p><strong>Technical name:</strong> this is <strong>high bias</strong> — the model is “biased” toward a shape too plain for the data. (Bias here means a systematic, built-in limitation, not prejudice.)</p>
+
+<h3>Overfitting = too complex = high variance</h3>
+
+<p><strong>Plain definition:</strong> the model is so flexible it fits the training points almost perfectly — including their noise — but that memorised detail doesn't carry over, so it does badly on new data.</p>
+
+<p><strong>What it looks like in numbers:</strong> training error <strong>tiny</strong>, validation error <strong>high</strong>, a <strong>big gap</strong> between them. That gap is the tell.</p>
+
+<p><strong>Tiny example:</strong> a curve with fifteen bends threaded through sixteen training points passes through nearly every one (tiny training error), but between the points it swings wildly up and down, so the held-out points — which fall <em>between</em> the training points — are way off.</p>
+
+<p><strong>Technical name:</strong> this is <strong>high variance</strong> — “variance” because the fitted curve would swing dramatically if you gave it a slightly different sample of training points. It's chasing the sample, not the truth.</p>
+
+<h3>The one diagnostic: the train-vs-validation gap</h3>
+
+<p>Put the two errors side by side and read them like a doctor:</p>
+
+<pre><code>   train error   validation error   diagnosis
+   -----------   ----------------   -----------------------------
+   HIGH          HIGH  (close)      UNDERFIT  (too simple / high bias)
+   LOW           LOW   (close)      <span class="hi">JUST RIGHT (keep this one)</span>
+   LOW (tiny)    HIGH  (big gap)    OVERFIT   (too complex / high variance)</code></pre>
+
+<p>This is <em>why</em> Lesson 12's split exists. With training data alone you only ever see the left column, which looks great in every row. The held-out score is what exposes overfitting.</p>
+
+<h3>The bias-variance tradeoff, and the U-shape</h3>
+
+<p><strong>Plain definition:</strong> as you make a model more complex, it underfits less (bias falls) but starts to overfit more (variance rises). You can't push both to zero; you trade one against the other and aim for the balance point.</p>
+
+<p>Watch what happens to the two error curves as complexity climbs from simple to complex:</p>
+
+<pre><code> error
+   |*                                           . <span class="c">&lt;- validation error (U-shaped)</span>
+   | *.                                       .
+   |   *..                                 ..
+   |      *...        best             ...
+   |          *.....    |         ....
+   |               *...........................  <span class="c">&lt;- training error (always falling)</span>
+   |________________________|__________________
+    simple            complexity           complex
+                     (sweet spot = lowest VALIDATION error)</code></pre>
+
+<ul>
+  <li><strong>Training error only ever falls</strong> as complexity rises — more flexibility can always hug the training points tighter. On its own it's a liar: it keeps improving even as the model gets worse for real use.</li>
+  <li><strong>Validation error falls, bottoms out, then rises</strong> — a <strong>U</strong>. The left wall of the U is underfitting (too simple), the right wall is overfitting (too complex), and the bottom is the model you want.</li>
+</ul>
+
+<p><strong>The rule:</strong> pick the complexity at the <strong>lowest validation error</strong>, never the lowest training error.</p>
+
+<h3>What you do about each</h3>
+
+<ul>
+  <li><strong>Underfitting (high bias):</strong> give the model more power — more complexity, better/more features, or train it longer.</li>
+  <li><strong>Overfitting (high variance):</strong> rein it in — a simpler model, <strong>more training data</strong> (harder to memorise a large pile), or techniques that penalise complexity (regularization, dropout, early stopping — all coming in the deep-learning chapters).</li>
+</ul>
+
+<p>More data is the one fix that helps overfitting almost for free: the more examples, the harder it is to memorise them all, so the model is nudged toward learning the general signal instead.</p>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>The notebook (<code>lesson-notebooks/phase-02-classical-machine-learning/chapter-04-the-machine-learning-workflow/lesson-13-overfitting-underfitting-bias-variance.ipynb</code>) tells the whole story on data where we secretly know the truth, so we can judge every fit fairly:</p>
+
+<ol>
+  <li><strong>Make data</strong> — a gentle hump-shaped <strong>signal</strong> plus random <strong>noise</strong>, 24 points.</li>
+  <li><strong>Split</strong> — hold out every third point as validation (Lesson 12), spread across the whole range.</li>
+  <li><strong>MSE helper</strong> — the loss from Lesson 09, written as an explicit loop.</li>
+  <li><strong>Three fits</strong> — polynomials of degree 1 (too simple), 3 (just right), 15 (too complex); print each one's training error, validation error, and the gap.</li>
+  <li><strong>Draw the three fits</strong> over the data so under/over-fitting is visible; save a PNG.</li>
+  <li><strong>Sweep degrees 1–15</strong> — record both errors at every complexity, find the lowest-validation degree, and plot the falling training curve against the U-shaped validation curve; save a PNG.</li>
+</ol>
+
+<p>Concept and <em>why</em> live in the markdown cells; each code cell has short per-line comments so it reads top to bottom on its own.</p>
+
+<div class="note">
+<p><strong>Verify-as-you-go note:</strong> the fitting uses <code>np.polyfit(x, y, degree)</code> (finds the best polynomial coefficients) and <code>np.polyval(coeffs, x)</code> (evaluates that polynomial). These are standard NumPy, but confirm the signatures in the current NumPy docs. At high degree, <code>np.polyfit</code> may print a <code>RankWarning</code> (the fit is numerically unstable — which is itself part of the overfitting story); that warning is expected here, not a bug.</p>
+</div>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<p>Open the notebook in VS Code and run the cells top to bottom. Expected output, labelled as a <strong>prediction</strong> (your exact numbers will differ; the <em>pattern</em> is the point):</p>
+
+<ol>
+  <li><strong>Data cell</strong> → a table of the first 5 points showing signal, noise, and observed <code>y</code>, then <code>Total points: 24</code>.</li>
+  <li><strong>Split cell</strong> → <code>Training points: 16</code>, <code>Validation points: 8</code>, and the held-out indices <code>[2, 5, 8, 11, 14, 17, 20, 23]</code>.</li>
+  <li><strong>MSE check</strong> → <code>MSE of a perfect guess: 0.0</code> and <code>MSE with one point off by 1: 0.333...</code>.</li>
+</ol>
+
+<p><strong>Three-fits cell</strong> (predicted shape of the numbers):</p>
+
+<pre><code>Degree 1 - TOO SIMPLE (underfit)
+   training error (points it learned): ~4.5
+   validation error (unseen points)  : ~5.0
+   gap (validation - training)        : small
+
+Degree 3 - JUST RIGHT
+   training error (points it learned): ~1.8
+   validation error (unseen points)  : ~2.0
+   gap (validation - training)        : small
+
+Degree 15 - TOO COMPLEX (overfit)
+<span class="hi">   training error (points it learned): ~0.2</span>
+<span class="hi">   validation error (unseen points)  : ~40+</span>
+   gap (validation - training)        : huge</code></pre>
+
+<p><strong>Three-fits plot</strong> → <code>Saved: plots/lesson-13-three-fits.png</code>, then three panels: a flat-ish line missing the hump; a curve tracing the hump; a violently wiggly curve touching training dots but flying past the red validation squares.</p>
+
+<p><strong>Sweep cell</strong> → 15 lines of <code>degree | train error | validation error</code>, with training error sliding steadily down and validation error dropping then climbing; then <code>Best degree by validation error: 3</code> (or nearby, e.g. 2–4).</p>
+
+<p><strong>Sweep plot</strong> → <code>Saved: plots/lesson-13-bias-variance-curve.png</code>: a black training curve heading down toward zero and a red validation curve forming a U, with a green line at the best degree.</p>
+
+<div class="warn">
+<p>The lesson lives in two contrasts: degree 15 has the <em>best</em> training error and the <em>worst</em> validation error (overfitting in one line), and the validation curve's U tells you the right complexity is in the middle, not at either extreme. Real numbers will shift, but the shapes — training always falling, validation a U — will hold.</p>
+</div>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<div class="demo">
+<p>Nothing to implement in the project today — this is a diagnosis lesson, not a feature.</p>
+</div>
+
+<p>But it sets the standard for every model we build starting next chapter. When we train the assistant's real ticket-category classifier (Lesson 15 onward), we will always print <em>both</em> its training score and its validation score and watch the gap: a big gap means it's memorising tickets and we simplify or add data; both scores low and close means we can trust it. The toy word-counter in <code>ticket_urgency.py</code> stays exactly as it is, and <code>python main.py</code> still runs the project end to end, unchanged.</p>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Trusting a great training score.</strong> It almost always looks good, even for a badly overfit model. Never celebrate a number measured on data the model learned from — check the held-out score.</li>
+  <li><strong>Assuming more complexity is always better.</strong> Bigger/fancier models overfit <em>more</em> readily on small data. Past the bottom of the U, added complexity makes real-world performance worse, not better.</li>
+  <li><strong>Confusing the two failures.</strong> Both scores high = underfit (add power). Low train, high validation = overfit (remove power / add data). The fixes are opposite, so diagnosing wrong makes it worse.</li>
+  <li><strong>Reading noise as signal.</strong> If validation error is stuck high no matter what you try, some of what looks like a pattern may just be irreducible noise — no model can predict a coin flip.</li>
+  <li><strong>Tiny validation sets give a jumpy U.</strong> With only 8 held-out points, the exact best degree wobbles. The <em>shape</em> (falling train, U-shaped validation) is reliable; the precise winning degree is not, on small data.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p>This isn't an optional technique — checking for over/underfitting is something you do for <strong>every</strong> model you ever train. The moment you have a training score and a validation score, you compare them. It costs nothing beyond the split you already made.</p>
+
+<p>The real tradeoff is <em>where to sit on the complexity dial</em>:</p>
+
+<ul>
+  <li><strong>Simpler models</strong> (fewer features, lower capacity) are less likely to overfit, faster, and easier to explain — but risk underfitting a genuinely complex pattern.</li>
+  <li><strong>More complex models</strong> can capture rich patterns but demand more data and more care to avoid overfitting.</li>
+  <li><strong>The honest guide:</strong> start simple, watch the gap, and add complexity only while validation error keeps falling. Stop when it starts to rise.</li>
+</ul>
+
+<p>When data is scarce, a single validation set gives a noisy read on where the U bottoms out; <strong>cross-validation</strong> (Lesson 23) averages several splits for a steadier estimate. The principle never changes: the number that decides is measured on data the model didn't learn from.</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li><strong>Underfitting</strong> means the model is too simple and does poorly on both training and new data; its technical name is <strong>high bias</strong>, and the fix is to give the model more power.</li>
+  <li><strong>Overfitting</strong> means the model memorised the training data (including its noise) and does well there but poorly on new data; its technical name is <strong>high variance</strong>, and the fix is a simpler model or more data.</li>
+  <li><strong>The gap between the training score and the validation score is the diagnostic</strong> — small gap with both good is healthy, a large gap with a great training score is overfitting — which is exactly why Lesson 12's held-out split had to exist.</li>
+  <li>As complexity rises, <strong>training error always falls but validation error traces a U</strong>, and the best model sits at the bottom of that U, chosen by validation error and never by training error.</li>
+  <li>The <strong>bias-variance tradeoff</strong> is the balancing act at the heart of machine learning: too simple and too complex both fail on new data, and every real model is an attempt to find the middle.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>You train two versions of a ticket classifier and measure each on the same train/validation split.</p>
+
+<ul>
+  <li><strong>Model A:</strong> training accuracy 0.99, validation accuracy 0.71.</li>
+  <li><strong>Model B:</strong> training accuracy 0.74, validation accuracy 0.72.</li>
+</ul>
+
+<p>Three questions: (1) Which model is overfitting, and how can you tell? (2) Is Model B underfitting, and what does its pair of numbers suggest? (3) Which model would you ship, and what would you try next to do better than either?</p>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p><strong>(1) Model A is overfitting.</strong> The giveaway is the huge gap between a near-perfect training score (0.99) and a much lower validation score (0.71). It has largely <em>memorised</em> the training tickets — including their noise — so it looks brilliant on data it learned from and mediocre on data it didn't. Big train-vs-validation gap = high variance = overfitting.</p>
+
+<p><strong>(2) Model B is probably underfitting (mild high bias).</strong> Its two numbers are close (0.74 vs 0.72), so it's <em>not</em> overfitting — but both are fairly low. When training and validation scores are both low and close together, the model isn't even fitting the training data well, which points to a model too simple (or features too weak) to capture the real pattern. Note the honesty, though: Model B's validation score (0.72) is actually <em>slightly better</em> than Model A's (0.71), because Model B isn't fooling itself.</p>
+
+<p><strong>(3) Ship Model B, then try to lift both models toward the middle.</strong> Between these two, Model B is the safer bet: what you see is what you get, and its real-world (validation) accuracy is marginally higher, whereas Model A's true performance is the 0.71, not the flattering 0.99. But 0.72 isn't great, so the goal is to escape <em>both</em> failure modes:</p>
+
+<ul>
+  <li>To cure Model A's overfitting: give it <strong>more training data</strong>, or make it <strong>simpler / add a complexity penalty</strong> so the gap closes.</li>
+  <li>To cure Model B's underfitting: give it <strong>more capacity or better features</strong> so its training score can rise.</li>
+</ul>
+
+<p>The ideal next model has both scores high <em>and</em> close together — the bottom of the bias-variance U. Whichever direction you push, you keep watching the same two numbers and the gap between them.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>That closes Chapter 4 — the machine-learning <em>workflow</em> (pipeline → honest splits → diagnosing fit). Next comes the <strong>Chapter 4 summary</strong>, then Chapter 5 opens with <strong>Lesson 14 — Linear regression</strong>, our first real algorithm: a line-of-best-fit that learns its parameters by gradient descent (Lesson 09) and that we'll deliberately steer along the bias-variance tradeoff you just learned to read.</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Chapter 4 Summary — The Machine Learning Workflow</p>
+  <p>The workflow chapter's idea map, a self-check, and the boss challenge — then the first real algorithm.</p>
+  <p><a href="chapter-04-summary.html">Continue to the Chapter 4 Summary →</a></p>
+</footer>
+
+<p class="footnote">Lesson 13 of the curriculum · Phase 2 (Classical Machine Learning) · Chapter 4 (The Machine Learning Workflow) · Lesson 3 of 3 in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>

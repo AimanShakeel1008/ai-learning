@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 02 — The Main Types of Machine Learning</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">On this page</p>
+  <nav>
+    <a href="#why">1 · Why this matters</a>
+    <a href="#analogy">2 · Real-world analogy</a>
+    <a href="#concept">3 · The concept explained</a>
+    <a href="#code">4 · The code</a>
+    <a href="#ranit">5 · If you ran this</a>
+    <a href="#assistant">6 · Applied to our assistant</a>
+    <a href="#mistakes">7 · Common mistakes</a>
+    <a href="#tradeoffs">8 · When to use it</a>
+    <a href="#takeaways">9 · Key takeaways</a>
+    <a href="#challenge">10 · Challenge</a>
+    <a href="#next">11 · What is next</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="prev" href="lesson-01-ai-ml-deep-learning.html">← Lesson 01 — AI, ML, Deep Learning, and Generative AI</a>
+    <a class="next" href="lesson-03-why-ai-works-now.html">Lesson 03 — Why AI Works Now →</a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Phase 1 · Chapter 1 · Lesson 02</p>
+  <h1>The Main Types of Machine Learning</h1>
+  <p class="subtitle">Supervised, unsupervised, and reinforcement learning — three different situations, three different strategies.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Files created:</strong> this lesson page · <code>lesson-notebooks/phase-01-foundations/chapter-01-what-ai-is/lesson-02-types-of-learning.ipynb</code></p>
+  <p><strong>Prerequisites:</strong> Lesson 01 — AI, machine learning, deep learning, and generative AI.</p>
+</div>
+
+<section id="why">
+<h2><span class="secno">1</span>Why this matters</h2>
+
+<p>Lesson 1 established that machine learning means “learn patterns from data instead of hand-writing rules.” But that one idea splits into three genuinely different <em>situations</em>, depending on what kind of data you actually have. Do you already know the right answers for your examples? Do you have a pile of examples with no answers at all? Or do you not have a fixed pile of examples at all, just a chance to act and see what happens?</p>
+
+<p>Getting this right matters immediately, because it decides which tool you reach for. Later in this course you will build a classifier that needs labeled tickets (supervised learning), and eventually an agent that needs to try actions and learn from outcomes (reinforcement learning). If you use the wrong type of learning for the situation you're in, nothing works — it's like trying to teach by handing out an answer key that does not exist.</p>
+</section>
+
+<section id="analogy">
+<h2><span class="secno">2</span>Real-world analogy</h2>
+
+<p>Picture three different ways someone might learn to cook a new dish.</p>
+
+<p><strong>Supervised learning is like learning from a recipe book with photos of the finished dish.</strong> Every recipe (the input) comes with a picture of exactly what it should look like when done (the correct answer, the <strong>label</strong>). You cook, compare your result to the photo, adjust, and repeat. You are always learning <em>against a known right answer</em>.</p>
+
+<p><strong>Unsupervised learning is like being handed a fridge full of random ingredients with no recipes at all</strong>, and being asked to group them into categories that make sense — “these are all dairy,” “these are all vegetables” — using only what you notice about them yourself. Nobody tells you the categories exist; you invent them from the patterns you see.</p>
+
+<p><strong>Reinforcement learning is like learning to cook a brand-new dish purely by tasting your own attempts.</strong> Nobody hands you a recipe or a finished photo. You just try something, taste it (get a reward — good or bad), adjust next time based only on that feedback, and slowly get better through repeated trial and error.</p>
+
+<p>Same overall goal — get good at cooking — but three completely different learning situations, needing three completely different strategies.</p>
+</section>
+
+<section id="concept">
+<h2><span class="secno">3</span>The concept explained</h2>
+
+<h3>Supervised learning</h3>
+
+<p><strong>Plain definition:</strong> supervised learning is training a program using examples that already have the correct answer attached. The program's whole job during training is to find a pattern that connects the example to its attached answer, so it can guess the answer for new examples later.</p>
+
+<p><strong>Why it exists:</strong> many real problems have plenty of past examples where we already know what the “right answer” turned out to be — past emails already marked spam or not, past X-rays a doctor already diagnosed, past tickets a human already sorted into a category. Supervised learning is how a program turns that historical answer key into a general-purpose skill.</p>
+
+<p><strong>Tiny concrete example:</strong> show a program 6 support tickets, each already tagged <code>billing</code>, <code>shipping</code>, or <code>account</code>. It notices that words like “charged” and “billed” show up mostly in tickets tagged <code>billing</code>, while “tracking” and “package” show up mostly in tickets tagged <code>shipping</code>. Now, given a brand-new ticket saying “my card was charged twice,” it can guess <code>billing</code>, even though it never saw that exact sentence before, because it learned the <em>pattern</em>, not the specific sentence.</p>
+
+<p><strong>Technical name:</strong> Supervised Learning. The attached correct answer is called a <strong>label</strong>, and data that has labels attached is called <strong>labeled data</strong>.</p>
+
+<h3>Unsupervised learning</h3>
+
+<p><strong>Plain definition:</strong> unsupervised learning is finding structure, patterns, or groupings in data that has <em>no</em> attached answers at all. Nobody tells the program what the “right” groups are — it has to notice similarity on its own.</p>
+
+<p><strong>Why it exists:</strong> most real-world data does not come with a neat answer key. Getting a human to label every single example is often slow, expensive, or simply impossible at scale. Unsupervised learning lets you still get value — spotting groups, patterns, or oddities — from raw, unlabeled data.</p>
+
+<p><strong>Tiny concrete example:</strong> give a program the same 6 support tickets, but with the <code>billing</code>/<code>shipping</code>/<code>account</code> tags hidden. It notices that two of the tickets share the words “was” and “for,” and groups just those two together — without ever being told what “billing” means, or that a category called “billing” even exists. It only ever notices “these two are similar to each other,” never “these two are the billing ones.”</p>
+
+<p><strong>Technical name:</strong> Unsupervised Learning. A common unsupervised task — sorting examples into groups of similar things — is called <strong>clustering</strong>.</p>
+
+<h3>Reinforcement learning</h3>
+
+<p><strong>Plain definition:</strong> reinforcement learning is learning by repeatedly taking an action, getting a signal back for how good or bad that action turned out to be, and using that signal to choose better actions next time. There is no upfront labeled dataset at all — the only “data” is the feedback the learner generates for itself by acting.</p>
+
+<p><strong>Why it exists:</strong> some problems are not “look at this fixed example and guess its answer.” They are “make a sequence of decisions in a changing situation, and learn which decisions tend to work out.” Nobody has a ready-made answer key for “should the robot turn left or right right now” — the only way to find out is to try it and see what happens.</p>
+
+<p><strong>Tiny concrete example:</strong> picture a robot in front of two vending machines, <code>A</code> and <code>B</code>, that each secretly have their own odds of giving a treat. The robot does not know either machine's odds in advance. It tries <code>A</code>, gets nothing, tries <code>B</code>, gets a treat, and starts favoring <code>B</code> — purely because of what happened when it tried each one, not because anyone told it “<code>B</code> is the better machine.”</p>
+
+<p><strong>Technical name:</strong> Reinforcement Learning (RL). The decision-maker is called the <strong>agent</strong>, the thing it interacts with is the <strong>environment</strong>, each decision it makes is an <strong>action</strong>, and the feedback signal after each action is the <strong>reward</strong>.</p>
+
+<h3>Which type fits which kind of problem</h3>
+
+<pre><code>Do you already have examples WITH the correct answer attached?
+├── Yes  -&gt;  SUPERVISED LEARNING
+│           <span class="c">(e.g. past tickets already tagged with their category)</span>
+│
+└── No, but you have a pile of examples with NO answers at all
+    ├── You want to find groups/patterns hiding in that pile
+    │        -&gt;  UNSUPERVISED LEARNING
+    │           <span class="c">(e.g. finding that certain tickets tend to cluster together)</span>
+    │
+    └── You don't have a fixed pile at all — you have a chance to ACT
+        and see what happens, repeatedly, in a changing situation
+             -&gt;  REINFORCEMENT LEARNING
+            <span class="c">(e.g. an agent deciding which action earns the best outcome)</span></code></pre>
+
+<p>Most of what you will build early in this course is supervised learning, because most business data (past tickets, past sales, past customers who did or didn't cancel) already comes with a known outcome attached. Reinforcement learning shows up later in the course (Phase 3 and again in Phase 7, when we cover how modern language models are tuned using human feedback) — it needs a very different setup: something that can act repeatedly and receive a reward, not just a static pile of examples.</p>
+</section>
+
+<section id="code">
+<h2><span class="secno">4</span>The code</h2>
+
+<p>The notebook for this lesson builds one tiny, from-scratch demo for each of the three types, all using the same six support tickets so they are easy to compare side by side.</p>
+
+<p>Open it here: <code>lesson-notebooks/phase-01-foundations/chapter-01-what-ai-is/lesson-02-types-of-learning.ipynb</code></p>
+
+<p class="footnote">(Lesson pages hold only explanation and never contain runnable code themselves — the notebook above is where you actually run something.)</p>
+
+<p>The notebook's markdown cells carry the explanation of each step; the code cells are kept clean, matching this course's format. Broadly, it:</p>
+
+<ol>
+  <li><strong>Part 1 (supervised):</strong> trains word-count scores per category from six labeled tickets, then predicts the category of two brand-new tickets by adding up their words' scores.</li>
+  <li><strong>Part 2 (unsupervised):</strong> ignores the labels entirely, and groups any two tickets that share at least two words, purely from overlapping vocabulary.</li>
+  <li><strong>Part 3 (reinforcement):</strong> simulates an agent choosing between two vending machines over 8 trials, always picking whichever machine's running-average reward currently looks best.</li>
+</ol>
+
+<div class="note">
+<p>Library note: this lesson uses only Python's standard library — <code>collections.Counter</code> and <code>itertools</code> — so there is nothing here that changes between versions.</p>
+</div>
+</section>
+
+<section id="ranit">
+<h2><span class="secno">5</span>If you ran this</h2>
+
+<p>Walking through the notebook top to bottom:</p>
+
+<p><strong>Part 1 — supervised prediction cell.</strong> The categorizer is trained on the six labeled tickets, then tested on two new ones.</p>
+
+<ul>
+  <li>The first new ticket, “My refund never showed up on my card,” scores <code>billing</code> and <code>account</code> exactly tied at 4 (both <code>shipping</code> at 2). Because the code picks the first category that reaches the highest score while scanning in order (<code>billing</code>, <code>shipping</code>, <code>account</code>), it prints <code>billing</code> — which happens to be correct, since this ticket really is about a billing problem.</li>
+  <li>The second new ticket, “Where is my order, it has not arrived yet,” is genuinely about shipping, but scores <code>account</code> highest (6, versus 2 and 2), because common words like “is,” “it,” and “not” happened to appear more often in the small <code>account</code> training examples. The categorizer prints <code>account</code> — a wrong prediction, caused entirely by ordinary words contaminating a tiny training set, exactly the same weakness Lesson 1's challenge uncovered.</li>
+</ul>
+
+<p><strong>Prediction</strong> of the printed lines:</p>
+
+<pre><code>My refund never showed up on my card
+  predicted category: billing  (scores: {'billing': 4, 'shipping': 2, 'account': 4})
+Where is my order, it has not arrived yet
+<span class="hi">  predicted category: account  (scores: {'billing': 2, 'shipping': 2, 'account': 6})</span>  <span class="c">← wrong: common words contaminated the tiny training set</span></code></pre>
+
+<p><strong>Part 2 — unsupervised grouping cell.</strong> Comparing every pair of the six tickets by shared vocabulary alone:</p>
+
+<pre><code>Ticket 0 and Ticket 1 share 2 words -&gt; grouped together
+  My card was charged twice for one order
+  I was billed for an item I never received
+Ticket 4 and Ticket 5 share 2 words -&gt; grouped together
+  I can not log into my account
+  Please reset my password, it is not working</code></pre>
+
+<p>Notice tickets 2 and 3 (both genuinely about shipping) are never grouped — they share zero words with each other, so this simple method finds two of the three true groupings and misses the third completely.</p>
+
+<p><strong>Part 3 — reinforcement learning cell.</strong> Machine <code>A</code> starts tied with <code>B</code> (both assumed 0.5, since neither has been tried), so <code>A</code> is tried first (ties go to whichever is checked first) and gets a <code>0</code>. From then on <code>B</code>'s running average stays above <code>A</code>'s zero for the rest of the run, so the agent keeps choosing <code>B</code> for all 7 remaining trials and never gives <code>A</code> a second chance.</p>
+
+<p><strong>Prediction</strong> of the printed lines:</p>
+
+<pre><code>Trial 1: tried machine A, got reward 0
+Trial 2: tried machine B, got reward 1
+Trial 3: tried machine B, got reward 1
+Trial 4: tried machine B, got reward 0
+Trial 5: tried machine B, got reward 1
+Trial 6: tried machine B, got reward 1
+Trial 7: tried machine B, got reward 0
+Trial 8: tried machine B, got reward 1
+
+Machine A: tried 1 times, average reward 0.00
+<span class="hi">Machine B: tried 7 times, average reward 0.71</span></code></pre>
+
+<div class="warn">
+<p>This is a prediction based on tracing through the code by hand, not a verified run — open the notebook and run it to confirm.</p>
+</div>
+</section>
+
+<section id="assistant">
+<h2><span class="secno">6</span>Applied to our assistant</h2>
+
+<div class="demo">
+<p>This lesson is about building the mental map for <em>which type of learning fits which situation</em> — it does not introduce a new technique meant to be implemented in the project right now, so there is no new <code>.py</code> file or <code>main.py</code> change this lesson. The project stays exactly as it was after Lesson 1, still fully runnable with <code>python main.py</code> from inside <code>customer-support-assistant/</code>.</p>
+</div>
+
+<p>It is worth noticing, though, that <code>ticket_urgency.py</code> — built in Lesson 1 — is already a tiny example of <strong>supervised learning</strong>: it was trained on eight tickets that each came with a known “urgent” or “not urgent” answer attached. As the course continues, you will see this same project eventually gain features from all three types covered today: supervised classifiers (Phase 2), and later, an agent that takes actions and learns from outcomes (Phase 8).</p>
+</section>
+
+<section id="mistakes">
+<h2><span class="secno">7</span>Common mistakes and gotchas</h2>
+
+<ul>
+  <li><strong>Assuming “no labels” always means unsupervised learning is the answer.</strong> Sometimes it means you should go label some data instead, because supervised learning would work far better if you did — unsupervised learning is a fallback for when labeling truly is not feasible, not automatically the better choice.</li>
+  <li><strong>Expecting unsupervised clustering to find the groupings you had in mind.</strong> As Part 2 showed, clustering only finds structure that is actually visible in the data's surface features (here, shared words) — it can miss a grouping that is obvious to a human but invisible in the specific signal the algorithm is using.</li>
+  <li><strong>Thinking reinforcement learning needs a “correct answer” at all.</strong> It never gets one — only a reward signal telling it how good an action turned out to be, which is a fundamentally different, sparser kind of feedback than a label.</li>
+  <li><strong>Only ever exploiting, never exploring.</strong> Our Part 3 agent always chose whichever machine currently looked best, and once <code>A</code> looked bad after a single unlucky try, it was never tried again — even though its true long-run odds might have been fine. Real reinforcement learning needs a way to occasionally try the “worse-looking” option anyway, a tradeoff we return to properly in Lesson 39.</li>
+  <li><strong>Mixing up “the type of learning” with “the specific algorithm.”</strong> Supervised, unsupervised, and reinforcement learning are <em>categories</em> of problem setup — decision trees, k-means, and Q-learning (covered later) are specific <em>algorithms</em> that live inside those categories.</li>
+</ul>
+</section>
+
+<section id="tradeoffs">
+<h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<p>Reach for supervised learning whenever you have — or can reasonably get — examples with known correct answers; it is the most reliable and easiest-to-evaluate of the three, which is why most of Phase 2 focuses on it. Reach for unsupervised learning when you have plenty of data but no answer key, and you want to explore it for groupings or patterns you did not already know to look for — but stay honest that what it finds depends entirely on which features it can see. Reach for reinforcement learning only when your problem is genuinely about a sequence of actions with feedback over time, not a fixed pile of examples — it is powerful but by far the hardest of the three to set up and get working reliably, which is part of why it is introduced later in this course, after the fundamentals are solid.</p>
+</section>
+
+<section id="takeaways">
+<h2><span class="secno">9</span>Key takeaways</h2>
+
+<ul>
+  <li>Supervised learning trains on examples that already have the correct answer attached, called labels, and is the most common starting point for real business problems.</li>
+  <li>Unsupervised learning finds structure or groupings in data that has no labels at all, but what it finds is limited to whatever pattern is actually visible in the data it's given.</li>
+  <li>Reinforcement learning learns by taking actions in a changing situation and adjusting based on a reward signal, with no upfront dataset of correct answers.</li>
+  <li>Choosing the right type starts with asking what data you actually have: labeled examples, unlabeled examples, or just a chance to act and observe feedback.</li>
+  <li>The customer-support assistant will end up using all three types over the course: supervised classifiers first, unsupervised techniques for exploring customer data, and reinforcement-learning-adjacent ideas once we reach agents in Phase 8.</li>
+</ul>
+</section>
+
+<section id="challenge">
+<h2><span class="secno">10</span>Challenge</h2>
+
+<p>Using the trained word counts from <code>category_word_counts</code> in the notebook, work out by hand which category the supervised approach from Part 1 would predict for this brand-new ticket, and show your work:</p>
+
+<blockquote><p>“Can I get my password fixed for my account”</p></blockquote>
+
+<p>Tokenized (lowercased, no punctuation to strip): <code>can</code>, <code>i</code>, <code>get</code>, <code>my</code>, <code>password</code>, <code>fixed</code>, <code>for</code>, <code>my</code>, <code>account</code></p>
+
+<details>
+<summary>Click to reveal the answer</summary>
+<div class="details-body">
+
+<p>Recall the three tally sheets built from the six training examples (only the relevant words are shown):</p>
+
+<ul>
+  <li><strong>billing:</strong> <code>i</code>:2, <code>my</code>:1, <code>for</code>:2</li>
+  <li><strong>shipping:</strong> <code>my</code>:1</li>
+  <li><strong>account:</strong> <code>can</code>:1, <code>i</code>:1, <code>my</code>:2, <code>password</code>:1, <code>account</code>:1</li>
+</ul>
+
+<p>Word by word, remembering <code>my</code> appears twice in this ticket:</p>
+
+<p><strong>billing</strong> = can(0) + i(2) + get(0) + my(1) + password(0) + fixed(0) + for(2) + my(1) + account(0) = <strong>6</strong></p>
+
+<p><strong>shipping</strong> = can(0) + i(0) + get(0) + my(1) + password(0) + fixed(0) + for(0) + my(1) + account(0) = <strong>2</strong></p>
+
+<p><strong>account</strong> = can(1) + i(1) + get(0) + my(2) + password(1) + fixed(0) + for(0) + my(2) + account(1) = <strong>8</strong></p>
+
+<p><code>account</code> scores highest (8, versus 6 and 2), so the supervised approach predicts <strong>account</strong> — correctly, since this ticket is clearly about a password and account problem. Unlike the two tickets tested in the notebook, there is no tie and no contamination from common words here, because the words that matter most (“password,” “account”) only ever appeared in the <code>account</code> training examples.</p>
+
+</div>
+</details>
+</section>
+
+<section id="next">
+<h2><span class="secno">11</span>What is next</h2>
+
+<p>Lesson 3 asks why AI works so well <em>right now</em>, covering the three ingredients — data, computing power, and better algorithms — plus a short, honest history from early AI up through today's large language models.</p>
+</section>
+
+<footer class="next">
+  <p class="kicker">Next up</p>
+  <p class="next-title">Lesson 03 — Why AI Works Now</p>
+  <p>The three ingredients — data, computing power, and better algorithms — plus a short, honest history of AI.</p>
+  <p><a href="lesson-03-why-ai-works-now.html">Continue to Lesson 03 →</a></p>
+</footer>
+
+<p class="footnote">Lesson 2 of 113 — Phase 1, Chapter 1, Lesson 2 of 3 in this chapter.</p>
+
+</main>
+</div>
+</body>
+</html>
