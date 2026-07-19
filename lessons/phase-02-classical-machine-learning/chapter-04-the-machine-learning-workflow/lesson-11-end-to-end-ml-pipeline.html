@@ -25,8 +25,15 @@
     <a href="#next">11 · What is next</a>
   </nav>
   <div class="toc-nav">
-    <a class="prev" href="../../phase-01-foundations/chapter-03-math-you-actually-need/chapter-03-summary.html">← Chapter 3 Summary</a>
-    <a class="next" href="lesson-12-train-validation-test-sets.html">Lesson 12 — Train, Validation, and Test Sets →</a>
+    <a class="prev" href="../../phase-01-foundations/chapter-03-math-you-actually-need/chapter-03-summary.html">
+      <span class="nav-k">← Prev · Chapter 3</span>
+      <span class="nav-t">Chapter 3 Summary</span>
+    </a>
+    <a class="nav-map" href="../../index.html">↑ Course map</a>
+    <a class="next" href="lesson-12-train-validation-test-sets.html">
+      <span class="nav-k">Next · Lesson 12 →</span>
+      <span class="nav-t">Training, Validation &amp; Test Sets</span>
+    </a>
   </div>
 </aside>
 
@@ -77,7 +84,7 @@
 
 <h3>Stage 1 — Data</h3>
 
-<p><strong>Data</strong> here means a pile of <strong>labelled examples</strong>. A single example is an input paired with its correct answer. For us: a ticket's text (input) plus the category a human assigned it (answer). The answer is called the <strong>label</strong>. Because every training example carries its answer, this is <strong>supervised learning</strong> (Lesson 02) — the model learns by comparing its guesses to known answers.</p>
+<p><strong>Data</strong> here means a pile of <strong>labelled examples</strong>. A single example is an input paired with its correct answer. For us: a ticket's text (input) plus the category a human assigned it (answer). The answer is called the <strong>label</strong>. Because every training example carries its answer, this is <strong>supervised learning</strong> (<a href="../../phase-01-foundations/chapter-01-what-ai-is/lesson-02-types-of-learning.html">Lesson 02</a>) — the model learns by comparing its guesses to known answers.</p>
 
 <p>Tiny picture:</p>
 
@@ -85,7 +92,7 @@
 "I was charged twice"        -&gt; billing
 "I cannot log in"            -&gt; account</code></pre>
 
-<p>More good, correctly-labelled data is the single biggest lever on how well a model works — often more than a fancier algorithm (Lesson 03).</p>
+<p>More good, correctly-labelled data is the single biggest lever on how well a model works — often more than a fancier algorithm (<a href="../../phase-01-foundations/chapter-01-what-ai-is/lesson-03-why-ai-works-now.html">Lesson 03</a>).</p>
 
 <h3>Stage 2 — Features</h3>
 
@@ -226,6 +233,13 @@
 </figure>
 
 <p>If evaluation disappoints, you go back — collect more data, build better features, or try a stronger algorithm — and re-evaluate. Almost all real ML work is spinning this loop, not the single triumphant training run people imagine.</p>
+
+<details class="check">
+<summary>Your ticket classifier scores 92% accuracy. Why isn't that enough to celebrate yet?</summary>
+<div class="details-body">
+<p>Because you don't yet know the <strong>baseline</strong>. If 92% of tickets are one category, “always guess that category” already scores 92% while learning nothing — your model would have added zero value. Accuracy only means something <em>next to</em> the score of a trivial strategy. (And on imbalanced data, accuracy hides which mistakes you're making — deeper metrics come later, in Lesson 22.)</p>
+</div>
+</details>
 </section>
 
 <section id="code">
@@ -233,26 +247,26 @@
 
 <p>The notebook <code>lesson-11-end-to-end-ml-pipeline.ipynb</code> runs the ticket-category task through all five stages: it builds a 12-ticket labelled DataFrame, tokenises each ticket into a bag of words, holds out the last 3 tickets as a test set, trains per-category word-count tables from the 9 training tickets, evaluates accuracy against a majority-class baseline, and finally classifies a brand-new ticket.</p>
 
-<p>The model is intentionally the simple word counter you already understand — the point is to see the <em>pipeline</em>, not a new algorithm. Everything uses tools from earlier lessons: pandas for the data table (Lesson 06), Python's <code>collections.Counter</code> for the tallies, and a plain <code>max</code> to pick the winning category. The notebook explains every code cell line by line in the markdown just above it; below are the two functions worth reading slowly.</p>
+<p>The model is intentionally the simple word counter you already understand — the point is to see the <em>pipeline</em>, not a new algorithm. Everything uses tools from earlier lessons: pandas for the data table (<a href="../../phase-01-foundations/chapter-02-python-for-ai/lesson-06-pandas-basics.html">Lesson 06</a>), Python's <code>collections.Counter</code> for the tallies, and a plain <code>max</code> to pick the winning category. The notebook explains every code cell line by line in the markdown just above it; below are the two functions worth reading slowly.</p>
 
 <p><strong>The <code>train</code> function, line by line</strong> — this is where “learning” actually happens:</p>
 
-<pre><code>def train_word_counts(train_df):     <span class="c"># take the training table</span>
+<pre><code><span class="kw">def</span> <span class="fn">train_word_counts</span>(train_df):     <span class="c"># take the training table</span>
     counts = {}                        <span class="c"># empty box: category name -&gt; its word tally</span>
-    for _, row in train_df.iterrows(): <span class="c"># go through the training tickets one by one</span>
-        counts.setdefault(row["category"], Counter())   <span class="c"># first time we see a category, start it a fresh empty tally</span>
-        counts[row["category"]].update(row["tokens"])   <span class="c"># add this ticket's words into that category's tally</span>
-    return counts                      <span class="c"># hand back the three finished tallies</span></code></pre>
+    <span class="kw">for</span> _, row <span class="kw">in</span> train_df.<span class="fn">iterrows</span>(): <span class="c"># go through the training tickets one by one</span>
+        counts.<span class="fn">setdefault</span>(row[<span class="st">"category"</span>], <span class="ty">Counter</span>())   <span class="c"># first time we see a category, start it a fresh empty tally</span>
+        counts[row[<span class="st">"category"</span>]].<span class="fn">update</span>(row[<span class="st">"tokens"</span>])   <span class="c"># add this ticket's words into that category's tally</span>
+    <span class="kw">return</span> counts                      <span class="c"># hand back the three finished tallies</span></code></pre>
 
 <p>Plain version: for each ticket, find its category's tally sheet (make a new blank one if it's a category we haven't seen yet) and drop this ticket's words onto it. After all 9 training tickets, <code>counts</code> holds three word-count tables — and those tables <em>are</em> the learned model.</p>
 
 <p><strong>The <code>predict</code> function, line by line</strong> — this is how it guesses:</p>
 
-<pre><code>def predict(tokens, model):           <span class="c"># take a ticket's word-list and the learned tallies</span>
+<pre><code><span class="kw">def</span> <span class="fn">predict</span>(tokens, model):           <span class="c"># take a ticket's word-list and the learned tallies</span>
     scores = {}                        <span class="c"># one total score per category</span>
-    for category, counter in model.items():                 <span class="c"># look at each category's tally</span>
-        scores[category] = sum(counter.get(word, 0) for word in tokens)  <span class="c"># add up how often the ticket's words appeared in that category (0 if never seen)</span>
-    return max(scores, key=scores.get), scores              <span class="c"># return the highest-scoring category, plus all the scores</span></code></pre>
+    <span class="kw">for</span> category, counter <span class="kw">in</span> model.<span class="fn">items</span>():                 <span class="c"># look at each category's tally</span>
+        scores[category] = <span class="fn">sum</span>(counter.<span class="fn">get</span>(word, <span class="nu">0</span>) <span class="kw">for</span> word <span class="kw">in</span> tokens)  <span class="c"># add up how often the ticket's words appeared in that category (0 if never seen)</span>
+    <span class="kw">return</span> <span class="fn">max</span>(scores, key=scores.<span class="fn">get</span>), scores              <span class="c"># return the highest-scoring category, plus all the scores</span></code></pre>
 
 <p>Plain version: give each category a score by adding up how familiar this ticket's words are to it, then pick the category with the biggest score. <code>counter.get(word, 0)</code> is “look up this word's count, and if the word isn't there, use 0 instead of crashing.” <code>max(scores, key=scores.get)</code> is “of all the categories, give me the one with the largest score.”</p>
 
@@ -314,7 +328,7 @@ Scores: {'shipping': 14, 'billing': 4, 'account': 5}</code></pre>
 <p>Nothing is added to <code>customer-support-assistant/</code> this lesson, on purpose. This lesson <em>frames</em> the assistant's next capability — a learned ticket-<strong>category</strong> classifier — but the model at the centre of a real pipeline should be a real learning algorithm, and we don't meet those until Chapter 5. Bolting the toy word counter into the project now would just duplicate the existing urgency toy under a new name and teach nothing new.</p>
 </div>
 
-<p>So the project stays exactly as it is: <code>python main.py</code> still runs the Lesson 01 urgency classifier and its self-check, unchanged. What changed is the <em>plan</em> — you now know the five slots the category classifier will fill, and the notebook has walked the whole loop once with a stand-in model so the real thing has an obvious home.</p>
+<p>So the project stays exactly as it is: <code>python main.py</code> still runs the <a href="../../phase-01-foundations/chapter-01-what-ai-is/lesson-01-ai-ml-deep-learning.html">Lesson 01</a> urgency classifier and its self-check, unchanged. What changed is the <em>plan</em> — you now know the five slots the category classifier will fill, and the notebook has walked the whole loop once with a stand-in model so the real thing has an obvious home.</p>
 </section>
 
 <section id="mistakes">
@@ -333,6 +347,10 @@ Scores: {'shipping': 14, 'billing': 4, 'account': 5}</code></pre>
 <h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
 
 <p>The five-stage pipeline is the right frame for essentially <strong>every supervised learning task</strong> — any time you have labelled examples and want to predict labels for new ones. It's the default mental model to reach for first.</p>
+
+<div class="realworld">
+<p>On real ML teams, the “train” step people picture as the whole job is often an afternoon; the weeks go into the parts around it — collecting data, cleaning it, labelling it, and building an honest evaluation. A common saying is that ML is <strong>80% data work</strong>. When you hear about an ML project slipping, it's rarely the algorithm — it's that the data wasn't ready. Interviewers probe this too: “walk me through your pipeline” is really asking whether you know the loop is data-first, not model-first.</p>
+</div>
 
 <p>Tradeoffs and limits: the pipeline itself is universal, but its <em>cost</em> isn't. Gathering and labelling data can dominate the whole project. The pipeline also assumes new input looks like your training data; when the world shifts (new product lines, new slang), a once-good model quietly rots and you must loop back — that's monitoring and drift, much later in Lesson 105. And this workflow is for <strong>learning from labelled examples</strong>; problems with no labels (grouping similar customers) use a different shape (unsupervised learning, Chapter 8), and problems solved by clear fixed rules may not need ML at all.</p>
 </section>

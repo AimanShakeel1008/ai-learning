@@ -25,8 +25,15 @@
     <a href="#next">11 · What is next</a>
   </nav>
   <div class="toc-nav">
-    <span class="disabled">← This is the first lesson</span>
-    <a class="next" href="lesson-02-types-of-learning.html">Lesson 02 — The Types of Machine Learning →</a>
+    <span class="disabled">
+      <span class="nav-k">Start · Lesson 01</span>
+      <span class="nav-t">This is the first lesson</span>
+    </span>
+    <a class="nav-map" href="../../index.html">↑ Course map</a>
+    <a class="next" href="lesson-02-types-of-learning.html">
+      <span class="nav-k">Next · Lesson 02 →</span>
+      <span class="nav-t">The Main Types of Machine Learning</span>
+    </a>
   </div>
 </aside>
 
@@ -61,6 +68,13 @@
 <p><strong>The new way (learning from data):</strong> instead, you show the child a hundred photos labeled “dog” and a hundred labeled “not dog” — cats, cars, chairs. You never say <em>why</em>. The child's brain, on its own, starts noticing the patterns that separate the two piles. Eventually they can look at a totally new photo and guess correctly, even a hairless dog, because they built their own internal sense of “dog-ness” from examples, not from a rulebook you handed them.</p>
 
 <p>That shift — from <em>a human writes the rules</em> to <em>the program figures out the rules by looking at examples</em> — is the entire idea behind AI. Everything else in this course is detail stacked on top of that one idea.</p>
+
+<details class="check">
+<summary>In the dog example, which part plays the role of “training data”?</summary>
+<div class="details-body">
+<p>The <strong>two hundred labeled photos</strong> — a hundred marked “dog” and a hundred “not dog.” That labeled pile is exactly what a machine-learning system learns its patterns from. The child noticing the patterns on their own is the “training”; a brand-new photo they've never seen is the test.</p>
+</div>
+</details>
 </section>
 
 <section id="concept">
@@ -96,7 +110,7 @@
 
 <p><strong>Tiny concrete example:</strong> imagine a deep learning model looking at photos to spot cats. The first layer of neurons might learn to notice tiny things like “a short diagonal edge of pixels.” The second layer combines many of those edges into “a curved line.” A layer further in combines curves and shapes into “something shaped like a pointed ear.” A layer after that combines ears, eyes, and whiskers into “this looks like a cat's face.” Nobody wrote any of those rules by hand — each layer learned its own small piece of the pattern from data, and the layers build on each other.</p>
 
-<p><strong>Technical name:</strong> Deep Learning (DL), built from artificial neural networks.</p>
+<p><strong>Technical name:</strong> Deep Learning (DL), built from <span class="term" tabindex="0" data-def="Layers of simple connected math units (neurons) that learn patterns from data — the structure behind deep learning. Built from scratch in Phase 3.">artificial neural networks</span>.</p>
 
 <p><strong>How DL nests inside ML:</strong> deep learning is a subset of machine learning — every deep learning system is also a machine learning system, but not the other way around. Simpler ML techniques we will cover in Phase 2, such as decision trees, are machine learning but are <em>not</em> deep learning: they do not use stacked layers of neurons. Deep learning is the branch that produced the current wave of headline-making AI — image recognition, real-time translation, and language models like the one you may be using to read summarized versions of this course.</p>
 
@@ -106,7 +120,7 @@
 
 <p><strong>Why it exists:</strong> once deep learning got very good at finding patterns in huge amounts of text or images, researchers found that a similar kind of network, run in a slightly different way, could <em>produce</em> new content that follows those same patterns, one small piece at a time, instead of only sorting existing content into buckets.</p>
 
-<p><strong>Tiny concrete example:</strong> a large language model sees the start of a sentence — “The customer asked for a refund because” — and predicts the single most likely next small chunk of text (called a <em>token</em>; we will define this fully and carefully in a later lesson). It adds that chunk, then predicts the next one, then the next, one small step at a time, until it has produced a full, plausible sentence. It was never given a rule for grammar or refund policy — it learned the <em>shape</em> of language and of refund-request text from enormous amounts of example text.</p>
+<p><strong>Tiny concrete example:</strong> a large language model sees the start of a sentence — “The customer asked for a refund because” — and predicts the single most likely next small chunk of text (called a <span class="term" tabindex="0" data-def="The small chunk of text — a word or word-piece — a language model reads and predicts one at a time. Covered in depth in Phase 4.">token</span>; we will define this fully and carefully in a later lesson). It adds that chunk, then predicts the next one, then the next, one small step at a time, until it has produced a full, plausible sentence. It was never given a rule for grammar or refund policy — it learned the <em>shape</em> of language and of refund-request text from enormous amounts of example text.</p>
 
 <p><strong>Technical name:</strong> Generative AI in general; specifically for text, a Large Language Model (LLM). Note that exact model names, sizes, and capabilities change extremely fast — treat any specific model claim you read elsewhere as something to verify against current official documentation, not as a fixed fact.</p>
 
@@ -136,6 +150,13 @@
 </figure>
 
 <p>Each ring is a <em>subset</em> of the one around it. Every LLM is generative AI, every piece of generative AI we will study is deep learning, every deep learning system is machine learning, and every machine learning system is a form of AI. But the reverse is not true at each step — plenty of AI is not machine learning, plenty of machine learning is not deep learning, and plenty of deep learning is not generative.</p>
+
+<details class="check">
+<summary>True or false: every machine-learning system is also a deep-learning system.</summary>
+<div class="details-body">
+<p><strong>False</strong> — it's the other way around. Deep learning is a <em>subset</em> of machine learning: every deep-learning system is machine learning, but many machine-learning methods (like the decision trees in Phase 2) use no stacked layers of neurons and are not deep learning. Reading the rings inward, each is contained by the one outside it, never the reverse.</p>
+</div>
+</details>
 </section>
 
 <section id="code">
@@ -331,7 +352,7 @@ Can you tell me about your shipping policy whenever you get a chance
   <li><strong>Treating “AI” and “machine learning” as the same word.</strong> AI is the goal; ML is one (very dominant) way of reaching it. Old-fashioned hard-coded game AI or expert systems are AI without being ML.</li>
   <li><strong>Assuming deep learning is always the right tool.</strong> Deep learning needs a lot of data and computing power. For many everyday problems — including much of what we will build in Phase 2 — simpler machine learning methods work as well or better with far less data and cost.</li>
   <li><strong>Thinking the model “understands” anything the way a person does.</strong> Our tiny word-counter has no idea what “urgent” means as a concept; it only knows that certain words statistically leaned toward one label in the examples it saw. This same caution scales up to today's most advanced LLMs, which are pattern generators, not conscious reasoners.</li>
-  <li><strong>Forgetting that learned systems only know what they were shown.</strong> A word that never appeared in training scores exactly zero in our example — the model has no opinion on it at all. This is why the size and quality of training data matters so much, a theme we return to constantly.</li>
+  <li><strong>Forgetting that learned systems only know what they were shown.</strong> A word that never appeared in training scores exactly zero in our example — the model has no opinion on it at all. This is why the size and quality of <span class="term" tabindex="0" data-def="The labeled examples a model learns its patterns from; more and better training data usually beats a fancier model.">training data</span> matters so much, a theme we return to constantly.</li>
   <li><strong>Confusing “generative” with “intelligent.”</strong> A model that generates fluent, confident-sounding text can still be completely wrong. Fluency is a side effect of learning language patterns, not proof of correctness — a theme we return to in the accuracy and hallucination discussions later in the course.</li>
 </ul>
 </section>
@@ -342,6 +363,17 @@ Can you tell me about your shipping policy whenever you get a chance
 <p>Hand-written rules are still the right tool when a task is genuinely simple, fixed, and fully specifiable — like “flag any order over $10,000 for manual review.” They are transparent, instant to write for small cases, and easy to explain to anyone.</p>
 
 <p>Machine learning is worth the extra complexity when the pattern is too fuzzy or too varied to write down completely — like “does this sentence sound urgent” — where you can <em>show examples</em> far more easily than you can <em>state a complete rule</em>. The tradeoff is that ML systems need data, need a way to check whether they are actually working, and can fail in less predictable, harder-to-debug ways than a rule you wrote yourself. We will spend much of Phase 2 learning exactly how to manage that tradeoff responsibly.</p>
+
+<div class="realworld">
+<p>On real teams, the choice is rarely “AI or nothing.” Most production systems <strong>start with a handful of hand-written rules</strong> because they're transparent and ship in an afternoon, then bring in machine learning only once the rules sprawl into an unmaintainable thicket of exceptions. In interviews you'll often be asked to justify <em>why</em> a problem needs ML at all — “I can state the rule completely, so I wouldn't” is a strong answer, and reaching for a neural network when a three-line rule would do is a classic red flag.</p>
+</div>
+
+<details class="check">
+<summary>You must flag every order over $10,000 for manual review. Rules or machine learning?</summary>
+<div class="details-body">
+<p><strong>Hand-written rules.</strong> The condition is exact, fixed, and fully specifiable (<code>amount &gt; 10000</code>), so there is no fuzzy pattern to learn from examples. ML would add data needs, evaluation, and unpredictable failure modes for zero benefit. Reach for ML only when the rule can't be stated completely — like judging whether a message “sounds urgent.”</p>
+</div>
+</details>
 </section>
 
 <section id="takeaways">
@@ -403,7 +435,7 @@ Can you tell me about your shipping policy whenever you get a chance
 <section id="next">
 <h2><span class="secno">11</span>What is next</h2>
 
-<p>Lesson 2 looks at the three main <em>types</em> of machine learning — supervised, unsupervised, and reinforcement learning — and gives you a way to recognize, for any new problem, which type fits.</p>
+<p><a href="lesson-02-types-of-learning.html">Lesson 2</a> looks at the three main <em>types</em> of machine learning — supervised, unsupervised, and reinforcement learning — and gives you a way to recognize, for any new problem, which type fits.</p>
 </section>
 
 <footer class="next">

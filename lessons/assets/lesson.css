@@ -77,28 +77,85 @@ main {
   transform: translateX(4px);
 }
 
+/* prev / course-map / next as cards + a centred pill (see the nav markup:
+   each prev/next link wraps a .nav-k kicker over a .nav-t title). */
 .toc-nav {
   margin-top: 1.4rem;
   padding-top: 1rem;
   border-top: 1px solid #e6dfd2;
-  display: grid;
-  gap: 0.4rem;
-  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
 }
 
-.toc-nav a {
-  color: #0c8599;
+.toc-nav a.prev,
+.toc-nav a.next,
+.toc-nav .disabled {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e6dcc9;
+  border-left: 4px solid #2f9e44;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #2f7a3e;
   text-decoration: none;
-  transition: color 0.18s ease, transform 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
-.toc-nav a:hover {
-  color: #e8590c;
-  transform: translateX(4px);
+.toc-nav a.prev:hover,
+.toc-nav a.next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(35, 25, 15, 0.1);
+  border-left-color: #237634;
+}
+
+.toc-nav .nav-k {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #237634;
+}
+
+.toc-nav .nav-t {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #2f7a3e;
 }
 
 .toc-nav .disabled {
-  color: #b0a898;
+  border-left-color: #cdc7ba;
+  background: #f6f1e7;
+  cursor: default;
+}
+
+.toc-nav .disabled .nav-k { color: #8a8378; }
+.toc-nav .disabled .nav-t { color: #b0a898; }
+
+/* the centred "course map" pill */
+.toc-nav a.nav-map {
+  display: block;
+  text-align: center;
+  padding: 0.45rem 0.75rem;
+  border: 1.5px solid #0c8599;
+  border-radius: 999px;
+  background: transparent;
+  color: #0a6c7d;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+
+.toc-nav a.nav-map:hover {
+  background: #e7f4f6;
+  transform: translateY(-1px);
 }
 
 /* ---------- lesson header banner ---------- */
@@ -612,16 +669,39 @@ footer.next a {
     border-top-color: #353026;
   }
 
-  .toc-nav a {
+  .toc-nav a.prev,
+  .toc-nav a.next,
+  .toc-nav .disabled {
+    background: #201c15;
+    border-color: #3a3327;
+    border-left-color: #51cf66;
+    color: #8ce39a;
+  }
+
+  .toc-nav a.prev:hover,
+  .toc-nav a.next:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    border-left-color: #69db7c;
+  }
+
+  .toc-nav .nav-k { color: #69db7c; }
+  .toc-nav .nav-t { color: #8ce39a; }
+
+  .toc-nav .disabled {
+    border-left-color: #4a4436;
+    background: #241f17;
+  }
+
+  .toc-nav .disabled .nav-k { color: #9a9285; }
+  .toc-nav .disabled .nav-t { color: #6f6759; }
+
+  .toc-nav a.nav-map {
+    border-color: #17707f;
     color: #4cc4d9;
   }
 
-  .toc-nav a:hover {
-    color: #ff7b33;
-  }
-
-  .toc-nav .disabled {
-    color: #6f6759;
+  .toc-nav a.nav-map:hover {
+    background: #12262a;
   }
 
   .meta {
@@ -1256,11 +1336,367 @@ figure.fig figcaption strong {
   }
 }
 
+/* ---------- hover-to-define glossary terms ---------- */
+/* Wrap a term's first (re)mention in
+   <span class="term" tabindex="0" data-def="plain definition">term</span>.
+   The definition shows on hover AND keyboard focus, fully offline (CSS only).
+   Keep data-def to one plain line; match the glossary/inline definition. */
+
+.term {
+  border-bottom: 1px dashed #0c8599;
+  cursor: help;
+  position: relative;
+}
+
+.term:focus {
+  outline: 2px solid #0c8599;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.term::after {
+  content: attr(data-def);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 9px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 250px;
+  background: #1f2d30;
+  color: #eef6f7;
+  font-size: 0.82rem;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.4;
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.term::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1f2d30;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.term:hover::after, .term:focus::after,
+.term:hover::before, .term:focus::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ---------- syntax highlighting tokens (inside dark code blocks) ---------- */
+/* Manual span classes, no JS. Code blocks are dark in BOTH themes, so these
+   token colours need no dark override. NEVER wrap escaped &lt; &gt; &amp; so a
+   span splits the entity. Existing .c (comment) and .hi (highlight) still apply. */
+
+pre .kw { color: #ff7b72; }   /* keyword: def, for, if, return, import, in ... */
+pre .ty { color: #79c0ff; }   /* type / builtin constant: int, str, True, None */
+pre .st { color: #9ece6a; }   /* string literal */
+pre .nu { color: #f2cc60; }   /* number literal */
+pre .fn { color: #d2a8ff; }   /* function / method name */
+pre .an { color: #ffa657; }   /* annotation / decorator */
+
+/* ---------- active-recall micro-check (distinct from challenge details) ---------- */
+/* <details class="check"><summary>question</summary>
+     <div class="details-body">answer</div></details>
+   Teal, with an auto "Check yourself" label — visually distinct from the
+   violet hidden-answer/challenge <details>. Never gate progress on these. */
+
+details.check {
+  background: #e7f4f6;
+  border-left: 4px solid #0c8599;
+}
+
+details.check::before {
+  content: "Check yourself";
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0a6c7d;
+}
+
+details.check summary {
+  color: #0a6c7d;
+}
+
+details.check summary:hover {
+  color: #e8590c;
+}
+
+/* ---------- "In the real world" callout ---------- */
+
+.realworld {
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 1.3rem 0;
+  background: #eef0fb;
+  border-left: 4px solid #4c6ef5;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.realworld::before {
+  content: "In the real world";
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #3b5bdb;
+}
+
+.realworld:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(35, 25, 15, 0.13);
+}
+
+.realworld > :last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- course hub: status badges + lesson list ---------- */
+
+.hub-badge {
+  display: inline-block;
+  flex: none;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.1em 0.55em;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.hub-badge.done { background: #d3f9d8; color: #237634; }
+.hub-badge.next { background: #ffe8cc; color: #c14a0a; }
+.hub-badge.planned { background: #e9ecef; color: #868e96; }
+
+.hub-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.4rem 0 1.6rem;
+}
+
+.hub-list li {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.4rem 0.2rem;
+  border-top: 1px solid #eee5d6;
+}
+
+.hub-list li:first-child {
+  border-top: none;
+}
+
+.hub-list .hub-lesson {
+  min-width: 0;
+}
+
+.hub-list .hub-num {
+  color: #8a8378;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- dark overrides for the new components ---------- */
+
+@media (prefers-color-scheme: dark) {
+  .term {
+    border-bottom-color: #4cc4d9;
+  }
+
+  .term:focus {
+    outline-color: #4cc4d9;
+  }
+
+  .term::after {
+    background: #0c1e22;
+    color: #dfeef1;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  }
+
+  .term::before {
+    border-top-color: #0c1e22;
+  }
+
+  details.check {
+    background: #12262a;
+    border-left-color: #17707f;
+  }
+
+  details.check::before {
+    color: #4cc4d9;
+  }
+
+  details.check summary {
+    color: #4cc4d9;
+  }
+
+  details.check summary:hover {
+    color: #ff7b33;
+  }
+
+  .realworld {
+    background: #191d33;
+    border-left-color: #5c7cfa;
+  }
+
+  .realworld::before {
+    color: #91a7ff;
+  }
+
+  .realworld:hover {
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
+  }
+
+  .hub-badge.done { background: #133a1e; color: #69db7c; }
+  .hub-badge.next { background: #3a2413; color: #ffab73; }
+  .hub-badge.planned { background: #2a2a2a; color: #adb5bd; }
+
+  .hub-list li {
+    border-top-color: #2e2920;
+  }
+
+  .hub-list .hub-num {
+    color: #9a9285;
+  }
+}
+
 /* ---------- reduced motion: kill ALL animation and transitions ---------- */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* ---------- print: clean PDF study notes ---------- */
+/* Hide navigation/chrome, flatten heavy gradient banners to ink-light, wrap
+   code, and keep figures/callouts/code from splitting across pages. */
+
+@media print {
+  body {
+    background: #ffffff;
+    color: #000000;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  .page {
+    display: block;
+    max-width: 100%;
+    padding: 0;
+    gap: 0;
+  }
+
+  /* drop the navigation and "next up" chrome */
+  .toc,
+  footer.next,
+  .sim-controls {
+    display: none !important;
+  }
+
+  main {
+    animation: none;
+  }
+
+  /* flatten the gradient banner to plain ink on white */
+  header.lesson {
+    background: none !important;
+    color: #000000;
+    box-shadow: none;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    animation: none;
+  }
+
+  header.lesson .kicker,
+  header.lesson h1,
+  header.lesson .subtitle {
+    color: #000000;
+  }
+
+  h2 {
+    border-bottom-color: #000000;
+  }
+
+  .secno {
+    background: #000000;
+    color: #ffffff;
+  }
+
+  /* code prints as dark ink on light, wrapped so nothing is clipped */
+  pre {
+    background: #f4f4f4 !important;
+    color: #111111 !important;
+    box-shadow: none;
+    border: 1px solid #cccccc;
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 1rem;
+  }
+
+  pre::before {
+    display: none;
+  }
+
+  pre code, pre .kw, pre .ty, pre .st, pre .nu, pre .fn, pre .an, pre .hi {
+    color: #111111 !important;
+    background: transparent !important;
+  }
+
+  pre .c {
+    color: #666666 !important;
+  }
+
+  /* keep these blocks whole across page breaks */
+  figure.fig,
+  .tryit, .note, .warn, .demo, .realworld, .sim,
+  details,
+  pre,
+  table {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  figure.fig svg {
+    max-height: 320px;
+  }
+
+  a {
+    color: #000000;
+    text-decoration: underline;
+  }
+
+  /* never print tooltips */
+  .term::after, .term::before {
+    display: none !important;
+  }
+
+  .term {
+    border-bottom: none;
   }
 }

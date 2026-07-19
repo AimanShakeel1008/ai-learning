@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course Hub — AI From the Ground Up</title>
+<link rel="stylesheet" href="assets/lesson.css">
+</head>
+<body>
+<div class="page">
+
+<aside class="toc">
+  <p class="toc-title">Jump to phase</p>
+  <nav>
+    <a href="#p1">1 · Foundations</a>
+    <a href="#p2">2 · Classical ML</a>
+    <a href="#p3">3 · Deep Learning</a>
+    <a href="#p4">4 · NLP &amp; Transformers</a>
+    <a href="#p5">5 · Large Language Models</a>
+    <a href="#p6">6 · Retrieval (RAG)</a>
+    <a href="#p7">7 · Fine-Tuning</a>
+    <a href="#p8">8 · Agentic AI</a>
+    <a href="#p9">9 · Automation &amp; Tools</a>
+    <a href="#p10">10 · Multimodal</a>
+    <a href="#p11">11 · LLMOps</a>
+    <a href="#p12">12 · Responsible AI</a>
+    <a href="#p13">13 · Capstone</a>
+  </nav>
+  <div class="toc-nav">
+    <a class="next" href="phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-18-knn-svm.html">
+      <span class="nav-k">Latest · Lesson 18 →</span>
+      <span class="nav-t">k-Nearest Neighbors &amp; SVM</span>
+    </a>
+  </div>
+</aside>
+
+<main>
+
+<header class="lesson">
+  <p class="kicker">Course Hub</p>
+  <h1>AI From the Ground Up</h1>
+  <p class="subtitle">One customer-support assistant, built up from plain Python to a production AI system across 13 phases. This page is the map — where you are, and every lesson linked.</p>
+</header>
+
+<div class="meta">
+  <p><strong>Where we are:</strong> Phase 2 · Chapter 5 complete (Lessons 1–18). Next up: Lesson 19 — Cleaning data and missing values.</p>
+  <p><strong>How to read this page:</strong> the roadmap shows the 13 major stages; below it, every chapter and lesson is listed with a status badge — <span class="hub-badge done">done</span> lessons are clickable.</p>
+</div>
+
+<section id="roadmap">
+<h2><span class="secno">1</span>The roadmap</h2>
+
+<figure class="fig">
+  <svg viewBox="0 0 560 582" role="img" aria-label="Course roadmap of 13 phases on a single track. Phase 1, Foundations, is done. Phase 2, Classical Machine Learning, is where you are now. Phases 3 to 13 are planned ahead: Deep Learning, NLP and Transformers, Large Language Models, Retrieval-Augmented Generation, Fine-Tuning and Customization, Agentic AI, AI Automation and Tools, Multimodal and Generative AI, LLMOps and Production, Responsible AI and Security, and the Capstone.">
+    <line class="fig-axis" x1="40" y1="44" x2="40" y2="548"></line>
+
+    <!-- Phase 1: done -->
+    <circle class="fig-box" cx="40" cy="44" r="9"></circle>
+    <text class="fig-cap" x="40" y="48" text-anchor="middle">✓</text>
+    <text class="fig-label" x="62" y="49">Phase 1 · Foundations</text>
+
+    <!-- Phase 2: you are here -->
+    <circle class="fig-box-you" cx="40" cy="86" r="10"></circle>
+    <text class="fig-label" x="62" y="91">Phase 2 · Classical Machine Learning</text>
+    <rect class="fig-box-you" x="372" y="75" width="150" height="22" rx="11"></rect>
+    <text class="fig-cap fig-ink-you" x="447" y="90" text-anchor="middle">◀ YOU ARE HERE</text>
+
+    <!-- Phases 3–13: planned -->
+    <circle class="fig-axis" cx="40" cy="128" r="8"></circle>
+    <text class="fig-cap" x="62" y="132">Phase 3 · Deep Learning</text>
+    <circle class="fig-axis" cx="40" cy="170" r="8"></circle>
+    <text class="fig-cap" x="62" y="174">Phase 4 · NLP &amp; Transformers</text>
+    <circle class="fig-axis" cx="40" cy="212" r="8"></circle>
+    <text class="fig-cap" x="62" y="216">Phase 5 · Large Language Models</text>
+    <circle class="fig-axis" cx="40" cy="254" r="8"></circle>
+    <text class="fig-cap" x="62" y="258">Phase 6 · Retrieval-Augmented Generation</text>
+    <circle class="fig-axis" cx="40" cy="296" r="8"></circle>
+    <text class="fig-cap" x="62" y="300">Phase 7 · Fine-Tuning &amp; Customization</text>
+    <circle class="fig-axis" cx="40" cy="338" r="8"></circle>
+    <text class="fig-cap" x="62" y="342">Phase 8 · Agentic AI</text>
+    <circle class="fig-axis" cx="40" cy="380" r="8"></circle>
+    <text class="fig-cap" x="62" y="384">Phase 9 · AI Automation &amp; Tools</text>
+    <circle class="fig-axis" cx="40" cy="422" r="8"></circle>
+    <text class="fig-cap" x="62" y="426">Phase 10 · Multimodal &amp; Generative AI</text>
+    <circle class="fig-axis" cx="40" cy="464" r="8"></circle>
+    <text class="fig-cap" x="62" y="468">Phase 11 · LLMOps &amp; Production</text>
+    <circle class="fig-axis" cx="40" cy="506" r="8"></circle>
+    <text class="fig-cap" x="62" y="510">Phase 12 · Responsible AI &amp; Security</text>
+    <circle class="fig-axis" cx="40" cy="548" r="8"></circle>
+    <text class="fig-cap" x="62" y="552">Phase 13 · Capstone</text>
+  </svg>
+  <figcaption><strong>One track, 13 stages.</strong> The filled orange node is where you are now (Phase 2); the checked node behind it is finished (Phase 1); the hollow nodes ahead are still to come. Every stage builds the same customer-support assistant a little further.</figcaption>
+</figure>
+</section>
+
+<section id="p1">
+<h2><span class="secno">P1</span>Foundations</h2>
+
+<h3>Chapter 1 — What AI, ML &amp; Deep Learning Really Are</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">01</span> <a href="phase-01-foundations/chapter-01-what-ai-is/lesson-01-ai-ml-deep-learning.html">AI, ML, deep learning &amp; generative AI</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">02</span> <a href="phase-01-foundations/chapter-01-what-ai-is/lesson-02-types-of-learning.html">The main types of machine learning</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">03</span> <a href="phase-01-foundations/chapter-01-what-ai-is/lesson-03-why-ai-works-now.html">Why AI works now, and a short history</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">—</span> <a href="phase-01-foundations/chapter-01-what-ai-is/chapter-01-summary.html">Chapter 1 summary</a></span><span class="hub-badge done">done</span></li>
+</ul>
+
+<h3>Chapter 2 — Python for AI</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">04</span> <a href="phase-01-foundations/chapter-02-python-for-ai/lesson-04-python-ai-toolkit.html">The Python AI toolkit</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">05</span> <a href="phase-01-foundations/chapter-02-python-for-ai/lesson-05-numpy-arrays.html">NumPy and thinking in arrays</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">06</span> <a href="phase-01-foundations/chapter-02-python-for-ai/lesson-06-pandas-basics.html">pandas for handling data</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">07</span> <a href="phase-01-foundations/chapter-02-python-for-ai/lesson-07-seeing-data-with-plots.html">Seeing your data with plots</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">—</span> <a href="phase-01-foundations/chapter-02-python-for-ai/chapter-02-summary.html">Chapter 2 summary</a></span><span class="hub-badge done">done</span></li>
+</ul>
+
+<h3>Chapter 3 — The Math You Actually Need</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">08</span> <a href="phase-01-foundations/chapter-03-math-you-actually-need/lesson-08-linear-algebra-intuition.html">Linear algebra intuition</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">09</span> <a href="phase-01-foundations/chapter-03-math-you-actually-need/lesson-09-calculus-intuition.html">Calculus intuition</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">10</span> <a href="phase-01-foundations/chapter-03-math-you-actually-need/lesson-10-probability-statistics-intuition.html">Probability &amp; statistics intuition</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">—</span> <a href="phase-01-foundations/chapter-03-math-you-actually-need/chapter-03-summary.html">Chapter 3 summary</a></span><span class="hub-badge done">done</span></li>
+</ul>
+</section>
+
+<section id="p2">
+<h2><span class="secno">P2</span>Classical Machine Learning</h2>
+
+<h3>Chapter 4 — The Machine Learning Workflow</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">11</span> <a href="phase-02-classical-machine-learning/chapter-04-the-machine-learning-workflow/lesson-11-end-to-end-ml-pipeline.html">The end-to-end ML pipeline</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">12</span> <a href="phase-02-classical-machine-learning/chapter-04-the-machine-learning-workflow/lesson-12-train-validation-test-sets.html">Training, validation &amp; test sets</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">13</span> <a href="phase-02-classical-machine-learning/chapter-04-the-machine-learning-workflow/lesson-13-overfitting-underfitting-bias-variance.html">Overfitting, underfitting &amp; bias-variance</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">—</span> <a href="phase-02-classical-machine-learning/chapter-04-the-machine-learning-workflow/chapter-04-summary.html">Chapter 4 summary</a></span><span class="hub-badge done">done</span></li>
+</ul>
+
+<h3>Chapter 5 — Core Supervised Algorithms</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">14</span> <a href="phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-14-linear-regression.html">Linear regression</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">15</span> <a href="phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-15-logistic-regression.html">Logistic regression</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">16</span> <a href="phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-16-decision-trees-random-forests.html">Decision trees &amp; random forests</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">17</span> <a href="phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-17-gradient-boosting.html">Gradient boosting</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">18</span> <a href="phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/lesson-18-knn-svm.html">k-nearest neighbors &amp; SVM</a></span><span class="hub-badge done">done</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">—</span> <a href="phase-02-classical-machine-learning/chapter-05-core-supervised-algorithms/chapter-05-summary.html">Chapter 5 summary</a></span><span class="hub-badge done">done</span></li>
+</ul>
+
+<h3>Chapter 6 — Data and Features</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">19</span> Cleaning data &amp; missing values</span><span class="hub-badge next">next</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">20</span> Feature engineering &amp; encoding categories</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">21</span> Scaling, imbalance &amp; data leakage</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 7 — Evaluating Models</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">22</span> Classification metrics</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">23</span> Regression metrics &amp; cross-validation</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 8 — Unsupervised Learning</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">24</span> Clustering</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">25</span> Dimensionality reduction</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 9 — scikit-learn in Practice</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">26</span> The scikit-learn way of working</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">27</span> Tuning &amp; saving models</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 10 — Common ML Applications</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">28</span> Recommendation systems</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">29</span> Time-series forecasting</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">30</span> Anomaly &amp; fraud detection</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p3">
+<h2><span class="secno">P3</span>Deep Learning</h2>
+
+<h3>Chapter 11 — Neural Networks From the Ground Up</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">31</span> The neuron and the layer</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">32</span> How a network learns</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">33</span> Training neural networks well</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 12 — PyTorch</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">34</span> Tensors &amp; automatic gradients</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">35</span> Building &amp; training a model in PyTorch</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 13 — Key Architectures Before Transformers</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">36</span> Convolutional networks for images</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">37</span> Sequence models &amp; embeddings</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 14 — Reinforcement Learning Basics</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">38</span> What reinforcement learning is</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">39</span> Learning from reward</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">40</span> Deep RL &amp; where RL shows up today</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p4">
+<h2><span class="secno">P4</span>NLP &amp; Transformers</h2>
+
+<h3>Chapter 15 — NLP Foundations</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">41</span> Text as data</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">42</span> Embeddings &amp; the meaning of words</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 16 — The Transformer Architecture</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">43</span> The problem transformers solved, and attention</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">44</span> Self-attention, step by step</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">45</span> Multi-head attention &amp; positional encoding</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">46</span> The full transformer</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 17 — From Transformers to Language Models</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">47</span> What a language model actually is</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">48</span> The main families of models</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">49</span> Pretraining &amp; tokenizers in depth</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p5">
+<h2><span class="secno">P5</span>Large Language Models</h2>
+
+<h3>Chapter 18 — How LLMs Work and Are Made</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">50</span> Scale, parameters &amp; context windows</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">51</span> How a modern assistant model is trained</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 19 — Using Large Language Models</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">52</span> The model landscape &amp; how to choose</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">53</span> Controlling a model's output</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">54</span> Calling a model from Python</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 20 — Open-Source &amp; Running Models Locally</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">55</span> The open-model world</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">56</span> The Hugging Face Hub</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">57</span> Model formats &amp; licenses</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">58</span> Running models on your own machine</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 21 — Prompt Engineering</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">59</span> How to talk to a model well</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">60</span> Reasoning &amp; reliable prompting</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 22 — Frameworks for Building With Models</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">61</span> What LangChain &amp; LlamaIndex are for</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">62</span> Tool use &amp; structured outputs</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p6">
+<h2><span class="secno">P6</span>Retrieval-Augmented Generation</h2>
+
+<h3>Chapter 23 — Embeddings &amp; Vector Search</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">63</span> Embeddings for search</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">64</span> Vector databases</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 24 — Building Retrieval-Augmented Generation</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">65</span> Why RAG, and the pipeline</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">66</span> Making RAG actually good</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">67</span> Evaluating a RAG system</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 25 — Advanced Retrieval</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">68</span> Hybrid search, re-ranking &amp; query rewriting</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">69</span> Knowledge graphs, GraphRAG &amp; agentic retrieval</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p7">
+<h2><span class="secno">P7</span>Fine-Tuning &amp; Customization</h2>
+
+<h3>Chapter 26 — Adapting Models to Your Needs</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">70</span> Prompt vs retrieval vs fine-tuning</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">71</span> Fine-tuning &amp; parameter-efficient methods</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">72</span> Quantization &amp; smaller, faster models</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 27 — Fine-Tuning in Practice</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">73</span> Building a fine-tuning dataset</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">74</span> The fine-tuning tools</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">75</span> Preference tuning: RLHF &amp; DPO</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p8">
+<h2><span class="secno">P8</span>Agentic AI</h2>
+
+<h3>Chapter 28 — From Models to Agents</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">76</span> What an agent is</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">77</span> The reason-and-act loop &amp; memory</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 29 — Building Agents</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">78</span> Planning &amp; breaking down tasks</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">79</span> Agent frameworks</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">80</span> Guardrails &amp; failure modes</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 30 — Tool Interoperability: MCP and Beyond</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">81</span> Function calling &amp; why tools need a standard</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">82</span> The Model Context Protocol in depth</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">83</span> Agent-to-agent communication</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 31 — Advanced Agent Patterns</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">84</span> Multi-agent systems &amp; reflection</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">85</span> Evaluating agents</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p9">
+<h2><span class="secno">P9</span>AI Automation &amp; Building Tools</h2>
+
+<h3>Chapter 32 — No-Code &amp; Low-Code Automation</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">86</span> What workflow automation is, and where AI fits</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">87</span> n8n in depth</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">88</span> The wider automation landscape</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 33 — Building With AI Coding Assistants</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">89</span> Using AI to build software</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">90</span> Prompt-driven &amp; agentic development, and its limits</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p10">
+<h2><span class="secno">P10</span>Multimodal &amp; Generative AI Beyond Text</h2>
+
+<h3>Chapter 34 — Image Generation &amp; Diffusion</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">91</span> How image generation works</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">92</span> Using image models</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">93</span> Editing &amp; guiding images</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 35 — Vision &amp; Multimodal Models</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">94</span> Models that see and read</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">95</span> Practical vision tasks</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 36 — Speech &amp; Audio</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">96</span> Speech-to-text</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">97</span> Text-to-speech &amp; voice agents</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p11">
+<h2><span class="secno">P11</span>LLMOps &amp; Production</h2>
+
+<h3>Chapter 37 — Evaluating AI Systems</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">98</span> Why evaluating language systems is hard</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">99</span> Building evaluations</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 38 — LLMOps</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">100</span> The LLMOps lifecycle</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">101</span> Observability, cost &amp; optimization</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 39 — Serving &amp; Deploying</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">102</span> Serving models</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">103</span> Deploying an AI application safely</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 40 — MLOps for Classical Machine Learning</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">104</span> Tracking experiments &amp; models</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">105</span> Monitoring models in production</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p12">
+<h2><span class="secno">P12</span>Responsible AI &amp; Security</h2>
+
+<h3>Chapter 41 — Safety, Ethics &amp; Limits</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">106</span> Bias, fairness &amp; reliability</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">107</span> Privacy &amp; responsible data use</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 42 — AI &amp; LLM Security</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">108</span> The OWASP Top 10 for large language models</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">109</span> Prompt injection, jailbreaks &amp; guardrails</span><span class="hub-badge planned">planned</span></li>
+</ul>
+
+<h3>Chapter 43 — Alignment &amp; the Frontier</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">110</span> What alignment &amp; AI safety mean</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">111</span> The frontier</span><span class="hub-badge planned">planned</span></li>
+  <li><span class="hub-lesson"><span class="hub-num">112</span> How to keep learning in a fast field</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<section id="p13">
+<h2><span class="secno">P13</span>Capstone</h2>
+
+<h3>Chapter 44 — Capstone</h3>
+<ul class="hub-list">
+  <li><span class="hub-lesson"><span class="hub-num">113</span> The complete intelligent assistant</span><span class="hub-badge planned">planned</span></li>
+</ul>
+</section>
+
+<p class="footnote">Course hub · 13 phases · 44 chapters · 113 lessons · 18 complete.</p>
+
+</main>
+</div>
+</body>
+</html>

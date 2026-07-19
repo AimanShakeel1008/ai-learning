@@ -25,8 +25,15 @@
     <a href="#next">11 · What is next</a>
   </nav>
   <div class="toc-nav">
-    <a class="prev" href="lesson-02-types-of-learning.html">← Lesson 02 — The Types of Machine Learning</a>
-    <a class="next" href="chapter-01-summary.html">Chapter 1 Summary →</a>
+    <a class="prev" href="lesson-02-types-of-learning.html">
+      <span class="nav-k">← Prev · Lesson 02</span>
+      <span class="nav-t">The Main Types of Machine Learning</span>
+    </a>
+    <a class="nav-map" href="../../index.html">↑ Course map</a>
+    <a class="next" href="chapter-01-summary.html">
+      <span class="nav-k">Next · Chapter 1 →</span>
+      <span class="nav-t">Chapter 1 Summary</span>
+    </a>
   </div>
 </aside>
 
@@ -96,7 +103,7 @@
 
 <p><strong>Why it matters:</strong> simply having lots of data and a fast machine is not automatically enough — early attempts at large neural networks often failed to train well or stopped improving, for reasons that took decades of research to work out and fix. You will meet the actual mechanics of this — how a network updates itself, and why that process can fail — starting in Phase 3 of this course.</p>
 
-<p><strong>Tiny concrete example:</strong> you will not build this yet, but here's the shape of the problem in one sentence: imagine trying to tune a giant sound mixing board with a million knobs, where turning any one knob changes how every other knob should be set too, and you only get one blurry signal (“better” or “worse”) after each adjustment to guess which knobs to turn next. The algorithms this lesson refers to are the specific, carefully worked-out strategies for making that actually converge on a good setting instead of spinning forever — you'll meet the real version of this idea (called <strong>gradient descent</strong>) properly in Lesson 9 and Lesson 32.</p>
+<p><strong>Tiny concrete example:</strong> you will not build this yet, but here's the shape of the problem in one sentence: imagine trying to tune a giant sound mixing board with a million knobs, where turning any one knob changes how every other knob should be set too, and you only get one blurry signal (“better” or “worse”) after each adjustment to guess which knobs to turn next. The algorithms this lesson refers to are the specific, carefully worked-out strategies for making that actually converge on a good setting instead of spinning forever — you'll meet the real version of this idea (called <strong>gradient descent</strong>) properly in <a href="../chapter-03-math-you-actually-need/lesson-09-calculus-intuition.html">Lesson 9</a> and Lesson 32.</p>
 
 <h3>Putting the three together</h3>
 
@@ -156,6 +163,17 @@
 <p>Because of how it actually learns — huge amounts of real examples, crunched by huge amounts of compute, using algorithms that find statistical patterns — AI is strong at: recognizing patterns across large amounts of data, tasks where lots of past examples exist, and producing fluent, plausible-sounding text or images.</p>
 
 <p>It is weak at exactly the things that don't fit that shape: truly novel situations with no real precedent in its training data, guaranteeing that a confident-sounding answer is actually <em>true</em> (a model can state a completely made-up fact with total confidence — this is called <strong>hallucination</strong>, and you'll dig into why it happens and how to reduce its harm in Lesson 106), and clearly explaining <em>why</em> it produced a specific answer, since it's finding statistical patterns, not reasoning the way a human would explain a decision.</p>
+
+<div class="realworld">
+<p>“Why now” is a question you'll actually be asked to reason about at work. When a team debates building an AI feature, the honest check is whether all three ingredients are present <em>for this problem</em>: do we have enough real examples, can we afford the compute, and is there a method that reliably works here? Plenty of promising AI projects stall not because the idea is bad but because one ingredient — usually enough good data — simply isn't there yet. The same three-part lens tells you when <em>not</em> to build.</p>
+</div>
+
+<details class="check">
+<summary>You have a mountain of data and a rack of fast GPUs, but every training run diverges and never improves. Will the AI work?</summary>
+<div class="details-body">
+<p><strong>No.</strong> All three ingredients are required at once — data, compute, <em>and</em> an algorithm that reliably learns. Two out of three isn't enough: a training method that won't converge means the data and compute are wasted. This is exactly why AI's history is a story of waiting for the missing ingredient, not a single breakthrough.</p>
+</div>
+</details>
 </section>
 
 <section id="code">

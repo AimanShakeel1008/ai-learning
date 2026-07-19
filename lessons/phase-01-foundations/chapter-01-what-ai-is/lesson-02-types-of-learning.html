@@ -25,8 +25,15 @@
     <a href="#next">11 · What is next</a>
   </nav>
   <div class="toc-nav">
-    <a class="prev" href="lesson-01-ai-ml-deep-learning.html">← Lesson 01 — AI, ML, Deep Learning, and Generative AI</a>
-    <a class="next" href="lesson-03-why-ai-works-now.html">Lesson 03 — Why AI Works Now →</a>
+    <a class="prev" href="lesson-01-ai-ml-deep-learning.html">
+      <span class="nav-k">← Prev · Lesson 01</span>
+      <span class="nav-t">AI, ML, Deep Learning &amp; Generative AI</span>
+    </a>
+    <a class="nav-map" href="../../index.html">↑ Course map</a>
+    <a class="next" href="lesson-03-why-ai-works-now.html">
+      <span class="nav-k">Next · Lesson 03 →</span>
+      <span class="nav-t">Why AI Works Now</span>
+    </a>
   </div>
 </aside>
 
@@ -46,7 +53,7 @@
 <section id="why">
 <h2><span class="secno">1</span>Why this matters</h2>
 
-<p>Lesson 1 established that machine learning means “learn patterns from data instead of hand-writing rules.” But that one idea splits into three genuinely different <em>situations</em>, depending on what kind of data you actually have. Do you already know the right answers for your examples? Do you have a pile of examples with no answers at all? Or do you not have a fixed pile of examples at all, just a chance to act and see what happens?</p>
+<p><a href="lesson-01-ai-ml-deep-learning.html">Lesson 1</a> established that machine learning means “learn patterns from data instead of hand-writing rules.” But that one idea splits into three genuinely different <em>situations</em>, depending on what kind of data you actually have. Do you already know the right answers for your examples? Do you have a pile of examples with no answers at all? Or do you not have a fixed pile of examples at all, just a chance to act and see what happens?</p>
 
 <p>Getting this right matters immediately, because it decides which tool you reach for. Later in this course you will build a classifier that needs labeled tickets (supervised learning), and eventually an agent that needs to try actions and learn from outcomes (reinforcement learning). If you use the wrong type of learning for the situation you're in, nothing works — it's like trying to teach by handing out an answer key that does not exist.</p>
 </section>
@@ -152,6 +159,13 @@
 </figure>
 
 <p>Most of what you will build early in this course is supervised learning, because most business data (past tickets, past sales, past customers who did or didn't cancel) already comes with a known outcome attached. Reinforcement learning shows up later in the course (Phase 3 and again in Phase 7, when we cover how modern language models are tuned using human feedback) — it needs a very different setup: something that can act repeatedly and receive a reward, not just a static pile of examples.</p>
+
+<details class="check">
+<summary>You have 10,000 product reviews with no labels, and you want to discover natural groupings among them. Which type of learning?</summary>
+<div class="details-body">
+<p><strong>Unsupervised learning</strong> — specifically clustering. There are no correct answers attached, and the goal is to find structure the data reveals on its own (“these reviews are similar to each other”), not to predict a known label. If instead each review already carried a star rating you wanted to predict, that would be supervised; if you were an agent trying actions and getting rewards, reinforcement.</p>
+</div>
+</details>
 </section>
 
 <section id="code">
@@ -251,6 +265,10 @@ Machine A: tried 1 times, average reward 0.00
 
 <section id="tradeoffs">
 <h2><span class="secno">8</span>When to use this, and tradeoffs</h2>
+
+<div class="realworld">
+<p>The overwhelming majority of machine learning running in production today is <strong>supervised</strong> — spam filters, fraud scores, recommendations, churn prediction — precisely because businesses sit on piles of past outcomes to learn from. Unsupervised learning tends to show up as an <em>exploration</em> step (segmenting customers before deciding what to build), and reinforcement learning, while famous for game-playing and for tuning chatbots, is comparatively rare in everyday products because it's hard to set up safely. When someone says “we use AI” at work, it's supervised learning far more often than not.</p>
+</div>
 
 <p>Reach for supervised learning whenever you have — or can reasonably get — examples with known correct answers; it is the most reliable and easiest-to-evaluate of the three, which is why most of Phase 2 focuses on it. Reach for unsupervised learning when you have plenty of data but no answer key, and you want to explore it for groupings or patterns you did not already know to look for — but stay honest that what it finds depends entirely on which features it can see. Reach for reinforcement learning only when your problem is genuinely about a sequence of actions with feedback over time, not a fixed pile of examples — it is powerful but by far the hardest of the three to set up and get working reliably, which is part of why it is introduced later in this course, after the fundamentals are solid.</p>
 </section>
