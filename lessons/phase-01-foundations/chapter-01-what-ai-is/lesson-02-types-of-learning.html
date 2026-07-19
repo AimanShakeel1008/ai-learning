@@ -100,19 +100,56 @@
 
 <h3>Which type fits which kind of problem</h3>
 
-<pre><code>Do you already have examples WITH the correct answer attached?
-├── Yes  -&gt;  SUPERVISED LEARNING
-│           <span class="c">(e.g. past tickets already tagged with their category)</span>
-│
-└── No, but you have a pile of examples with NO answers at all
-    ├── You want to find groups/patterns hiding in that pile
-    │        -&gt;  UNSUPERVISED LEARNING
-    │           <span class="c">(e.g. finding that certain tickets tend to cluster together)</span>
-    │
-    └── You don't have a fixed pile at all — you have a chance to ACT
-        and see what happens, repeatedly, in a changing situation
-             -&gt;  REINFORCEMENT LEARNING
-            <span class="c">(e.g. an agent deciding which action earns the best outcome)</span></code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 600 300" role="img" aria-label="A decision tree for choosing a type of learning based on the data you have. Question 1: do the examples already carry the correct answer? If yes, use supervised learning. If no, question 2: is it a pile of examples with no answers? If yes, use unsupervised learning. If no — you only have a chance to act and see the result — use reinforcement learning. The questions about your data are violet; the approach you build in response is orange.">
+    <defs>
+      <marker id="fig02tree-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+
+    <!-- left column: what data do you have? (data = violet) -->
+    <rect class="fig-box-data" x="15" y="15" width="270" height="58" rx="10"></rect>
+    <text class="fig-label" x="150" y="39" text-anchor="middle">Examples already carry</text>
+    <text class="fig-label" x="150" y="57" text-anchor="middle">the correct answer?</text>
+
+    <rect class="fig-box-data" x="15" y="118" width="270" height="58" rx="10"></rect>
+    <text class="fig-label" x="150" y="142" text-anchor="middle">A pile of examples</text>
+    <text class="fig-label" x="150" y="160" text-anchor="middle">with no answers at all?</text>
+
+    <rect class="fig-box-data" x="15" y="221" width="270" height="58" rx="10"></rect>
+    <text class="fig-label" x="150" y="245" text-anchor="middle">No pile — just a chance</text>
+    <text class="fig-label" x="150" y="263" text-anchor="middle">to act and see results?</text>
+
+    <!-- right column: the approach you build (you = orange) -->
+    <rect class="fig-box-you" x="360" y="15" width="225" height="58" rx="10"></rect>
+    <text class="fig-label" x="472" y="39" text-anchor="middle">SUPERVISED</text>
+    <text class="fig-cap" x="472" y="57" text-anchor="middle">learn from labelled examples</text>
+
+    <rect class="fig-box-you" x="360" y="118" width="225" height="58" rx="10"></rect>
+    <text class="fig-label" x="472" y="142" text-anchor="middle">UNSUPERVISED</text>
+    <text class="fig-cap" x="472" y="160" text-anchor="middle">find groups in unlabelled data</text>
+
+    <rect class="fig-box-you" x="360" y="221" width="225" height="58" rx="10"></rect>
+    <text class="fig-label" x="472" y="245" text-anchor="middle">REINFORCEMENT</text>
+    <text class="fig-cap" x="472" y="263" text-anchor="middle">act, get rewards, improve</text>
+
+    <!-- yes → an approach -->
+    <line class="fig-arrow" x1="287" y1="44" x2="356" y2="44" marker-end="url(#fig02tree-ah)"></line>
+    <text class="fig-cap" x="321" y="36" text-anchor="middle">yes</text>
+    <line class="fig-arrow" x1="287" y1="147" x2="356" y2="147" marker-end="url(#fig02tree-ah)"></line>
+    <text class="fig-cap" x="321" y="139" text-anchor="middle">yes</text>
+    <line class="fig-arrow" x1="287" y1="250" x2="356" y2="250" marker-end="url(#fig02tree-ah)"></line>
+    <text class="fig-cap" x="321" y="242" text-anchor="middle">yes</text>
+
+    <!-- no → next question down the spine -->
+    <line class="fig-arrow" x1="150" y1="73" x2="150" y2="116" marker-end="url(#fig02tree-ah)"></line>
+    <text class="fig-cap" x="163" y="99" text-anchor="start">no</text>
+    <line class="fig-arrow" x1="150" y1="176" x2="150" y2="219" marker-end="url(#fig02tree-ah)"></line>
+    <text class="fig-cap" x="163" y="202" text-anchor="start">no</text>
+  </svg>
+  <figcaption><strong>The data you have decides the type of learning.</strong> Violet boxes ask what your data looks like; each "yes" points to the orange approach you'd build. Answer the questions top to bottom and the first "yes" is your answer.</figcaption>
+</figure>
 
 <p>Most of what you will build early in this course is supervised learning, because most business data (past tickets, past sales, past customers who did or didn't cancel) already comes with a known outcome attached. Reinforcement learning shows up later in the course (Phase 3 and again in Phase 7, when we cover how modern language models are tuned using human feedback) — it needs a very different setup: something that can act repeatedly and receive a reward, not just a static pile of examples.</p>
 </section>

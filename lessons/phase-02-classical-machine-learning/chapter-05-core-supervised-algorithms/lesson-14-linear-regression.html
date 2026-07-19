@@ -117,14 +117,37 @@ b  ←  b  −  learning_rate × (slope for b)</code></pre>
 
 <p>The <strong>learning rate</strong> is the step size — small (like 0.01) is slow but safe; too big and the steps overshoot and blow up (the divergence you saw in Lesson 09). Repeat the update a couple thousand times: each pass the line tilts and shifts a hair toward the dots and the loss drops, until it settles at the bottom — the line of best fit.</p>
 
-<pre><code> minutes                           minutes
-   |          . .  /                 |          . ./
-   |      . ./  .                    |      . ./ .
-   |   . /  .           many         |   . /.
-   | ./  .          steps of         | ./ .
-   |/______________  gradient  ---&gt;  |/______________
-   start: flat line     descent      end: best-fit line
-   (big loss)                        (smallest loss)</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 360 250" role="img" aria-label="A scatter of ticket length against minutes to resolve, with the best-fit line rising through the cloud of points. From each violet data point a short dashed vertical line drops to the line — that gap is the residual, the prediction error for that point. The best-fit line is the one orange line that makes the total of these squared gaps as small as possible.">
+    <!-- axes -->
+    <line class="fig-axis" x1="42" y1="200" x2="345" y2="200"></line>
+    <line class="fig-axis" x1="42" y1="200" x2="42" y2="25"></line>
+    <text class="fig-cap" x="335" y="222" text-anchor="middle">length →</text>
+    <text class="fig-cap" x="22" y="112" text-anchor="middle" transform="rotate(-90 22 112)">minutes</text>
+    <!-- residual segments (neutral dashed): point to line, same x -->
+    <line class="fig-arrow-dashed" x1="60" y1="168" x2="60" y2="178"></line>
+    <line class="fig-arrow-dashed" x1="95" y1="172" x2="95" y2="162"></line>
+    <line class="fig-arrow-dashed" x1="130" y1="138" x2="130" y2="145"></line>
+    <line class="fig-arrow-dashed" x1="170" y1="134" x2="170" y2="127"></line>
+    <line class="fig-arrow-dashed" x1="210" y1="96" x2="210" y2="108"></line>
+    <line class="fig-arrow-dashed" x1="250" y1="100" x2="250" y2="90"></line>
+    <line class="fig-arrow-dashed" x1="290" y1="64" x2="290" y2="71"></line>
+    <!-- the best-fit line (the model you build = orange) -->
+    <line class="fig-stroke-you" x1="45" y1="185" x2="325" y2="55"></line>
+    <!-- data points (violet) -->
+    <circle class="fig-box-data" cx="60" cy="168" r="4.5"></circle>
+    <circle class="fig-box-data" cx="95" cy="172" r="4.5"></circle>
+    <circle class="fig-box-data" cx="130" cy="138" r="4.5"></circle>
+    <circle class="fig-box-data" cx="170" cy="134" r="4.5"></circle>
+    <circle class="fig-box-data" cx="210" cy="96" r="4.5"></circle>
+    <circle class="fig-box-data" cx="250" cy="100" r="4.5"></circle>
+    <circle class="fig-box-data" cx="290" cy="64" r="4.5"></circle>
+    <!-- callout -->
+    <text class="fig-cap" x="112" y="192" text-anchor="start">residual = gap</text>
+    <text class="fig-cap fig-ink-you" x="250" y="45" text-anchor="middle">best-fit line</text>
+  </svg>
+  <figcaption><strong>The best-fit line minimises the squared gaps.</strong> Violet dots are the tickets; each dashed segment is one residual — how far the line's prediction sits from the truth. Training slides <code>w</code> and <code>b</code> until the total of those gaps, squared, is as small as it can be.</figcaption>
+</figure>
 
 <h3>One feature now, many features later</h3>
 

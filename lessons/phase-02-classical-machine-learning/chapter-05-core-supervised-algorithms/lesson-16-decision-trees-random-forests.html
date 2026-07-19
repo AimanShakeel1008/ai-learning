@@ -97,13 +97,46 @@
 
 <p>Here is the actual tree our assistant learns in this lesson (nobody wrote it — the data chose every question):</p>
 
-<pre><code>contains "refund"?
-  yes: predict billing
-  no:  contains "package"?
-    yes: predict shipping
-    no:  contains "delivery"?
-      yes: predict shipping
-      no:  predict account</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 470 320" role="img" aria-label="The learned decision tree as a flowchart. First question in teal: does the ticket contain the word refund? If yes, predict billing, an orange leaf. If no, next question: contains package? If yes, predict shipping. If no, next question: contains delivery? If yes, predict shipping; if no, predict account. Teal boxes are the yes/no questions the tree learned to ask; orange boxes are the predictions it gives.">
+    <defs>
+      <marker id="fig16tree-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <!-- question nodes (learned machinery = teal) down the spine -->
+    <rect class="fig-box-infra" x="20" y="15" width="175" height="46" rx="10"></rect>
+    <text class="fig-mono" x="107" y="43" text-anchor="middle">contains "refund"?</text>
+    <rect class="fig-box-infra" x="20" y="105" width="175" height="46" rx="10"></rect>
+    <text class="fig-mono" x="107" y="133" text-anchor="middle">contains "package"?</text>
+    <rect class="fig-box-infra" x="20" y="195" width="175" height="46" rx="10"></rect>
+    <text class="fig-mono" x="107" y="223" text-anchor="middle">contains "delivery"?</text>
+    <!-- leaves = the prediction the model gives (you = orange) -->
+    <rect class="fig-box-you" x="290" y="16" width="150" height="42" rx="10"></rect>
+    <text class="fig-label" x="365" y="42" text-anchor="middle">billing</text>
+    <rect class="fig-box-you" x="290" y="106" width="150" height="42" rx="10"></rect>
+    <text class="fig-label" x="365" y="132" text-anchor="middle">shipping</text>
+    <rect class="fig-box-you" x="290" y="196" width="150" height="42" rx="10"></rect>
+    <text class="fig-label" x="365" y="222" text-anchor="middle">shipping</text>
+    <rect class="fig-box-you" x="290" y="262" width="150" height="42" rx="10"></rect>
+    <text class="fig-label" x="365" y="288" text-anchor="middle">account</text>
+    <!-- yes branches (to a prediction) -->
+    <line class="fig-arrow" x1="195" y1="38" x2="288" y2="37" marker-end="url(#fig16tree-ah)"></line>
+    <text class="fig-cap" x="240" y="30" text-anchor="middle">yes</text>
+    <line class="fig-arrow" x1="195" y1="128" x2="288" y2="127" marker-end="url(#fig16tree-ah)"></line>
+    <text class="fig-cap" x="240" y="120" text-anchor="middle">yes</text>
+    <line class="fig-arrow" x1="195" y1="218" x2="288" y2="217" marker-end="url(#fig16tree-ah)"></line>
+    <text class="fig-cap" x="240" y="210" text-anchor="middle">yes</text>
+    <!-- no branches (down the spine, last one to account) -->
+    <line class="fig-arrow" x1="107" y1="61" x2="107" y2="103" marker-end="url(#fig16tree-ah)"></line>
+    <text class="fig-cap" x="120" y="85" text-anchor="start">no</text>
+    <line class="fig-arrow" x1="107" y1="151" x2="107" y2="193" marker-end="url(#fig16tree-ah)"></line>
+    <text class="fig-cap" x="120" y="175" text-anchor="start">no</text>
+    <path class="fig-arrow" d="M107,241 L107,283 L288,283" marker-end="url(#fig16tree-ah)"></path>
+    <text class="fig-cap" x="120" y="265" text-anchor="start">no</text>
+  </svg>
+  <figcaption><strong>Nobody wrote this tree — the data chose every question.</strong> Teal boxes are the yes/no questions the tree learned to ask; follow "no" down the spine or "yes" across to an orange leaf, which is the category it predicts.</figcaption>
+</figure>
 
 <p>The only thing a human supplied was the <strong>menu</strong> of questions the tree was <em>allowed</em> to ask — a list of candidate words (“refund”, “charged”, “package”, “delivery”, “order”, “password”, “account”, “login”, “help”). Which of them to use, and in what order, the tree worked out from 12 labelled tickets.</p>
 

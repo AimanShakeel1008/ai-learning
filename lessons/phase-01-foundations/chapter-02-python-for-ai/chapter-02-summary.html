@@ -45,13 +45,29 @@
 <section id="map">
 <h2><span class="secno">2</span>How the chapter's ideas connect</h2>
 
-<pre><code>Python AI toolkit <span class="c">(Lesson 4)</span>
- └── NumPy: numbers laid out as arrays, operated on all at once <span class="c">(Lesson 5)</span>
-      └── pandas: labeled tables built on top of NumPy arrays,
-           mixing types column by column <span class="c">(Lesson 6)</span>
-           └── matplotlib: turns any of the above into a picture,
-                so spread, balance, and relationships are SEEN,
-                not just computed <span class="c">(Lesson 7)</span></code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 520 130" role="img" aria-label="Three libraries in a dependency chain, each built on the one before it. NumPy provides arrays operated on all at once. pandas, built on NumPy, adds labeled tables that mix types column by column. matplotlib, built on both, turns them into pictures. All three are teal tools you did not write.">
+    <defs>
+      <marker id="fig-ch2-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <rect class="fig-box-infra" x="15" y="30" width="150" height="66" rx="10"></rect>
+    <text class="fig-label" x="90" y="58" text-anchor="middle">NumPy</text>
+    <text class="fig-cap" x="90" y="78" text-anchor="middle">arrays (L5)</text>
+    <rect class="fig-box-infra" x="185" y="30" width="150" height="66" rx="10"></rect>
+    <text class="fig-label" x="260" y="58" text-anchor="middle">pandas</text>
+    <text class="fig-cap" x="260" y="78" text-anchor="middle">labeled tables (L6)</text>
+    <rect class="fig-box-infra" x="355" y="30" width="150" height="66" rx="10"></rect>
+    <text class="fig-label" x="430" y="58" text-anchor="middle">matplotlib</text>
+    <text class="fig-cap" x="430" y="78" text-anchor="middle">pictures (L7)</text>
+    <line class="fig-arrow" x1="165" y1="63" x2="183" y2="63" marker-end="url(#fig-ch2-ah)"></line>
+    <line class="fig-arrow" x1="335" y1="63" x2="353" y2="63" marker-end="url(#fig-ch2-ah)"></line>
+    <text class="fig-cap" x="174" y="24" text-anchor="middle">built on</text>
+    <text class="fig-cap" x="344" y="24" text-anchor="middle">built on</text>
+  </svg>
+  <figcaption><strong>Each library is built on the one before it.</strong> pandas' speed comes from the NumPy arrays under every column; matplotlib draws straight from both. All teal — tools you import, not code you write — sharing the one habit from Lesson 5: act on every value at once.</figcaption>
+</figure>
 
 <p>Each library in this chapter is built on the one before it: pandas' speed comes from NumPy arrays running underneath each column; matplotlib's plots in Lesson 7 draw directly from NumPy arrays and pandas Series and DataFrames without any conversion step. The thread underneath all four lessons is the same one first named in Lesson 5: doing something to <em>every</em> value in a collection at once (vectorization), instead of writing a loop, is both faster and the standard way this is done throughout the rest of the course.</p>
 </section>

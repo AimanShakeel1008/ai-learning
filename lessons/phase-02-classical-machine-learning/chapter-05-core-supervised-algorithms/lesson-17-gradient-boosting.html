@@ -131,6 +131,35 @@ right of 45: 24.5 + (+12.5) = 37.0 minutes</code></pre>
 
 <p>So each round does the same four things: <strong>(1)</strong> compute the residuals, <strong>(2)</strong> fit a stump to them, <strong>(3)</strong> add the stump's corrections to the model, <strong>(4)</strong> repeat. The final model is a <em>recipe</em>:</p>
 
+<figure class="fig">
+  <svg viewBox="0 0 560 210" role="img" aria-label="The boosting loop as a cycle. Step one: compute the residuals, the actual minus predicted to-do list, shown in violet as data. Step two: fit one small stump to those residuals, shown in teal as the learning machinery. Step three: add that stump's correction to the model, shown in orange as the model you are building. An arrow loops back to step one and repeats, and each round sees only the errors left by the round before it, so the rounds must run in order.">
+    <defs>
+      <marker id="fig17loop-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <!-- residuals are the data / to-do list (violet) -->
+    <rect class="fig-box-data" x="20" y="90" width="155" height="66" rx="10"></rect>
+    <text class="fig-label" x="97" y="118" text-anchor="middle">Residuals</text>
+    <text class="fig-cap" x="97" y="137" text-anchor="middle">actual − predicted</text>
+    <!-- fitting a stump is the machinery (teal) -->
+    <rect class="fig-box-infra" x="203" y="90" width="155" height="66" rx="10"></rect>
+    <text class="fig-label" x="280" y="118" text-anchor="middle">Fit one stump</text>
+    <text class="fig-cap" x="280" y="137" text-anchor="middle">a tree on the residuals</text>
+    <!-- the model you are building (orange) -->
+    <rect class="fig-box-you" x="386" y="90" width="155" height="66" rx="10"></rect>
+    <text class="fig-label" x="463" y="114" text-anchor="middle">Add to the model</text>
+    <text class="fig-cap" x="463" y="133" text-anchor="middle">prediction += rate × stump</text>
+
+    <line class="fig-arrow" x1="175" y1="123" x2="201" y2="123" marker-end="url(#fig17loop-ah)"></line>
+    <line class="fig-arrow" x1="358" y1="123" x2="384" y2="123" marker-end="url(#fig17loop-ah)"></line>
+    <!-- repeat, back to the top -->
+    <path class="fig-arrow" d="M463,90 C463,34 97,34 97,88" marker-end="url(#fig17loop-ah)"></path>
+    <text class="fig-cap" x="280" y="26" text-anchor="middle">repeat — each round sees only the errors the last one left</text>
+  </svg>
+  <figcaption><strong>Boosting is a relay, not a vote.</strong> Violet = the residual to-do list; teal = fitting one weak stump to it; orange = the model you keep adding corrections to. The loop must run in order — a round's target does not exist until the previous round has been applied.</figcaption>
+</figure>
+
 <pre><code>prediction(ticket) = 24.5                      <span class="c">&lt;- the average</span>
                    + stump1(ticket)            <span class="c">&lt;- ±12.5 at the 45-word line</span>
                    + stump2(ticket)            <span class="c">&lt;- fixes the right side</span>

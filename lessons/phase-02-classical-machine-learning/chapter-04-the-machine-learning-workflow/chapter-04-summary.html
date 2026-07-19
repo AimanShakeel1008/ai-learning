@@ -51,14 +51,31 @@
 <section id="map">
 <h2><span class="secno">2</span>How the chapter's ideas connect</h2>
 
-<pre><code>  LESSON 11               LESSON 12                 LESSON 13
-  the PROCESS      --&gt;     honest SCORING     --&gt;   reading the SCORE
-  (5-stage pipeline)      (hide data properly)     (over/underfit, bias-variance)
-
-  data -&gt; features        train | validation |     train error vs validation error
-  -&gt; train -&gt; evaluate     test  (each a job)        -&gt; the GAP tells you what's wrong
-  -&gt; use                  memoriser proves the      -&gt; U-curve: pick the middle
-                          cardinal sin</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 560 150" role="img" aria-label="Three lessons in a chain. Lesson 11 is the process: a five-stage pipeline that builds a model and a score. An arrow leads to Lesson 12, honest scoring: hide test data so the score is trustworthy. Another arrow leads to Lesson 13, reading the score: the gap between training and validation error reveals over- or underfitting.">
+    <defs>
+      <marker id="fig-ch4-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <rect class="fig-box" x="15" y="25" width="160" height="86" rx="10"></rect>
+    <text class="fig-label" x="95" y="52" text-anchor="middle">Lesson 11</text>
+    <text class="fig-cap" x="95" y="72" text-anchor="middle">the process</text>
+    <text class="fig-cap" x="95" y="90" text-anchor="middle">5-stage pipeline</text>
+    <rect class="fig-box" x="200" y="25" width="160" height="86" rx="10"></rect>
+    <text class="fig-label" x="280" y="52" text-anchor="middle">Lesson 12</text>
+    <text class="fig-cap" x="280" y="72" text-anchor="middle">honest scoring</text>
+    <text class="fig-cap" x="280" y="90" text-anchor="middle">hide the test data</text>
+    <rect class="fig-box" x="385" y="25" width="160" height="86" rx="10"></rect>
+    <text class="fig-label" x="465" y="52" text-anchor="middle">Lesson 13</text>
+    <text class="fig-cap" x="465" y="72" text-anchor="middle">read the score</text>
+    <text class="fig-cap" x="465" y="90" text-anchor="middle">the gap: over/underfit</text>
+    <line class="fig-arrow" x1="175" y1="68" x2="198" y2="68" marker-end="url(#fig-ch4-ah)"></line>
+    <line class="fig-arrow" x1="360" y1="68" x2="383" y2="68" marker-end="url(#fig-ch4-ah)"></line>
+    <text class="fig-cap" x="280" y="132" text-anchor="middle">build a model · score it honestly · understand the score</text>
+  </svg>
+  <figcaption><strong>Three lessons, one idea.</strong> Lesson 11 builds the machine that makes a model and a score; Lesson 12 makes that score honest by hiding data; Lesson 13 teaches what the honest score is telling you — impossible without Lesson 12's held-out split.</figcaption>
+</figure>
 
 <p>The through-line: <strong>Lesson 11</strong> gives you the machine (a pipeline that produces a model and a score). <strong>Lesson 12</strong> makes sure that score is <em>honest</em> by hiding data the model never learns from. <strong>Lesson 13</strong> teaches you what the honest score is <em>telling you</em> — and none of Lesson 13's diagnosis is even possible without Lesson 12's held-out split, because you need a training score <em>and</em> a validation score to see the gap between them. Three lessons, one idea: build a model, score it honestly, and understand the score.</p>
 </section>

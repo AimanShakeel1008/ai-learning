@@ -936,6 +936,326 @@ footer.next a {
   }
 }
 
+/* ---------- hand-authored SVG diagrams (figures) ---------- */
+/* Reusable classes for inline <svg> diagrams (see CLAUDE.md "SVG Diagrams").
+   Rules, same as the rest of this file:
+   - LITERAL colors only, no var(--x); dark-mode overrides live below.
+   - Diagram COLOR (fill/stroke), stroke width, and dashes come from these
+     classes only — never inline color/style attributes on SVG elements.
+     Geometry (x, y, width, height, points, d, cx, cy, r, viewBox,
+     text-anchor) stays as normal SVG attributes.
+   The colour LANGUAGE, kept identical across every lesson:
+     orange  = the thing the learner builds / owns (their model, their code,
+               the prediction the system makes)          -> .fig-box-you
+     teal    = tool / library / algorithm machinery / infrastructure they did
+               not write (scikit-learn, the optimiser, a training loop)
+                                                          -> .fig-box-infra
+     violet  = data / values / examples flowing through   -> .fig-box-data
+     neutral = external, generic, or real-world context   -> .fig-box
+   Box classes set fill/stroke and work on any shape (rect, circle, ellipse,
+   path). Box fills are light tints in light mode / dark tints in dark mode, so
+   the single theme-aware .fig-label ink reads on all of them. */
+
+figure.fig {
+  margin: 1.8rem 0;
+  padding: 0;
+}
+
+figure.fig svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+figure.fig figcaption {
+  margin: 0.7rem 0.2rem 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: #6b6459;
+}
+
+figure.fig figcaption strong {
+  color: #9a4a10;
+}
+
+/* box variants — apply to rect / circle / ellipse / path */
+.fig-box {
+  fill: #f5efe4;
+  stroke: #cbb99a;
+  stroke-width: 2;
+}
+
+.fig-box-you {
+  fill: #fdf0e6;
+  stroke: #e8590c;
+  stroke-width: 2;
+}
+
+.fig-box-infra {
+  fill: #e7f4f6;
+  stroke: #0c8599;
+  stroke-width: 2;
+}
+
+.fig-box-data {
+  fill: #efeafc;
+  stroke: #7048e8;
+  stroke-width: 2;
+}
+
+/* a soft containment region ("inside / outside", a grouping) */
+.fig-zone {
+  fill: #f7f2ea;
+  stroke: #b0a898;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+
+/* a hard boundary line (e.g. a decision boundary, a split) */
+.fig-divider {
+  stroke: #e8590c;
+  stroke-width: 2;
+  stroke-dasharray: 7 5;
+  fill: none;
+}
+
+/* text */
+.fig-title {
+  fill: #2b2620;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.fig-label {
+  fill: #2b2620;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+}
+
+.fig-cap {
+  fill: #6b6459;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 11px;
+}
+
+.fig-mono {
+  fill: #2b2620;
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  font-size: 12.5px;
+}
+
+/* colour-coded label text, to name a role away from its box */
+.fig-ink-you {
+  fill: #9a4a10;
+}
+
+.fig-ink-infra {
+  fill: #0a6c7d;
+}
+
+.fig-ink-data {
+  fill: #5f3dc4;
+}
+
+/* arrows: .fig-arrow on the line/path, .fig-arrowhead on the marker polygon */
+.fig-arrow {
+  stroke: #6b6459;
+  stroke-width: 2;
+  fill: none;
+}
+
+.fig-arrow-dashed {
+  stroke: #6b6459;
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+  fill: none;
+}
+
+.fig-arrowhead {
+  fill: #6b6459;
+  stroke: none;
+}
+
+/* stroke-only lines/curves in the colour language (best-fit lines, plot
+   curves, distribution shapes). fill:none so they never flood an area. */
+.fig-stroke-you {
+  stroke: #e8590c;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.fig-stroke-infra {
+  stroke: #0c8599;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.fig-stroke-data {
+  stroke: #7048e8;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+/* a thin neutral line for plot axes and tick marks */
+.fig-axis {
+  stroke: #8a8378;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+/* a faint area fill under a curve / inside a shape (soft, no border) */
+.fig-fill-data {
+  fill: #efeafc;
+  stroke: none;
+}
+
+.fig-fill-you {
+  fill: #fdf0e6;
+  stroke: none;
+}
+
+/* a data-coloured arrow (violet), e.g. a feature vector or a value flowing */
+.fig-arrow-data {
+  stroke: #7048e8;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.fig-arrowhead-data {
+  fill: #7048e8;
+  stroke: none;
+}
+
+/* before / after "VS" badge (circle + its text) */
+.fig-vs {
+  fill: #e8590c;
+  stroke: none;
+}
+
+.fig-vs-text {
+  fill: #ffffff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  figure.fig figcaption {
+    color: #9a9285;
+  }
+
+  figure.fig figcaption strong {
+    color: #ffab73;
+  }
+
+  .fig-box {
+    fill: #241f17;
+    stroke: #4a4030;
+  }
+
+  .fig-box-you {
+    fill: #2b1c10;
+    stroke: #ff7b33;
+  }
+
+  .fig-box-infra {
+    fill: #13282b;
+    stroke: #17707f;
+  }
+
+  .fig-box-data {
+    fill: #211b33;
+    stroke: #9775fa;
+  }
+
+  .fig-zone {
+    fill: #201c15;
+    stroke: #6f6759;
+  }
+
+  .fig-divider {
+    stroke: #ff7b33;
+  }
+
+  .fig-title {
+    fill: #e8e2d6;
+  }
+
+  .fig-label {
+    fill: #e8e2d6;
+  }
+
+  .fig-cap {
+    fill: #9a9285;
+  }
+
+  .fig-mono {
+    fill: #e8e2d6;
+  }
+
+  .fig-ink-you {
+    fill: #ffab73;
+  }
+
+  .fig-ink-infra {
+    fill: #4cc4d9;
+  }
+
+  .fig-ink-data {
+    fill: #b197fc;
+  }
+
+  .fig-arrow,
+  .fig-arrow-dashed {
+    stroke: #b6ae9f;
+  }
+
+  .fig-arrowhead {
+    fill: #b6ae9f;
+  }
+
+  .fig-arrow-data {
+    stroke: #9775fa;
+  }
+
+  .fig-arrowhead-data {
+    fill: #9775fa;
+  }
+
+  .fig-stroke-you {
+    stroke: #ff7b33;
+  }
+
+  .fig-stroke-infra {
+    stroke: #4cc4d9;
+  }
+
+  .fig-stroke-data {
+    stroke: #9775fa;
+  }
+
+  .fig-axis {
+    stroke: #9a9285;
+  }
+
+  .fig-fill-data {
+    fill: #2a2340;
+  }
+
+  .fig-fill-you {
+    fill: #3a2413;
+  }
+
+  .fig-vs {
+    fill: #ff7b33;
+  }
+
+  .fig-vs-text {
+    fill: #241505;
+  }
+}
+
 /* ---------- reduced motion: kill ALL animation and transitions ---------- */
 
 @media (prefers-reduced-motion: reduce) {

@@ -85,12 +85,24 @@
 
 <p>We split our labelled examples into three separate sets:</p>
 
-<pre><code>   ALL LABELLED TICKETS
-   ┌───────────────────────────────────────────────┐
-   │  TRAIN (biggest)   │  VALIDATION  │   TEST     │
-   └───────────────────────────────────────────────┘
-        learn from          tune &amp;         final judge,
-        this only           choose         look ONCE</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 560 150" role="img" aria-label="One bar of all labelled tickets cut into three pieces. The biggest piece on the left is the training set, which the model learns from. The middle piece is the validation set, used to tune and choose. The small piece on the right is the test set, the final judge you look at only once. All three are pieces of the same data, shown in violet.">
+    <text class="fig-cap" x="280" y="26" text-anchor="middle">ALL LABELLED TICKETS — cut into three, before anything else</text>
+    <!-- the three splits are all pieces of the same dataset (data = violet) -->
+    <rect class="fig-box-data" x="20" y="42" width="298" height="56" rx="8"></rect>
+    <text class="fig-label" x="169" y="76" text-anchor="middle">TRAIN</text>
+    <rect class="fig-box-data" x="322" y="42" width="128" height="56" rx="8"></rect>
+    <text class="fig-label" x="386" y="76" text-anchor="middle">VALIDATION</text>
+    <rect class="fig-box-data" x="454" y="42" width="86" height="56" rx="8"></rect>
+    <text class="fig-label" x="497" y="76" text-anchor="middle">TEST</text>
+    <!-- each piece's one job -->
+    <text class="fig-cap" x="169" y="120" text-anchor="middle">learn from this only</text>
+    <text class="fig-cap" x="386" y="120" text-anchor="middle">tune &amp; choose</text>
+    <text class="fig-cap" x="497" y="120" text-anchor="middle">final judge</text>
+    <text class="fig-cap" x="497" y="136" text-anchor="middle">— look once</text>
+  </svg>
+  <figcaption><strong>One dataset, three jobs.</strong> All three slices are the same labelled data (violet) split up front. Train is biggest because the model learns only from it; validation absorbs your choices; test stays locked away as the honest final judge.</figcaption>
+</figure>
 
 <p><strong>1. Training set</strong> — the biggest slice. The model sets its numbers (its <strong>parameters</strong> — the values it learns from data, defined in Lesson 11) using <em>only</em> these examples. This is the textbook.</p>
 

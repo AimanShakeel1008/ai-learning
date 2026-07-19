@@ -100,21 +100,39 @@
 
 <h3>Putting the three together</h3>
 
-<pre><code>        DATA              COMPUTE            ALGORITHMS
-  (enough real       (fast enough to     (a training method
-   examples to        actually crunch     that reliably
-   find a real         through all         improves instead
-   pattern, not         that data in        of breaking down)
-   noise)               reasonable time)
-        \                   |                    /
-         \                  |                   /
-          \-----------------+------------------/
-                             |
-                             v
-                  <span class="hi">AI THAT ACTUALLY WORKS WELL</span>
+<figure class="fig">
+  <svg viewBox="0 0 560 260" role="img" aria-label="Three ingredients all flowing into one result: DATA, meaning enough real examples, in violet; COMPUTE, fast enough to crunch it, and ALGORITHMS, training that reliably improves, both in teal as machinery; all three converge with arrows into an orange box, AI that works well. Missing any one means it does not work.">
+    <defs>
+      <marker id="fig03three-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <!-- DATA is data (violet); COMPUTE and ALGORITHMS are machinery (teal) -->
+    <rect class="fig-box-data" x="20" y="20" width="150" height="72" rx="10"></rect>
+    <text class="fig-label" x="95" y="48" text-anchor="middle">DATA</text>
+    <text class="fig-cap" x="95" y="68" text-anchor="middle">enough real examples</text>
 
-  Missing any ONE of the three = it doesn't work,
-  no matter how good the other two are.</code></pre>
+    <rect class="fig-box-infra" x="205" y="20" width="150" height="72" rx="10"></rect>
+    <text class="fig-label" x="280" y="48" text-anchor="middle">COMPUTE</text>
+    <text class="fig-cap" x="280" y="68" text-anchor="middle">fast enough to crunch it</text>
+
+    <rect class="fig-box-infra" x="390" y="20" width="150" height="72" rx="10"></rect>
+    <text class="fig-label" x="465" y="48" text-anchor="middle">ALGORITHMS</text>
+    <text class="fig-cap" x="465" y="68" text-anchor="middle">reliably improves</text>
+
+    <!-- all three converge -->
+    <path class="fig-arrow" d="M95,92 L255,171" marker-end="url(#fig03three-ah)"></path>
+    <path class="fig-arrow" d="M280,92 L280,171" marker-end="url(#fig03three-ah)"></path>
+    <path class="fig-arrow" d="M465,92 L305,171" marker-end="url(#fig03three-ah)"></path>
+
+    <!-- the result you get (you = orange) -->
+    <rect class="fig-box-you" x="180" y="174" width="200" height="56" rx="10"></rect>
+    <text class="fig-label" x="280" y="207" text-anchor="middle">AI THAT WORKS WELL</text>
+
+    <text class="fig-cap" x="280" y="250" text-anchor="middle">Missing any one → it doesn't work, no matter how good the other two are.</text>
+  </svg>
+  <figcaption><strong>Three trends had to overlap.</strong> Violet is the data; teal is the machinery (compute and algorithms); orange is the working AI you get only when all three arrive at once. For most of AI's history at least one was missing.</figcaption>
+</figure>
 
 <p>For most of AI's history, at least one of these three was missing. That is the real, honest explanation for why AI “suddenly” got good recently — not a single breakthrough moment, but three separate trends finally overlapping.</p>
 

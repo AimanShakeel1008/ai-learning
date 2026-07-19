@@ -102,17 +102,40 @@
 
 <p><strong>Measuring slope without any calculus rules.</strong> The notebook never differentiates a formula. It measures the slope numerically: compute the loss slightly above the current <code>w</code>, slightly below it, subtract, divide by the distance between the two points. “Rise over run” from school, over a very small run (<code>0.0001</code>). This is called a <strong>numerical derivative</strong> (this symmetric version is the <em>central difference</em>). It is how we can honestly say: no formula manipulation is required to understand — or even to implement — how models learn. (Real frameworks compute exact slopes a faster way; that is Phase 3's backpropagation.)</p>
 
-<pre><code> loss
-  21 |*                                   *
-     | *                                 *
-     |  *                               *
-5.25 |    *                           *
-     |      *                       *
-     |         *                 *
-   0 +------------*-----*-----*------------  w
-     0      1         2         3        4
-              <span class="hi">bottom of the valley: w = 2</span>
-              slope here = 0 (flat ground)</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 380 250" role="img" aria-label="The loss valley, a U-shaped curve of loss against the weight w. Loss is 21 at w equals 0, drops to 0 at the bottom where w equals 2, and rises back to 21 at w equals 4. Orange dots step down the left wall from w equals 0 toward the bottom, each step smaller than the last, because gradient descent moves w downhill by an amount proportional to the slope, which flattens near the bottom.">
+    <defs>
+      <marker id="fig09gd-ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L6,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <!-- axes -->
+    <line class="fig-axis" x1="45" y1="212" x2="360" y2="212"></line>
+    <line class="fig-axis" x1="45" y1="212" x2="45" y2="25"></line>
+    <text class="fig-cap" x="352" y="230" text-anchor="middle">w →</text>
+    <text class="fig-cap" x="22" y="120" text-anchor="middle" transform="rotate(-90 22 120)">loss</text>
+    <text class="fig-cap" x="45" y="228" text-anchor="middle">0</text>
+    <text class="fig-cap" x="121" y="228" text-anchor="middle">1</text>
+    <text class="fig-cap" x="197" y="228" text-anchor="middle">2</text>
+    <text class="fig-cap" x="274" y="228" text-anchor="middle">3</text>
+    <text class="fig-cap" x="350" y="228" text-anchor="middle">4</text>
+    <!-- the loss curve: loss = 5.25 (w-2)^2 (the machinery = teal) -->
+    <path class="fig-stroke-infra" d="M45,27 Q83,108 121,164 T197,210 Q236,198 274,164 T350,27"></path>
+    <!-- gradient-descent steps walking down the left wall (you tune w = orange) -->
+    <circle class="fig-box-you" cx="45" cy="27" r="4.5"></circle>
+    <circle class="fig-box-you" cx="91" cy="120" r="4.5"></circle>
+    <circle class="fig-box-you" cx="129" cy="172" r="4.5"></circle>
+    <circle class="fig-box-you" cx="159" cy="198" r="4.5"></circle>
+    <circle class="fig-box-you" cx="182" cy="208" r="4.5"></circle>
+    <circle class="fig-box-you" cx="197" cy="210" r="4.5"></circle>
+    <line class="fig-arrow" x1="52" y1="40" x2="85" y2="110" marker-end="url(#fig09gd-ah)"></line>
+    <line class="fig-arrow" x1="98" y1="130" x2="123" y2="164" marker-end="url(#fig09gd-ah)"></line>
+    <line class="fig-arrow" x1="135" y1="180" x2="154" y2="192" marker-end="url(#fig09gd-ah)"></line>
+    <text class="fig-cap" x="60" y="20" text-anchor="start">start: w = 0</text>
+    <text class="fig-cap fig-ink-you" x="205" y="200" text-anchor="start">bottom: w = 2, slope 0</text>
+  </svg>
+  <figcaption><strong>Gradient descent walks downhill.</strong> Teal is the loss valley <code>5.25·(w−2)²</code>; each orange dot is one step, <code>w = w − rate × slope</code>. The steps shrink on their own as the slope flattens toward the bottom, so the walk brakes itself — the same valley the simulation below lets you step through.</figcaption>
+</figure>
 
 <p><strong>Gradient descent, the learning recipe.</strong> Knowing the slope, improvement is mechanical:</p>
 

@@ -100,6 +100,53 @@
 
 <p><strong>Technical name:</strong> this is <strong>high variance</strong> — “variance” because the fitted curve would swing dramatically if you gave it a slightly different sample of training points. It's chasing the sample, not the truth.</p>
 
+<figure class="fig">
+  <svg viewBox="0 0 560 210" role="img" aria-label="Three panels over the same seven data points, which follow a gentle hump with a little noise. Left panel, underfit: a straight orange line cannot bend into the hump and misses most points — high bias. Middle panel, just right: a smooth orange hump follows the real pattern and passes near the points without chasing every wobble. Right panel, overfit: a wildly zig-zagging orange line threads exactly through every point, including the noise — high variance.">
+    <!-- PANEL 1: underfit -->
+    <text class="fig-label" x="105" y="20" text-anchor="middle">Underfit</text>
+    <text class="fig-cap" x="105" y="36" text-anchor="middle">too simple · high bias</text>
+    <line class="fig-axis" x1="35" y1="180" x2="180" y2="180"></line>
+    <line class="fig-axis" x1="35" y1="180" x2="35" y2="55"></line>
+    <line class="fig-stroke-you" x1="45" y1="120" x2="165" y2="108"></line>
+    <circle class="fig-box-data" cx="45" cy="142" r="4"></circle>
+    <circle class="fig-box-data" cx="65" cy="112" r="4"></circle>
+    <circle class="fig-box-data" cx="85" cy="98" r="4"></circle>
+    <circle class="fig-box-data" cx="105" cy="72" r="4"></circle>
+    <circle class="fig-box-data" cx="125" cy="94" r="4"></circle>
+    <circle class="fig-box-data" cx="145" cy="110" r="4"></circle>
+    <circle class="fig-box-data" cx="165" cy="140" r="4"></circle>
+
+    <!-- PANEL 2: just right -->
+    <text class="fig-label" x="285" y="20" text-anchor="middle">Just right</text>
+    <text class="fig-cap" x="285" y="36" text-anchor="middle">learns the signal</text>
+    <line class="fig-axis" x1="215" y1="180" x2="360" y2="180"></line>
+    <line class="fig-axis" x1="215" y1="180" x2="215" y2="55"></line>
+    <path class="fig-stroke-you" d="M225,140 Q285,58 345,140"></path>
+    <circle class="fig-box-data" cx="225" cy="142" r="4"></circle>
+    <circle class="fig-box-data" cx="245" cy="112" r="4"></circle>
+    <circle class="fig-box-data" cx="265" cy="98" r="4"></circle>
+    <circle class="fig-box-data" cx="285" cy="72" r="4"></circle>
+    <circle class="fig-box-data" cx="305" cy="94" r="4"></circle>
+    <circle class="fig-box-data" cx="325" cy="110" r="4"></circle>
+    <circle class="fig-box-data" cx="345" cy="140" r="4"></circle>
+
+    <!-- PANEL 3: overfit -->
+    <text class="fig-label" x="465" y="20" text-anchor="middle">Overfit</text>
+    <text class="fig-cap" x="465" y="36" text-anchor="middle">too complex · high variance</text>
+    <line class="fig-axis" x1="395" y1="180" x2="540" y2="180"></line>
+    <line class="fig-axis" x1="395" y1="180" x2="395" y2="55"></line>
+    <polyline class="fig-stroke-you" points="405,142 415,100 425,112 445,72 455,110 465,72 485,94 495,128 505,110 525,140"></polyline>
+    <circle class="fig-box-data" cx="405" cy="142" r="4"></circle>
+    <circle class="fig-box-data" cx="425" cy="112" r="4"></circle>
+    <circle class="fig-box-data" cx="445" cy="72" r="4"></circle>
+    <circle class="fig-box-data" cx="465" cy="72" r="4"></circle>
+    <circle class="fig-box-data" cx="485" cy="94" r="4"></circle>
+    <circle class="fig-box-data" cx="505" cy="110" r="4"></circle>
+    <circle class="fig-box-data" cx="525" cy="140" r="4"></circle>
+  </svg>
+  <figcaption><strong>Same points, three models.</strong> Violet dots are the data (signal + noise); the orange line is the fitted model. Underfit can't bend to the pattern; just-right follows the signal and ignores the wobble; overfit threads every point including the noise, so it swings wildly between them.</figcaption>
+</figure>
+
 <h3>The one diagnostic: the train-vs-validation gap</h3>
 
 <p>Put the two errors side by side and read them like a doctor:</p>
@@ -118,16 +165,27 @@
 
 <p>Watch what happens to the two error curves as complexity climbs from simple to complex:</p>
 
-<pre><code> error
-   |*                                           . <span class="c">&lt;- validation error (U-shaped)</span>
-   | *.                                       .
-   |   *..                                 ..
-   |      *...        best             ...
-   |          *.....    |         ....
-   |               *...........................  <span class="c">&lt;- training error (always falling)</span>
-   |________________________|__________________
-    simple            complexity           complex
-                     (sweet spot = lowest VALIDATION error)</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 400 235" role="img" aria-label="Two error curves against model complexity, from simple on the left to complex on the right. The training error, in teal, only ever falls as complexity rises. The validation error, in violet, is U-shaped: high on the left from underfitting, dipping to a minimum in the middle, then rising on the right from overfitting. An orange dashed line marks the sweet spot at the bottom of the U — the lowest validation error, which is the complexity you pick.">
+    <!-- axes -->
+    <line class="fig-axis" x1="45" y1="195" x2="370" y2="195"></line>
+    <line class="fig-axis" x1="45" y1="195" x2="45" y2="30"></line>
+    <text class="fig-cap" x="22" y="115" text-anchor="middle" transform="rotate(-90 22 115)">error</text>
+    <text class="fig-cap" x="60" y="212" text-anchor="start">simple</text>
+    <text class="fig-cap" x="355" y="212" text-anchor="end">complex</text>
+    <text class="fig-cap" x="207" y="212" text-anchor="middle">complexity →</text>
+    <!-- sweet spot -->
+    <line class="fig-divider" x1="190" y1="195" x2="190" y2="150"></line>
+    <text class="fig-cap fig-ink-you" x="190" y="142" text-anchor="middle">best</text>
+    <!-- training error: always falls (machinery = teal) -->
+    <path class="fig-stroke-infra" d="M52,70 C120,120 210,165 362,186"></path>
+    <text class="fig-cap fig-ink-infra" x="300" y="176" text-anchor="middle">training error</text>
+    <!-- validation error: U-shape (data measurement = violet) -->
+    <path class="fig-stroke-data" d="M52,74 C110,125 165,158 190,158 C235,158 305,110 362,78"></path>
+    <text class="fig-cap fig-ink-data" x="110" y="105" text-anchor="middle">validation error</text>
+  </svg>
+  <figcaption><strong>Pick the bottom of the U.</strong> Training error (teal) always falls, so on its own it lies — it keeps improving even as the model gets worse for real use. Validation error (violet) falls, bottoms out, then rises; its lowest point (orange) is the complexity you choose.</figcaption>
+</figure>
 
 <ul>
   <li><strong>Training error only ever falls</strong> as complexity rises — more flexibility can always hug the training points tighter. On its own it's a liar: it keeps improving even as the model gets worse for real use.</li>

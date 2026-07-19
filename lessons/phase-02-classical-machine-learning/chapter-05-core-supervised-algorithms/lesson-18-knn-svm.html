@@ -129,6 +129,38 @@ urgent:      (3,3)  (4,2)  (3,4)  (5,3)</code></pre>
   <li><strong>k = 7:</strong> seven vote: four not-urgent, three urgent. Prediction: <strong>NOT URGENT</strong>.</li>
 </ul>
 
+<figure class="fig">
+  <svg viewBox="0 0 320 300" role="img" aria-label="A map of eight stored tickets by their two features, with not-urgent tickets as violet circles clustered lower-left and urgent tickets as violet squares upper-right. The new ticket B at (2,2) is an orange marker in the middle. A dashed ring around B encloses its three nearest neighbours: one not-urgent circle and two urgent squares. With k equals 3 the vote is two urgent to one not-urgent, so B is classified urgent.">
+    <!-- axes -->
+    <line class="fig-axis" x1="40" y1="260" x2="295" y2="260"></line>
+    <line class="fig-axis" x1="40" y1="260" x2="40" y2="25"></line>
+    <text class="fig-cap" x="285" y="280" text-anchor="middle">urgent words →</text>
+    <text class="fig-cap" x="20" y="140" text-anchor="middle" transform="rotate(-90 20 140)">caps words →</text>
+    <!-- k = 3 ring around B -->
+    <circle class="fig-axis" cx="132" cy="168" r="97"></circle>
+    <text class="fig-cap" x="132" y="60" text-anchor="middle">k = 3 nearest</text>
+    <!-- not-urgent = violet circles -->
+    <circle class="fig-box-data" cx="86" cy="168" r="6"></circle>
+    <circle class="fig-box-data" cx="86" cy="260" r="6"></circle>
+    <circle class="fig-box-data" cx="40" cy="214" r="6"></circle>
+    <circle class="fig-box-data" cx="40" cy="260" r="6"></circle>
+    <!-- urgent = violet squares -->
+    <rect class="fig-box-data" x="172" y="116" width="12" height="12"></rect>
+    <rect class="fig-box-data" x="218" y="162" width="12" height="12"></rect>
+    <rect class="fig-box-data" x="172" y="70" width="12" height="12"></rect>
+    <rect class="fig-box-data" x="264" y="116" width="12" height="12"></rect>
+    <!-- new ticket B (the thing you classify = orange) -->
+    <circle class="fig-box-you" cx="132" cy="168" r="7"></circle>
+    <text class="fig-cap fig-ink-you" x="132" y="186" text-anchor="middle">B (2, 2)</text>
+    <!-- legend -->
+    <circle class="fig-box-data" cx="210" cy="30" r="6"></circle>
+    <text class="fig-cap" x="222" y="34" text-anchor="start">not urgent</text>
+    <rect class="fig-box-data" x="204" y="44" width="12" height="12"></rect>
+    <text class="fig-cap" x="222" y="54" text-anchor="start">urgent</text>
+  </svg>
+  <figcaption><strong>kNN classifies by nearest neighbours.</strong> Violet circles are not-urgent tickets, violet squares urgent ones; the orange point is the new ticket B. The dashed ring holds its three closest — 2 urgent, 1 not — so k = 3 votes <strong>urgent</strong>. Widen or shrink the ring (change k) and the vote can flip.</figcaption>
+</figure>
+
 <p>The answer flips twice. This is not a bug — it is Lesson 13's bias–variance dial wearing a new costume. <strong>k = 1</strong> trusts a single neighbor completely: it can be swayed by one mislabelled or odd training example, which is overfitting (in fact, with k = 1 the model scores 100% on its own training data — every stored ticket's nearest neighbor is itself). A <strong>very large k</strong> — say k = 8, the whole dataset — always predicts the overall majority no matter what the new ticket looks like, which is underfitting: it has collapsed into Lesson 11's baseline. Good k values sit in between and are chosen the honest way, with a validation set (Lesson 12). One practical habit: use an <strong>odd</strong> k for two-class problems, so the vote can never tie.</p>
 
 <div class="note">
@@ -172,6 +204,39 @@ urgent:      (3,3)  (4,2)  (3,4)  (5,3)</code></pre>
 </div>
 
 <p>The winner is <strong>sum = 4</strong>, sitting exactly halfway between the closest not-urgent sum (2) and the closest urgent sum (6). Notice the shape of the table: the margin rises, peaks in the middle, and falls — hugging either class shrinks the street. A real SVM does not try candidates one by one like we just did; it solves for the widest street directly with optimization mathematics. The answer it finds is the same kind of line — our brute-force table is the idea made visible.</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 320 300" role="img" aria-label="Six cleanly separated tickets on a map: not-urgent as violet circles at (0,0), (1,1), (0,2) lower-left, and urgent as violet squares at (4,4), (5,3), (4,2) upper-right. A solid orange line, the widest-margin boundary at feature-sum 4, runs between them. Two dashed orange lines mark the edges of the margin street at sums 2 and 6. Three points touch those edges — (1,1), (0,2) and (4,2) — ringed as the support vectors that pin the street in place.">
+    <!-- axes -->
+    <line class="fig-axis" x1="45" y1="260" x2="300" y2="260"></line>
+    <line class="fig-axis" x1="45" y1="260" x2="45" y2="25"></line>
+    <text class="fig-cap" x="288" y="280" text-anchor="middle">urgent words →</text>
+    <text class="fig-cap" x="22" y="140" text-anchor="middle" transform="rotate(-90 22 140)">caps words →</text>
+    <!-- margin street edges: sum = 2 and sum = 6 (dashed orange) -->
+    <line class="fig-divider" x1="137" y1="260" x2="45" y2="168"></line>
+    <line class="fig-divider" x1="275" y1="214" x2="91" y2="30"></line>
+    <!-- widest-margin boundary: sum = 4 (solid orange) -->
+    <line class="fig-stroke-you" x1="229" y1="260" x2="45" y2="76"></line>
+    <!-- support-vector rings (neutral) -->
+    <circle class="fig-axis" cx="91" cy="214" r="11"></circle>
+    <circle class="fig-axis" cx="45" cy="168" r="11"></circle>
+    <circle class="fig-axis" cx="229" cy="168" r="11"></circle>
+    <!-- not-urgent = violet circles -->
+    <circle class="fig-box-data" cx="45" cy="260" r="6"></circle>
+    <circle class="fig-box-data" cx="91" cy="214" r="6"></circle>
+    <circle class="fig-box-data" cx="45" cy="168" r="6"></circle>
+    <!-- urgent = violet squares -->
+    <rect class="fig-box-data" x="223" y="70" width="12" height="12"></rect>
+    <rect class="fig-box-data" x="269" y="116" width="12" height="12"></rect>
+    <rect class="fig-box-data" x="223" y="162" width="12" height="12"></rect>
+    <!-- labels -->
+    <text class="fig-cap fig-ink-you" x="150" y="150" text-anchor="middle">boundary</text>
+    <text class="fig-cap fig-ink-you" x="150" y="163" text-anchor="middle">sum = 4</text>
+    <text class="fig-cap" x="250" y="205" text-anchor="middle">support</text>
+    <text class="fig-cap" x="250" y="218" text-anchor="middle">vectors ○</text>
+  </svg>
+  <figcaption><strong>The SVM picks the widest street.</strong> Violet circles and squares are the two classes; the solid orange line is the boundary and the dashed orange lines are the street's edges. Only the three ringed <em>support vectors</em> touch those edges and fix the street — delete any other point and the boundary doesn't move.</figcaption>
+</figure>
 
 <h3>3.6 Support vectors: the only points that matter</h3>
 

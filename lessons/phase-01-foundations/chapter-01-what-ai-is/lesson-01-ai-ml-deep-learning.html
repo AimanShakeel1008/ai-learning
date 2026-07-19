@@ -114,11 +114,26 @@
 
 <h3>Putting the nesting together</h3>
 
-<pre><code>AI  (the whole goal: make machines act smart)
-└─ ML  (the main way we do it today: learn from data instead of hand-written rules)
-    └─ DL  (a powerful style of ML: many stacked layers of simple neurons)
-        └─ Generative AI  (deep learning that creates new content, not just labels it)
-            └─ LLMs  (generative AI focused on text)</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 560 340" role="img" aria-label="Five nested rings showing that each field is a subset of the one around it. The outermost ring is AI, making machines act smart. Inside it is Machine Learning, learning from data. Inside that is Deep Learning, many stacked layers. Inside that is Generative AI, creating new content. The innermost ring, highlighted in orange, is Large Language Models, generative AI focused on text — what this course builds toward.">
+    <!-- outer rings are the broader fields (neutral); innermost is where the course is headed (orange) -->
+    <rect class="fig-box" x="10" y="10" width="540" height="320" rx="16"></rect>
+    <text class="fig-label" x="26" y="34">AI — make machines act smart</text>
+
+    <rect class="fig-box" x="45" y="50" width="470" height="248" rx="14"></rect>
+    <text class="fig-label" x="61" y="74">Machine Learning — learn from data</text>
+
+    <rect class="fig-box" x="80" y="92" width="400" height="174" rx="12"></rect>
+    <text class="fig-label" x="96" y="116">Deep Learning — many stacked layers</text>
+
+    <rect class="fig-box" x="115" y="134" width="330" height="100" rx="10"></rect>
+    <text class="fig-label" x="131" y="158">Generative AI — creates new content</text>
+
+    <rect class="fig-box-you" x="150" y="176" width="260" height="46" rx="9"></rect>
+    <text class="fig-label" x="280" y="204" text-anchor="middle">LLMs — generative AI for text</text>
+  </svg>
+  <figcaption><strong>Each ring is a subset of the one around it.</strong> Every LLM is generative AI, all of it deep learning, all of that machine learning, all of that AI — but not the reverse. The orange core (LLMs) is what this course builds toward; the neutral rings are the broader fields it sits inside.</figcaption>
+</figure>
 
 <p>Each ring is a <em>subset</em> of the one around it. Every LLM is generative AI, every piece of generative AI we will study is deep learning, every deep learning system is machine learning, and every machine learning system is a form of AI. But the reverse is not true at each step — plenty of AI is not machine learning, plenty of machine learning is not deep learning, and plenty of deep learning is not generative.</p>
 </section>

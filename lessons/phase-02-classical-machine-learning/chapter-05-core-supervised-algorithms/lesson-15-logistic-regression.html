@@ -139,7 +139,31 @@
 
 <p>Remember the <strong>chain rule</strong> from Lesson 14: the slope of the loss with respect to a knob is built by multiplying a <em>chain</em> of smaller slopes — if turning knob A moves B, and B moves C, then A moves C at the two rates multiplied. For one data point, the chain from the weight <code>w</code> all the way to the loss <code>L</code> has three links:</p>
 
-<pre><code>w  ──►  z = w·x + b  ──►  P = sigmoid(z)  ──►  L = log loss</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 720 96" role="img" aria-label="The chain from the weight to the loss, in three links: the weight w feeds into z equals w times x plus b, which feeds into P equals sigmoid of z, which feeds into L equals log loss. The weight you learn is orange; the values computed forward from it are violet.">
+    <defs>
+      <marker id="fig15chain-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <!-- the weight is the knob you learn (you = orange) -->
+    <rect class="fig-box-you" x="8" y="20" width="96" height="56" rx="10"></rect>
+    <text class="fig-mono" x="56" y="46" text-anchor="middle">w</text>
+    <text class="fig-cap" x="56" y="64" text-anchor="middle">weight</text>
+    <!-- computed values flowing forward (data = violet) -->
+    <rect class="fig-box-data" x="164" y="20" width="150" height="56" rx="10"></rect>
+    <text class="fig-mono" x="239" y="52" text-anchor="middle">z = w·x + b</text>
+    <rect class="fig-box-data" x="374" y="20" width="160" height="56" rx="10"></rect>
+    <text class="fig-mono" x="454" y="52" text-anchor="middle">P = sigmoid(z)</text>
+    <rect class="fig-box-data" x="594" y="20" width="120" height="56" rx="10"></rect>
+    <text class="fig-mono" x="654" y="52" text-anchor="middle">L = log loss</text>
+    <!-- links -->
+    <line class="fig-arrow" x1="106" y1="48" x2="162" y2="48" marker-end="url(#fig15chain-ah)"></line>
+    <line class="fig-arrow" x1="316" y1="48" x2="372" y2="48" marker-end="url(#fig15chain-ah)"></line>
+    <line class="fig-arrow" x1="536" y1="48" x2="592" y2="48" marker-end="url(#fig15chain-ah)"></line>
+  </svg>
+  <figcaption><strong>Three links from knob to loss.</strong> Orange is the weight you learn; violet are the values computed forward from it. The chain rule multiplies the slope of each link — and when sigmoid meets log loss, the middle two collapse to a clean <code>P − y</code>.</figcaption>
+</figure>
 
 <p>The two middle links are the ones that look scary on their own:</p>
 

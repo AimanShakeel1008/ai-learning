@@ -81,18 +81,27 @@
 
 <p><strong>Distributions: the whole shape.</strong> Mean and spread are two summary numbers, but sometimes you need the full picture of where values land — that picture is the <strong>distribution</strong>. It exists because different shapes demand different decisions even at the same mean: a tight bump means “promise customers the average,” a wide or lopsided shape means “the average is a lie for many customers.” The tool for seeing it is Lesson 07's histogram. The notebook simulates 5,000 ticket resolution times that cluster around 24 hours with typical wobble 5 hours, and the histogram comes out bell-shaped: a big hump in the middle, thinning symmetrically into rare tails. That particular shape has a name — the <strong>normal distribution</strong> (the “bell curve”) — and it appears everywhere in nature and data because quantities built from many small independent influences tend toward it. Not everything is bell-shaped (incomes are not, ticket <em>counts per customer</em> are not), which is precisely why you look before assuming.</p>
 
-<pre><code> number of tickets
-   |                 *  *  *
-   |              *          *
-   |            *              *
-   |          *                  *
-   |        *                      *
-   |     *                            *
-   +--*----------------|------------------*----  hours
-      9               24                  39
-                     mean
-        most values land near the middle;
-        far-out values exist but are rare</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 380 210" role="img" aria-label="A bell-shaped distribution of ticket resolution times. The horizontal axis is hours, from 9 on the left to 39 on the right, with the mean of 24 in the middle. A smooth symmetric hump peaks over 24, meaning most values land near the middle, and thins out into rare tails at 9 and 39. A dashed vertical line marks the mean.">
+    <!-- area under the curve (soft data fill) -->
+    <path class="fig-fill-data" d="M40,178 C95,176 120,150 150,95 C172,56 185,47 195,47 C205,47 218,56 240,95 C270,150 295,176 350,178 Z"></path>
+    <!-- axis -->
+    <line class="fig-axis" x1="40" y1="178" x2="355" y2="178"></line>
+    <text class="fig-cap" x="345" y="198" text-anchor="middle">hours →</text>
+    <text class="fig-cap" x="40" y="196" text-anchor="middle">9</text>
+    <text class="fig-cap" x="195" y="196" text-anchor="middle">24</text>
+    <text class="fig-cap" x="350" y="196" text-anchor="middle">39</text>
+    <!-- the bell curve (a distribution = data, violet) -->
+    <path class="fig-stroke-data" d="M40,178 C95,176 120,150 150,95 C172,56 185,47 195,47 C205,47 218,56 240,95 C270,150 295,176 350,178"></path>
+    <!-- mean line -->
+    <line class="fig-arrow-dashed" x1="195" y1="178" x2="195" y2="52"></line>
+    <text class="fig-cap fig-ink-data" x="195" y="40" text-anchor="middle">mean 24</text>
+    <text class="fig-cap" x="118" y="120" text-anchor="middle">most values</text>
+    <text class="fig-cap" x="118" y="134" text-anchor="middle">near the middle</text>
+    <text class="fig-cap" x="330" y="160" text-anchor="middle">rare tails</text>
+  </svg>
+  <figcaption><strong>A distribution is the whole shape.</strong> Mean and spread are two summary numbers; the distribution shows where every value actually lands. This one is the <em>normal distribution</em> (bell curve): a hump around the mean thinning symmetrically into rare tails. Not all data is bell-shaped — which is exactly why you look before assuming.</figcaption>
+</figure>
 
 <p><strong>Uncertainty: the model's honesty channel.</strong> Everything a model outputs is a bet, and a well-built system reports the bet's strength. The notebook's final demo is a keyword classifier that, instead of naming one category, reports a probability for <em>every</em> category — each category's share of the keyword matches found in the ticket. A ticket reading “my package is late and tracking shows no delivery update” matches four shipping words and nothing else: <code>shipping 1.00, billing 0.00, product 0.00</code> — act on it. A ticket reading “i was charged for a broken item” matches one billing word and one product word: <code>0.50 / 0.50</code> — the classifier is announcing “my top guess is a coin flip,” and the right system response is to route that ticket to a human rather than act. This confidence-threshold pattern — act when sure, escalate when not — is one of the most important patterns in applied AI, and it becomes a real guardrail in our assistant in Phase 8.</p>
 

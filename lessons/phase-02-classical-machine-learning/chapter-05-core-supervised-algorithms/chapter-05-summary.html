@@ -53,24 +53,50 @@
 <section id="map">
 <h2><span class="secno">2</span>How the chapter's ideas connect</h2>
 
-<pre><code>            CHAPTER 5 — FIVE WAYS TO MAKE A PREDICTION
+<figure class="fig">
+  <svg viewBox="0 0 560 320" role="img" aria-label="Chapter 5's five algorithm families in three groups. Weighted-sum family (learn the numbers): linear regression which predicts a number, and logistic regression which predicts a probability. Question-asking family (learn thresholds): one decision tree, a random forest, and gradient boosting. Geometry and memory family (use the points): kNN which votes among the k closest, and SVM which draws the widest street. Underneath, a banner: gradient descent (Lesson 9) is the engine for the weighted-sum family, and every family has an overfitting dial tuned on validation data.">
+    <!-- family headers (neutral) -->
+    <rect class="fig-box" x="15" y="12" width="170" height="46" rx="9"></rect>
+    <text class="fig-label" x="100" y="34" text-anchor="middle">Weighted-sum</text>
+    <text class="fig-cap" x="100" y="51" text-anchor="middle">learn the numbers</text>
+    <rect class="fig-box" x="195" y="12" width="170" height="46" rx="9"></rect>
+    <text class="fig-label" x="280" y="34" text-anchor="middle">Question-asking</text>
+    <text class="fig-cap" x="280" y="51" text-anchor="middle">learn the thresholds</text>
+    <rect class="fig-box" x="375" y="12" width="170" height="46" rx="9"></rect>
+    <text class="fig-label" x="460" y="34" text-anchor="middle">Geometry &amp; memory</text>
+    <text class="fig-cap" x="460" y="51" text-anchor="middle">use the points</text>
 
-  WEIGHTED-SUM FAMILY       QUESTION-ASKING FAMILY      GEOMETRY &amp; MEMORY
-  (learn the numbers)       (learn the thresholds)      (use the points themselves)
+    <!-- weighted-sum family (models you build = orange) -->
+    <rect class="fig-box-you" x="20" y="72" width="160" height="50" rx="9"></rect>
+    <text class="fig-label" x="100" y="94" text-anchor="middle">L14 linear regression</text>
+    <text class="fig-cap" x="100" y="112" text-anchor="middle">→ a number</text>
+    <rect class="fig-box-you" x="20" y="130" width="160" height="50" rx="9"></rect>
+    <text class="fig-label" x="100" y="152" text-anchor="middle">L15 logistic regression</text>
+    <text class="fig-cap" x="100" y="170" text-anchor="middle">→ a probability</text>
 
-  L14 linear regression     L16 one decision tree       L18 kNN
-    weight*x + bias           readable flowchart          store everything;
-    -&gt; predicts a NUMBER      of yes/no questions         the k closest VOTE
-  L15 logistic regression   L16 random forest           L18 SVM
-    same sum -&gt; sigmoid       many trees, bootstrap       the widest street
-    -&gt; a PROBABILITY          + menus + voting            between the classes
-                            L17 gradient boosting
-                              trees in sequence,
-                              each fixes the leftovers
+    <!-- question-asking family -->
+    <rect class="fig-box-you" x="200" y="72" width="160" height="42" rx="9"></rect>
+    <text class="fig-label" x="280" y="98" text-anchor="middle">L16 decision tree</text>
+    <rect class="fig-box-you" x="200" y="124" width="160" height="42" rx="9"></rect>
+    <text class="fig-label" x="280" y="150" text-anchor="middle">L16 random forest</text>
+    <rect class="fig-box-you" x="200" y="176" width="160" height="42" rx="9"></rect>
+    <text class="fig-label" x="280" y="202" text-anchor="middle">L17 gradient boosting</text>
 
-  engine underneath L14/L15 (and, in spirit, L17): GRADIENT DESCENT (L9)
-  every family has an overfitting dial, tuned on VALIDATION data (L12/L13):
-    tree depth | boosting rounds &amp; learning rate | k in kNN | C in SVM</code></pre>
+    <!-- geometry & memory family -->
+    <rect class="fig-box-you" x="380" y="72" width="160" height="50" rx="9"></rect>
+    <text class="fig-label" x="460" y="94" text-anchor="middle">L18 kNN</text>
+    <text class="fig-cap" x="460" y="112" text-anchor="middle">the k closest vote</text>
+    <rect class="fig-box-you" x="380" y="130" width="160" height="50" rx="9"></rect>
+    <text class="fig-label" x="460" y="152" text-anchor="middle">L18 SVM</text>
+    <text class="fig-cap" x="460" y="170" text-anchor="middle">the widest street</text>
+
+    <!-- the shared engine + shared dial (neutral banner) -->
+    <rect class="fig-box" x="15" y="240" width="530" height="66" rx="10"></rect>
+    <text class="fig-label" x="280" y="266" text-anchor="middle">Engine underneath L14 / L15 / L17: gradient descent (L9)</text>
+    <text class="fig-cap" x="280" y="290" text-anchor="middle">every family has an overfitting dial, tuned on validation (L12/13): tree depth · rounds &amp; rate · k · C</text>
+  </svg>
+  <figcaption><strong>Five families, one question.</strong> All answer "given features, what's the answer?" but disagree on what to <strong>learn</strong> — orange marks each model you'd build. Neutral headers group them; the neutral banner is what they share: gradient descent as the engine, and a dial tuned on validation data.</figcaption>
+</figure>
 
 <p>The through-line: all five families answer the same question — <em>"given features, what is the answer?"</em> — but they disagree about what to <strong>learn</strong>. The weighted-sum family learns a few numbers and is fast, smooth, and explainable. The question-asking family learns thresholds, eats unscaled and mixed data happily, and (boosted) wins most tabular contests. The geometry-and-memory family learns almost nothing (kNN) or only the borderline (SVM) — and both live or die by <strong>distance</strong>, which is why feature scaling matters so much for them. Chapter 4's rules referee everything: whichever family you pick, its knobs get tuned on validation data, never on the test set.</p>
 </section>

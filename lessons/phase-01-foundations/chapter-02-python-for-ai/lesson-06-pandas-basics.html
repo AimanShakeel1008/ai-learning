@@ -70,6 +70,76 @@
 
 <p><strong>The technical name:</strong> the whole table is a <strong>DataFrame</strong>; one column (or one row) pulled out on its own is called a <strong>Series</strong> — a labeled 1D array, carrying its row labels along with it.</p>
 
+<figure class="fig">
+  <svg viewBox="0 0 540 250" role="img" aria-label="Anatomy of a DataFrame. A table has a header row of column names — ticket_id, text, category, rating — across the top, and an index column of row labels 0, 1, 2 down the left. The whole grid of rows and columns is the DataFrame. One single column, category, is highlighted in violet: pulled out on its own it is a Series.">
+    <defs>
+      <marker id="fig06df-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+      <marker id="fig06df-ahd" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead-data" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+
+    <!-- header row of column names -->
+    <rect class="fig-box" x="45" y="45" width="44" height="32"></rect>
+    <text class="fig-cap" x="67" y="65" text-anchor="middle">idx</text>
+    <rect class="fig-box" x="89" y="45" width="108" height="32"></rect>
+    <text class="fig-cap" x="143" y="65" text-anchor="middle">ticket_id</text>
+    <rect class="fig-box" x="197" y="45" width="108" height="32"></rect>
+    <text class="fig-cap" x="251" y="65" text-anchor="middle">text</text>
+    <rect class="fig-box-data" x="305" y="45" width="108" height="32"></rect>
+    <text class="fig-cap" x="359" y="65" text-anchor="middle">category</text>
+    <rect class="fig-box" x="413" y="45" width="108" height="32"></rect>
+    <text class="fig-cap" x="467" y="65" text-anchor="middle">rating</text>
+
+    <!-- three data rows; the index column + the category column stand out -->
+    <!-- row 0 -->
+    <rect class="fig-box" x="45" y="77" width="44" height="32"></rect>
+    <text class="fig-mono" x="67" y="97" text-anchor="middle">0</text>
+    <rect class="fig-box" x="89" y="77" width="108" height="32"></rect>
+    <text class="fig-mono" x="143" y="97" text-anchor="middle">1</text>
+    <rect class="fig-box" x="197" y="77" width="108" height="32"></rect>
+    <text class="fig-cap" x="251" y="97" text-anchor="middle">payment…</text>
+    <rect class="fig-box-data" x="305" y="77" width="108" height="32"></rect>
+    <text class="fig-cap" x="359" y="97" text-anchor="middle">billing</text>
+    <rect class="fig-box" x="413" y="77" width="108" height="32"></rect>
+    <text class="fig-mono" x="467" y="97" text-anchor="middle">2.0</text>
+    <!-- row 1 -->
+    <rect class="fig-box" x="45" y="109" width="44" height="32"></rect>
+    <text class="fig-mono" x="67" y="129" text-anchor="middle">1</text>
+    <rect class="fig-box" x="89" y="109" width="108" height="32"></rect>
+    <text class="fig-mono" x="143" y="129" text-anchor="middle">2</text>
+    <rect class="fig-box" x="197" y="109" width="108" height="32"></rect>
+    <text class="fig-cap" x="251" y="129" text-anchor="middle">larger size?</text>
+    <rect class="fig-box-data" x="305" y="109" width="108" height="32"></rect>
+    <text class="fig-cap" x="359" y="129" text-anchor="middle">product</text>
+    <rect class="fig-box" x="413" y="109" width="108" height="32"></rect>
+    <text class="fig-mono" x="467" y="129" text-anchor="middle">4.0</text>
+    <!-- row 2 -->
+    <rect class="fig-box" x="45" y="141" width="44" height="32"></rect>
+    <text class="fig-mono" x="67" y="161" text-anchor="middle">2</text>
+    <rect class="fig-box" x="89" y="141" width="108" height="32"></rect>
+    <text class="fig-mono" x="143" y="161" text-anchor="middle">3</text>
+    <rect class="fig-box" x="197" y="141" width="108" height="32"></rect>
+    <text class="fig-cap" x="251" y="161" text-anchor="middle">where's my…</text>
+    <rect class="fig-box-data" x="305" y="141" width="108" height="32"></rect>
+    <text class="fig-cap" x="359" y="161" text-anchor="middle">shipping</text>
+    <rect class="fig-box" x="413" y="141" width="108" height="32"></rect>
+    <text class="fig-mono" x="467" y="161" text-anchor="middle">1.0</text>
+
+    <!-- annotations -->
+    <text class="fig-cap" x="300" y="30" text-anchor="middle">column names ↓</text>
+    <text class="fig-cap" x="67" y="200" text-anchor="middle">index</text>
+    <text class="fig-cap" x="67" y="214" text-anchor="middle">(row labels)</text>
+    <line class="fig-arrow" x1="67" y1="188" x2="67" y2="176" marker-end="url(#fig06df-ah)"></line>
+    <text class="fig-label fig-ink-data" x="359" y="200" text-anchor="middle">one column</text>
+    <text class="fig-label fig-ink-data" x="359" y="216" text-anchor="middle">= a Series</text>
+    <line class="fig-arrow-data" x1="359" y1="188" x2="359" y2="176" marker-end="url(#fig06df-ahd)"></line>
+  </svg>
+  <figcaption><strong>A DataFrame is a table that knows its labels.</strong> Column names run across the top, the index (row labels) down the left, and the whole grid is the DataFrame. Pull one column out on its own — violet here — and you get a Series, a 1D array that carries those row labels with it.</figcaption>
+</figure>
+
 <h3>The index: row labels</h3>
 
 <p><strong>Plain definition:</strong> the <strong>index</strong> is the label attached to each row, shown on the left whenever a DataFrame prints.</p>

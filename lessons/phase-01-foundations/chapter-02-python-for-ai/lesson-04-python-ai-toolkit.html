@@ -84,6 +84,29 @@
   <li><strong>LangChain / LlamaIndex</strong> — frameworks for wiring a language model together with your own data and tools, covered from Phase 6 onward. <em>(Flag this pair hardest for verification — their exact APIs change unusually often, even between minor versions. Always check current docs before trusting a specific function name from any source, including this course.)</em></li>
 </ul>
 
+<figure class="fig">
+  <svg viewBox="0 0 520 362" role="img" aria-label="A stack of layers. At the top, in orange, is your assistant, the code you write. Below it sit five teal library layers you did not write, from high-level to low: LangChain and LlamaIndex for wiring LLMs to your data in Phase 6 onward; Hugging Face Transformers for running pretrained models in Phase 4 onward; PyTorch for building and training neural networks in Phase 3 onward; scikit-learn for classical machine learning in Phase 2; and NumPy, pandas, and Matplotlib for data, math, and charts in Phases 1 and 2. At the very bottom, in neutral, is Python, the language everything runs on.">
+    <!-- the code you write sits on top (you = orange) -->
+    <rect class="fig-box-you" x="20" y="15" width="480" height="44" rx="9"></rect>
+    <text class="fig-label" x="260" y="42" text-anchor="middle">Your assistant — the code you write</text>
+    <!-- libraries you did not write (infra = teal) -->
+    <rect class="fig-box-infra" x="20" y="65" width="480" height="44" rx="9"></rect>
+    <text class="fig-label" x="260" y="92" text-anchor="middle">LangChain / LlamaIndex — wire LLMs to your data (Phase 6+)</text>
+    <rect class="fig-box-infra" x="20" y="115" width="480" height="44" rx="9"></rect>
+    <text class="fig-label" x="260" y="142" text-anchor="middle">Hugging Face Transformers — run pretrained models (Phase 4+)</text>
+    <rect class="fig-box-infra" x="20" y="165" width="480" height="44" rx="9"></rect>
+    <text class="fig-label" x="260" y="192" text-anchor="middle">PyTorch — build &amp; train neural networks (Phase 3+)</text>
+    <rect class="fig-box-infra" x="20" y="215" width="480" height="44" rx="9"></rect>
+    <text class="fig-label" x="260" y="242" text-anchor="middle">scikit-learn — classical ML algorithms (Phase 2)</text>
+    <rect class="fig-box-infra" x="20" y="265" width="480" height="44" rx="9"></rect>
+    <text class="fig-label" x="260" y="292" text-anchor="middle">NumPy · pandas · Matplotlib — data, math, charts (Phase 1–2)</text>
+    <!-- the platform underneath (neutral) -->
+    <rect class="fig-box" x="20" y="315" width="480" height="44" rx="9"></rect>
+    <text class="fig-label" x="260" y="342" text-anchor="middle">Python — the language everything runs on</text>
+  </svg>
+  <figcaption><strong>The toolkit is a stack.</strong> Orange is the only layer you write; every teal layer is a library someone else already built, tested, and packaged so you can <code>import</code> it; neutral Python underneath runs it all. Higher layers lean on the ones below them.</figcaption>
+</figure>
+
 <p>None of these get installed yet. <code>customer-support-assistant/requirements.txt</code> stays empty until the lesson that first genuinely imports one — Lesson 05, for NumPy. The goal of this lesson is only the map: knowing what each name is <em>for</em>, so none of them are a surprise when a later lesson starts using them for real.</p>
 
 <h3>What a notebook actually is</h3>

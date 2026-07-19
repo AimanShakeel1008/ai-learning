@@ -127,10 +127,31 @@
 
 <p><strong>First, split.</strong> Set aside some examples the model will never study — the <strong>test set</strong>. The rest is the <strong>training set</strong>. Why first? Because the moment the model sees an example, evaluating on it later is cheating: the model could just memorise answers and look perfect while having learned nothing general.</p>
 
-<pre><code>12 tickets
-   |
-   +-- 9 training tickets  -&gt; model learns from these
-   +-- 3 test tickets      -&gt; locked away, used only to judge</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 520 190" role="img" aria-label="All 12 tickets split into two piles before any training: 9 training tickets the model learns from, and 3 test tickets locked away and used only to judge it.">
+    <defs>
+      <marker id="fig11split-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <!-- the whole pile of examples (data = violet) -->
+    <rect class="fig-box-data" x="20" y="70" width="150" height="52" rx="10"></rect>
+    <text class="fig-label" x="95" y="92" text-anchor="middle">12 tickets</text>
+    <text class="fig-cap" x="95" y="110" text-anchor="middle">all labelled examples</text>
+    <!-- split arrows -->
+    <path class="fig-arrow" d="M170,88 L250,44" marker-end="url(#fig11split-ah)"></path>
+    <path class="fig-arrow" d="M170,104 L250,148" marker-end="url(#fig11split-ah)"></path>
+    <!-- training pile (still data = violet) -->
+    <rect class="fig-box-data" x="258" y="18" width="242" height="52" rx="10"></rect>
+    <text class="fig-label" x="379" y="40" text-anchor="middle">9 training tickets</text>
+    <text class="fig-cap" x="379" y="58" text-anchor="middle">the model learns from these</text>
+    <!-- test pile (locked away) -->
+    <rect class="fig-box" x="258" y="122" width="242" height="52" rx="10"></rect>
+    <text class="fig-label" x="379" y="144" text-anchor="middle">3 test tickets</text>
+    <text class="fig-cap" x="379" y="162" text-anchor="middle">locked away — used only to judge</text>
+  </svg>
+  <figcaption><strong>Split before you train.</strong> Violet is the data the model is allowed to study; the neutral pile is held back so the score at the end reflects new tickets, not memorised ones.</figcaption>
+</figure>
 
 <p><strong>Then, train.</strong> <strong>Training</strong> means letting the model set its own internal numbers — its <strong>parameters</strong> — from the training data. In our word-count model, training is literally: for each category, tally how often each word shows up across that category's training tickets. Those three count tables <em>are</em> the parameters. We didn't type them; the data did. (In later lessons the parameters are weights adjusted by gradient descent — Lesson 09 — but the idea is identical: settings learned from data, not hand-written.)</p>
 
@@ -156,11 +177,53 @@
 
 <p>Drawn out, the pipeline is a <strong>loop</strong>, not a straight line:</p>
 
-<pre><code>   +-----------------------------------------------+
-   v                                               |
- DATA --&gt; FEATURES --&gt; TRAIN --&gt; EVALUATE --&gt; (good enough?) --&gt; USE
-                                     |  no
-                                     +--&gt; back to data / features / model</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 790 250" role="img" aria-label="The machine learning workflow drawn as a loop. Data flows to features, then to train, then to evaluate. If the result is good enough it flows on to use; if not, a feedback arrow loops all the way back to data, meaning collect more data, build better features, or try a stronger model. Data and features are violet, train and evaluate are teal machinery, and use — the finished model making predictions — is orange.">
+    <defs>
+      <marker id="fig11loop-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <text class="fig-title" x="15" y="24">The pipeline is a loop, not a straight line</text>
+
+    <!-- DATA (data = violet) -->
+    <rect class="fig-box-data" x="15" y="58" width="120" height="64" rx="10"></rect>
+    <text class="fig-label" x="75" y="86" text-anchor="middle">DATA</text>
+    <text class="fig-cap" x="75" y="104" text-anchor="middle">labelled examples</text>
+
+    <!-- FEATURES (data = violet) -->
+    <rect class="fig-box-data" x="155" y="58" width="120" height="64" rx="10"></rect>
+    <text class="fig-label" x="215" y="86" text-anchor="middle">FEATURES</text>
+    <text class="fig-cap" x="215" y="104" text-anchor="middle">text → numbers</text>
+
+    <!-- TRAIN (machinery = teal) -->
+    <rect class="fig-box-infra" x="295" y="58" width="120" height="64" rx="10"></rect>
+    <text class="fig-label" x="355" y="86" text-anchor="middle">TRAIN</text>
+    <text class="fig-cap" x="355" y="104" text-anchor="middle">learn parameters</text>
+
+    <!-- EVALUATE (machinery = teal) -->
+    <rect class="fig-box-infra" x="435" y="58" width="120" height="64" rx="10"></rect>
+    <text class="fig-label" x="495" y="86" text-anchor="middle">EVALUATE</text>
+    <text class="fig-cap" x="495" y="104" text-anchor="middle">score on test set</text>
+
+    <!-- USE (the finished model you own = orange) -->
+    <rect class="fig-box-you" x="655" y="58" width="120" height="64" rx="10"></rect>
+    <text class="fig-label" x="715" y="86" text-anchor="middle">USE</text>
+    <text class="fig-cap" x="715" y="104" text-anchor="middle">predict new input</text>
+
+    <!-- forward arrows -->
+    <line class="fig-arrow" x1="137" y1="90" x2="153" y2="90" marker-end="url(#fig11loop-ah)"></line>
+    <line class="fig-arrow" x1="277" y1="90" x2="293" y2="90" marker-end="url(#fig11loop-ah)"></line>
+    <line class="fig-arrow" x1="417" y1="90" x2="433" y2="90" marker-end="url(#fig11loop-ah)"></line>
+    <line class="fig-arrow" x1="557" y1="90" x2="653" y2="90" marker-end="url(#fig11loop-ah)"></line>
+    <text class="fig-cap" x="605" y="80" text-anchor="middle">good enough? ✓</text>
+
+    <!-- feedback loop: not good enough → back to data -->
+    <path class="fig-arrow-dashed" d="M495,122 L495,208 L75,208 L75,124" marker-end="url(#fig11loop-ah)"></path>
+    <text class="fig-cap" x="285" y="228" text-anchor="middle">not good enough → back to data / features / model</text>
+  </svg>
+  <figcaption><strong>Almost all real ML is spinning this loop.</strong> Violet = data and the features built from it; teal = the training and evaluation machinery; orange = the finished model you put to use. The dashed arrow is the return trip you take whenever evaluation disappoints.</figcaption>
+</figure>
 
 <p>If evaluation disappoints, you go back — collect more data, build better features, or try a stronger algorithm — and re-evaluate. Almost all real ML work is spinning this loop, not the single triumphant training run people imagine.</p>
 </section>

@@ -72,13 +72,42 @@
 
 <p>Picture it as an arrow. For a 2-number vector like <code>[3, 4]</code>, draw an arrow starting at the point <code>(0, 0)</code> and ending at the point <code>(3, 4)</code>:</p>
 
-<pre><code>  y
-  4 |           * (3, 4)
-  3 |         /
-  2 |       /
-  1 |     /
-  0 *---+---+---+---  x
-    0   1   2   3</code></pre>
+<figure class="fig">
+  <svg viewBox="0 0 300 300" role="img" aria-label="A coordinate grid with an arrow drawn from the origin at zero-zero to the point three-four. The arrow, in violet, is the vector three-four. Dashed guide lines drop from the arrow tip to 3 on the x axis and across to 4 on the y axis.">
+    <defs>
+      <marker id="fig08axis-ah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+      <marker id="fig08vec-ah" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead-data" d="M0,0 L8,3.5 L0,7 Z"></path>
+      </marker>
+    </defs>
+    <!-- axes -->
+    <line class="fig-arrow" x1="40" y1="260" x2="288" y2="260" marker-end="url(#fig08axis-ah)"></line>
+    <line class="fig-arrow" x1="40" y1="260" x2="40" y2="18" marker-end="url(#fig08axis-ah)"></line>
+    <text class="fig-cap" x="284" y="278" text-anchor="middle">x</text>
+    <text class="fig-cap" x="26" y="22" text-anchor="middle">y</text>
+    <!-- tick labels -->
+    <text class="fig-cap" x="30" y="276" text-anchor="middle">0</text>
+    <text class="fig-cap" x="95" y="276" text-anchor="middle">1</text>
+    <text class="fig-cap" x="150" y="276" text-anchor="middle">2</text>
+    <text class="fig-cap" x="205" y="276" text-anchor="middle">3</text>
+    <text class="fig-cap" x="260" y="276" text-anchor="middle">4</text>
+    <text class="fig-cap" x="28" y="209" text-anchor="middle">1</text>
+    <text class="fig-cap" x="28" y="154" text-anchor="middle">2</text>
+    <text class="fig-cap" x="28" y="99" text-anchor="middle">3</text>
+    <text class="fig-cap" x="28" y="44" text-anchor="middle">4</text>
+    <!-- guide lines to the axes -->
+    <line class="fig-arrow-dashed" x1="205" y1="40" x2="205" y2="260"></line>
+    <line class="fig-arrow-dashed" x1="205" y1="40" x2="40" y2="40"></line>
+    <!-- the vector itself (data = violet) -->
+    <line class="fig-arrow-data" x1="40" y1="260" x2="203" y2="42" marker-end="url(#fig08vec-ah)"></line>
+    <circle class="fig-box-data" cx="205" cy="40" r="5"></circle>
+    <text class="fig-mono fig-ink-data" x="215" y="38" text-anchor="start">(3, 4)</text>
+    <text class="fig-label fig-ink-data" x="70" y="150" text-anchor="start">vector [3, 4]</text>
+  </svg>
+  <figcaption><strong>A vector is an arrow.</strong> The violet arrow from the origin to (3, 4) <em>is</em> the vector [3, 4] — its length and direction are the two numbers. Violet marks it as a piece of data (a feature vector), the same role it plays everywhere in this course.</figcaption>
+</figure>
 
 <p>The arrow's length and direction <em>are</em> the vector. Adding two vectors places one arrow at the tip of the other; scaling a vector by a number stretches or shrinks the arrow without changing its direction (or flips it if the number is negative).</p>
 

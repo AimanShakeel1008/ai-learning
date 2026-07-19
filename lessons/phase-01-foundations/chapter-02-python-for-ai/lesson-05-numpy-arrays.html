@@ -80,6 +80,45 @@
 
 <p><strong>Tiny concrete example:</strong> <code>[x * 2 for x in ticket_lengths]</code> and <code>np_lengths * 2</code> produce the exact same answer, <code>[24, 90, 14, 46]</code>. The list version is a loop written in plain sight (a <strong>list comprehension</strong> is just a loop written compactly on one line — <code>[x * 2 for x in ticket_lengths]</code> means “for every <code>x</code> in <code>ticket_lengths</code>, compute <code>x * 2</code>, and collect the results into a new list”). The array version has no visible loop at all — the loop still technically happens, but it happens inside NumPy, in fast compiled code, not in the Python you wrote.</p>
 
+<figure class="fig">
+  <svg viewBox="0 0 560 200" role="img" aria-label="Two ways to double every number in a list. On the left, a Python loop visits the values 12, 45, 7, 23 one at a time, multiplying each by two in turn — slow at scale. A VS badge separates the two. On the right, a NumPy array multiplies all four at once in a single instruction, turning 12, 45, 7, 23 into 24, 90, 14, 46 — fast, because the loop happens inside NumPy's compiled code.">
+    <defs>
+      <marker id="fig05vec-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <!-- LEFT: a Python loop, one item at a time -->
+    <text class="fig-label" x="120" y="24" text-anchor="middle">Python list — a loop</text>
+    <rect class="fig-box-data" x="20" y="44" width="40" height="34" rx="6"></rect>
+    <text class="fig-mono" x="40" y="66" text-anchor="middle">12</text>
+    <rect class="fig-box-data" x="70" y="44" width="40" height="34" rx="6"></rect>
+    <text class="fig-mono" x="90" y="66" text-anchor="middle">45</text>
+    <rect class="fig-box-data" x="120" y="44" width="40" height="34" rx="6"></rect>
+    <text class="fig-mono" x="140" y="66" text-anchor="middle">7</text>
+    <rect class="fig-box-data" x="170" y="44" width="40" height="34" rx="6"></rect>
+    <text class="fig-mono" x="190" y="66" text-anchor="middle">23</text>
+    <line class="fig-arrow" x1="60" y1="61" x2="69" y2="61" marker-end="url(#fig05vec-ah)"></line>
+    <line class="fig-arrow" x1="110" y1="61" x2="119" y2="61" marker-end="url(#fig05vec-ah)"></line>
+    <line class="fig-arrow" x1="160" y1="61" x2="169" y2="61" marker-end="url(#fig05vec-ah)"></line>
+    <text class="fig-cap" x="120" y="104" text-anchor="middle">×2 per item, in your Python — slow at scale</text>
+
+    <!-- VS badge -->
+    <circle class="fig-vs" cx="280" cy="82" r="18"></circle>
+    <text class="fig-vs-text" x="280" y="87" text-anchor="middle">VS</text>
+
+    <!-- RIGHT: one vectorized instruction -->
+    <text class="fig-label" x="420" y="24" text-anchor="middle">NumPy array — one instruction</text>
+    <rect class="fig-box-data" x="320" y="44" width="195" height="34" rx="6"></rect>
+    <text class="fig-mono" x="417" y="66" text-anchor="middle">[12, 45, 7, 23]</text>
+    <line class="fig-arrow" x1="417" y1="80" x2="417" y2="112" marker-end="url(#fig05vec-ah)"></line>
+    <text class="fig-cap fig-ink-infra" x="470" y="100" text-anchor="start">× 2 all at once</text>
+    <rect class="fig-box-data" x="320" y="116" width="195" height="34" rx="6"></rect>
+    <text class="fig-mono" x="417" y="138" text-anchor="middle">[24, 90, 14, 46]</text>
+    <text class="fig-cap" x="417" y="172" text-anchor="middle">loop hidden in NumPy's compiled code — fast</text>
+  </svg>
+  <figcaption><strong>Think in whole arrays, not single items.</strong> Both sides give <code>[24, 90, 14, 46]</code>; the violet data is the same. The difference is where the loop runs — your slow Python on the left, NumPy's fast compiled code on the right. This one shift underlies NumPy, pandas, and PyTorch.</figcaption>
+</figure>
+
 <p><strong>The mental shift this creates:</strong> from here on, whenever a problem sounds like “do something to every item in a big collection of numbers,” the instinct to reach for is “can this be one array operation?” before reaching for a loop. That shift — thinking in whole arrays rather than individual items — is the single habit that makes NumPy, pandas, and even deep learning frameworks like PyTorch click into place, because all three are built on exactly this idea.</p>
 
 <h3>Shape: how many numbers, arranged how</h3>
@@ -119,6 +158,51 @@ ticket4   23          1</code></pre>
 <p><strong>Plain definition:</strong> a <strong>boolean mask</strong> is an array of <code>True</code>/<code>False</code> values, the same shape as the array it came from, built by comparing every element to some condition at once.</p>
 
 <p><strong>Why it matters:</strong> filtering — “give me only the long tickets” — is one of the most common things done to real data. Writing it as a loop means an <code>if</code> statement re-checked once per item. NumPy instead lets a comparison like <code>np_lengths &gt; 20</code> produce a whole new array of <code>True</code>/<code>False</code> answers in one step, then uses that array of answers to pull out only the matching elements — no <code>if</code>, no loop, written by you.</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 560 150" role="img" aria-label="The build-a-mask-then-filter pattern in three steps. Start with the array 12, 45, 7, 23. Compare every element to greater-than 20 to get a mask of False, True, False, True. Then keep only the True positions, leaving the filtered result 45 and 23.">
+    <defs>
+      <marker id="fig05mask-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+        <path class="fig-arrowhead" d="M0,0 L7,3 L0,6 Z"></path>
+      </marker>
+    </defs>
+    <!-- step 1: the array (data = violet) -->
+    <text class="fig-cap" x="70" y="30" text-anchor="middle">np_lengths</text>
+    <rect class="fig-box-data" x="20" y="38" width="30" height="30" rx="5"></rect>
+    <text class="fig-mono" x="35" y="58" text-anchor="middle">12</text>
+    <rect class="fig-box-data" x="50" y="38" width="30" height="30" rx="5"></rect>
+    <text class="fig-mono" x="65" y="58" text-anchor="middle">45</text>
+    <rect class="fig-box-data" x="80" y="38" width="30" height="30" rx="5"></rect>
+    <text class="fig-mono" x="95" y="58" text-anchor="middle">7</text>
+    <rect class="fig-box-data" x="110" y="38" width="30" height="30" rx="5"></rect>
+    <text class="fig-mono" x="125" y="58" text-anchor="middle">23</text>
+    <line class="fig-arrow" x1="150" y1="53" x2="182" y2="53" marker-end="url(#fig05mask-ah)"></line>
+    <text class="fig-cap" x="166" y="44" text-anchor="middle">&gt; 20</text>
+
+    <!-- step 2: the mask — True cells kept (violet), False dropped (neutral) -->
+    <text class="fig-cap" x="250" y="30" text-anchor="middle">mask</text>
+    <rect class="fig-box" x="192" y="38" width="30" height="30" rx="5"></rect>
+    <text class="fig-cap" x="207" y="57" text-anchor="middle">F</text>
+    <rect class="fig-box-data" x="222" y="38" width="30" height="30" rx="5"></rect>
+    <text class="fig-cap" x="237" y="57" text-anchor="middle">T</text>
+    <rect class="fig-box" x="252" y="38" width="30" height="30" rx="5"></rect>
+    <text class="fig-cap" x="267" y="57" text-anchor="middle">F</text>
+    <rect class="fig-box-data" x="282" y="38" width="30" height="30" rx="5"></rect>
+    <text class="fig-cap" x="297" y="57" text-anchor="middle">T</text>
+    <line class="fig-arrow" x1="322" y1="53" x2="354" y2="53" marker-end="url(#fig05mask-ah)"></line>
+    <text class="fig-cap" x="338" y="44" text-anchor="middle">keep T</text>
+
+    <!-- step 3: the filtered result -->
+    <text class="fig-cap" x="410" y="30" text-anchor="middle">result</text>
+    <rect class="fig-box-data" x="364" y="38" width="42" height="30" rx="5"></rect>
+    <text class="fig-mono" x="385" y="58" text-anchor="middle">45</text>
+    <rect class="fig-box-data" x="414" y="38" width="42" height="30" rx="5"></rect>
+    <text class="fig-mono" x="435" y="58" text-anchor="middle">23</text>
+
+    <text class="fig-cap" x="240" y="104" text-anchor="middle">np_lengths[np_lengths &gt; 20]  →  [45, 23]</text>
+  </svg>
+  <figcaption><strong>Build a mask, then filter.</strong> A comparison turns the whole array into True/False in one step (violet = kept, neutral = dropped); indexing with that mask keeps only the True positions. No <code>if</code>, no loop — the same pattern returns constantly in pandas.</figcaption>
+</figure>
 
 <p><strong>Tiny concrete example:</strong> <code>np_lengths &gt; 20</code> on <code>[12, 45, 7, 23]</code> compares every element to 20 at once and returns <code>[False, True, False, True]</code> — this is the mask. (“Boolean” is just the technical name for a value that is only ever <code>True</code> or <code>False</code>, named after the 19th-century mathematician George Boole, who worked out the algebra of true/false logic; “mask” describes how the array of <code>True</code>/<code>False</code> values is used next — laid over the original array like a stencil, keeping only what lines up with <code>True</code>.) Then <code>np_lengths[np_lengths &gt; 20]</code> uses that exact mask to keep only the positions marked <code>True</code>, returning <code>[45, 23]</code> — the two lengths that were actually greater than 20. This build-a-mask-then-filter pattern reappears constantly in pandas starting next lesson, so it is worth recognizing by name now.</p>
 </section>
