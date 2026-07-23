@@ -170,6 +170,245 @@ urgent:      (3,3)  (4,2)  (3,4)  (5,3)</code></pre>
 
 <p>The answer flips twice. This is not a bug — it is Lesson 13's bias–variance dial wearing a new costume. <strong>k = 1</strong> trusts a single neighbor completely: it can be swayed by one mislabelled or odd training example, which is overfitting (in fact, with k = 1 the model scores 100% on its own training data — every stored ticket's nearest neighbor is itself). A <strong>very large k</strong> — say k = 8, the whole dataset — always predicts the overall majority no matter what the new ticket looks like, which is underfitting: it has collapsed into Lesson 11's baseline. Good k values sit in between and are chosen the honest way, with a validation set (Lesson 12). One practical habit: use an <strong>odd</strong> k for two-class problems, so the vote can never tie.</p>
 
+<h3>Turn the k dial yourself</h3>
+
+<p>The figure above froze the ring at k = 3. Here it moves. Pick a new ticket, then turn k and watch the neighbourhood grow, the voters change, and — for ticket B — the answer flip twice. Ticket A is there for contrast: it sits deep inside urgent territory, so no value of k rescues it.</p>
+
+<div class="sim">
+<p class="sim-hint">Same eight stored tickets, same distances as the table above. Try B at k = 1, then 3, then 7 — the prediction changes each time without a single number in the data changing.</p>
+<div class="sim-controls">
+  <span>new ticket:</span>
+  <button type="button" class="sim-btn active" data-ticket="b" aria-pressed="true">B (2, 2) borderline</button>
+  <button type="button" class="sim-btn" data-ticket="a" aria-pressed="false">A (4, 4) clear-cut</button>
+  <span>k =</span>
+  <button type="button" class="sim-btn" data-k="1" aria-pressed="false">1</button>
+  <button type="button" class="sim-btn active" data-k="3" aria-pressed="true">3</button>
+  <button type="button" class="sim-btn" data-k="7" aria-pressed="false">7</button>
+  <button type="button" class="sim-btn" id="sim1-reset">Reset ↺</button>
+</div>
+<svg class="sim-map" id="sim1-map" viewBox="0 0 400 300" role="img" aria-label="Feature-space map of eight stored tickets plotted by urgent-word count and all-caps-word count. Circles are not-urgent tickets, squares are urgent ones, and the orange point is the new ticket B at (2, 2). A dashed ring and dashed spokes mark its three nearest neighbours: two urgent and one not urgent, so k equals 3 votes urgent.">
+<line class="sim-map-axis" x1="75" y1="245" x2="300" y2="245"/>
+<line class="sim-map-axis" x1="75" y1="245" x2="75" y2="85"/>
+<text class="sim-map-tick" x="75" y="261" text-anchor="middle">0</text>
+<text class="sim-map-tick" x="111" y="261" text-anchor="middle">1</text>
+<text class="sim-map-tick" x="147" y="261" text-anchor="middle">2</text>
+<text class="sim-map-tick" x="183" y="261" text-anchor="middle">3</text>
+<text class="sim-map-tick" x="219" y="261" text-anchor="middle">4</text>
+<text class="sim-map-tick" x="255" y="261" text-anchor="middle">5</text>
+<text class="sim-map-tick" x="65" y="249" text-anchor="end">0</text>
+<text class="sim-map-tick" x="65" y="213" text-anchor="end">1</text>
+<text class="sim-map-tick" x="65" y="177" text-anchor="end">2</text>
+<text class="sim-map-tick" x="65" y="141" text-anchor="end">3</text>
+<text class="sim-map-tick" x="65" y="105" text-anchor="end">4</text>
+<text class="sim-map-label" x="190" y="281" text-anchor="middle">urgent words →</text>
+<text class="sim-map-label" x="22" y="165" text-anchor="middle" transform="rotate(-90 22 165)">caps words →</text>
+<circle class="sim-map-ring" cx="147" cy="173" r="72.0"/>
+<line class="sim-map-link" x1="147" y1="173" x2="111" y2="173"/>
+<line class="sim-map-link" x1="147" y1="173" x2="183" y2="137"/>
+<line class="sim-map-link" x1="147" y1="173" x2="219" y2="173"/>
+<circle class="sim-map-pt dim" cx="75" cy="245" r="7.5"/>
+<circle class="sim-map-pt dim" cx="111" cy="245" r="7.5"/>
+<circle class="sim-map-pt dim" cx="75" cy="209" r="7.5"/>
+<circle class="sim-map-pt picked" cx="111" cy="173" r="7.5"/>
+<rect class="sim-map-pt picked" x="176" y="130" width="14" height="14" rx="2"/>
+<rect class="sim-map-pt picked" x="212" y="166" width="14" height="14" rx="2"/>
+<rect class="sim-map-pt dim" x="176" y="94" width="14" height="14" rx="2"/>
+<rect class="sim-map-pt dim" x="248" y="130" width="14" height="14" rx="2"/>
+<circle class="sim-map-new" cx="147" cy="173" r="8"/>
+<text class="sim-map-label" x="161" y="163">B (2, 2)</text>
+<circle class="sim-map-pt" cx="310" cy="100" r="6"/><text class="sim-map-key" x="322" y="104">not urgent</text>
+<rect class="sim-map-pt" x="304" y="118" width="12" height="12" rx="2"/><text class="sim-map-key" x="322" y="128">urgent</text>
+<circle class="sim-map-new" cx="310" cy="146" r="6"/><text class="sim-map-key" x="322" y="150">new ticket</text>
+</svg>
+<div class="sim-console" id="sim1-out" aria-live="polite"></div>
+<p class="sim-note">This is a model of the mechanism, not the real thing — the same eight stored tickets, the same Euclidean distances and the same votes as the notebook's <code>knn_predict</code> cells, with ties broken by the stored order (which never changes an answer at k = 1, 3 or 7 here). The notebook is the authority: open <code>lesson-18-knn-svm.ipynb</code> and run the distance and vote cells for real.</p>
+</div>
+
+<script>
+(function () {
+  // The whole kNN "model" is this list - exactly the notebook's stored_tickets.
+  var STORED = [
+    { ux: 0, cx: 0, label: "not urgent" },
+    { ux: 1, cx: 0, label: "not urgent" },
+    { ux: 0, cx: 1, label: "not urgent" },
+    { ux: 1, cx: 2, label: "not urgent" },
+    { ux: 3, cx: 3, label: "urgent" },
+    { ux: 4, cx: 2, label: "urgent" },
+    { ux: 3, cx: 4, label: "urgent" },
+    { ux: 5, cx: 3, label: "urgent" }
+  ];
+  var NEW_TICKETS = {
+    b: { name: "B", ux: 2, cx: 2 },
+    a: { name: "A", ux: 4, cx: 4 }
+  };
+
+  // Equal px-per-unit on BOTH axes, or the distance ring stops being a circle.
+  var UNIT = 36, X0 = 75, Y0 = 245;
+  function sx(ux) { return X0 + ux * UNIT; }
+  function sy(cx) { return Y0 - cx * UNIT; }
+
+  var which = "b";
+  var k = 3;
+
+  var mapEl = document.getElementById("sim1-map");
+  var out = document.getElementById("sim1-out");
+  var resetBtn = document.getElementById("sim1-reset");
+  var ticketBtns = document.querySelectorAll('.sim-controls .sim-btn[data-ticket]');
+  var kBtns = document.querySelectorAll('.sim-controls .sim-btn[data-k]');
+
+  function distance(ax, ay, bx, by) {
+    var dx = ax - bx;
+    var dy = ay - by;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  // Distances to every stored ticket, nearest first; ties keep stored order
+  // because sort() is stable in every browser we care about.
+  function ranked(point) {
+    var rows = [];
+    for (var i = 0; i < STORED.length; i++) {
+      var s = STORED[i];
+      rows.push({ s: s, i: i, d: distance(point.ux, point.cx, s.ux, s.cx) });
+    }
+    rows.sort(function (p, q) { return p.d - q.d; });
+    return rows;
+  }
+
+  function drawMap(point, rows) {
+    var voters = {};
+    for (var i = 0; i < k; i++) { voters[rows[i].i] = true; }
+
+    var svg = "";
+    // axes
+    svg += '<line class="sim-map-axis" x1="' + X0 + '" y1="' + Y0 + '" x2="300" y2="' + Y0 + '"/>';
+    svg += '<line class="sim-map-axis" x1="' + X0 + '" y1="' + Y0 + '" x2="' + X0 + '" y2="85"/>';
+    var t;
+    for (t = 0; t <= 5; t++) {
+      svg += '<text class="sim-map-tick" x="' + sx(t) + '" y="' + (Y0 + 16) + '" text-anchor="middle">' + t + "</text>";
+    }
+    for (t = 0; t <= 4; t++) {
+      svg += '<text class="sim-map-tick" x="' + (X0 - 10) + '" y="' + (sy(t) + 4) + '" text-anchor="end">' + t + "</text>";
+    }
+    svg += '<text class="sim-map-label" x="190" y="' + (Y0 + 36) + '" text-anchor="middle">urgent words →</text>';
+    svg += '<text class="sim-map-label" x="22" y="165" text-anchor="middle" transform="rotate(-90 22 165)">caps words →</text>';
+
+    // the neighbourhood ring, but only when it actually fits in the frame
+    var cxp = sx(point.ux), cyp = sy(point.cx);
+    var r = rows[k - 1].d * UNIT;
+    var ringFits = (cxp - r >= 0) && (cxp + r <= 400) && (cyp - r >= 0) && (cyp + r <= 300);
+    if (ringFits) {
+      svg += '<circle class="sim-map-ring" cx="' + cxp + '" cy="' + cyp + '" r="' + r.toFixed(1) + '"/>';
+    }
+
+    // a dashed spoke out to each voting neighbour
+    for (var v = 0; v < k; v++) {
+      var nb = rows[v].s;
+      svg += '<line class="sim-map-link" x1="' + cxp + '" y1="' + cyp + '" x2="' + sx(nb.ux) + '" y2="' + sy(nb.cx) + '"/>';
+    }
+
+    // stored tickets: circle = not urgent, square = urgent (shape carries the
+    // label, so the plot still reads without relying on colour)
+    for (var i = 0; i < STORED.length; i++) {
+      var s = STORED[i];
+      var cls = "sim-map-pt " + (voters[i] ? "picked" : "dim");
+      var px = sx(s.ux), py = sy(s.cx);
+      if (s.label === "urgent") {
+        svg += '<rect class="' + cls + '" x="' + (px - 7) + '" y="' + (py - 7) + '" width="14" height="14" rx="2"/>';
+      } else {
+        svg += '<circle class="' + cls + '" cx="' + px + '" cy="' + py + '" r="7.5"/>';
+      }
+    }
+
+    // the new, unlabelled ticket
+    svg += '<circle class="sim-map-new" cx="' + cxp + '" cy="' + cyp + '" r="8"/>';
+    svg += '<text class="sim-map-label" x="' + (cxp + 14) + '" y="' + (cyp - 10) + '">' + point.name + " (" + point.ux + ", " + point.cx + ")</text>";
+
+    // key
+    svg += '<circle class="sim-map-pt" cx="310" cy="100" r="6"/><text class="sim-map-key" x="322" y="104">not urgent</text>';
+    svg += '<rect class="sim-map-pt" x="304" y="118" width="12" height="12" rx="2"/><text class="sim-map-key" x="322" y="128">urgent</text>';
+    svg += '<circle class="sim-map-new" cx="310" cy="146" r="6"/><text class="sim-map-key" x="322" y="150">new ticket</text>';
+
+    mapEl.innerHTML = svg;
+    return ringFits;
+  }
+
+  function append(html) {
+    if (out.innerHTML !== "") { out.innerHTML += "\n"; }
+    out.innerHTML += html;
+  }
+
+  function render() {
+    var point = NEW_TICKETS[which];
+    var rows = ranked(point);
+    var ringFits = drawMap(point, rows);
+
+    out.innerHTML = "";
+    append("new ticket " + point.name + " (" + point.ux + ", " + point.cx + ")  ·  k = " + k);
+    append("");
+
+    var urgentVotes = 0;
+    var calmVotes = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var voting = i < k;
+      var line = "  (" + row.s.ux + ", " + row.s.cx + ")  " + row.s.label;
+      while (line.length < 26) { line += " "; }
+      line += "d = " + row.d.toFixed(3);
+      if (voting) {
+        if (row.s.label === "urgent") { urgentVotes += 1; } else { calmVotes += 1; }
+        append('<span class="ok">' + line + "   ← votes</span>");
+      } else {
+        append('<span class="skip">' + line + "</span>");
+      }
+    }
+
+    append("");
+    append("tally: " + urgentVotes + " urgent  vs  " + calmVotes + " not urgent");
+    var verdict = urgentVotes > calmVotes ? "URGENT" : "NOT URGENT";
+    append('<span class="hi">prediction at k = ' + k + ": " + verdict + "</span>");
+    if (!ringFits) {
+      append('<span class="skip">(the k = ' + k + " ring is wider than the frame, so only the spokes to the voters are drawn)</span>");
+    }
+  }
+
+  function syncButtons(list, attr, value) {
+    for (var i = 0; i < list.length; i++) {
+      var on = list[i].getAttribute(attr) === String(value);
+      if (on) { list[i].classList.add("active"); } else { list[i].classList.remove("active"); }
+      list[i].setAttribute("aria-pressed", on ? "true" : "false");
+    }
+  }
+
+  for (var a = 0; a < ticketBtns.length; a++) {
+    (function (btn) {
+      btn.addEventListener("click", function () {
+        which = btn.getAttribute("data-ticket");
+        syncButtons(ticketBtns, "data-ticket", which);
+        render();
+      });
+    })(ticketBtns[a]);
+  }
+  for (var b = 0; b < kBtns.length; b++) {
+    (function (btn) {
+      btn.addEventListener("click", function () {
+        k = parseInt(btn.getAttribute("data-k"), 10);
+        syncButtons(kBtns, "data-k", k);
+        render();
+      });
+    })(kBtns[b]);
+  }
+  resetBtn.addEventListener("click", function () {
+    which = "b";
+    k = 3;
+    syncButtons(ticketBtns, "data-ticket", which);
+    syncButtons(kBtns, "data-k", k);
+    render();
+  });
+
+  render();
+})();
+</script>
+
 <div class="note">
 <p><strong>kNN can predict numbers too.</strong> Everything above is classification, but the same machine does regression: find the k nearest tickets and answer with the <em>average</em> of their values (for example, the average of their resolution times) instead of a vote. Nothing else changes.</p>
 </div>

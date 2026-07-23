@@ -962,6 +962,326 @@ footer.next a {
   font-weight: 700;
 }
 
+/* ---------- code walkthrough stepper (.sim-code*) ---------- */
+/* A "run the code one line at a time" simulation: the real source sits in the
+   markup as .sim-line rows, and JS only adds highlight state + reveals the
+   matching explanation. With JavaScript off the reader still sees the complete
+   code and every explanation, so nothing load-bearing is lost. */
+
+.sim-codebox {
+  background: #171a21;
+  border-radius: 10px;
+  padding: 0.75rem 0;
+  margin: 0.8rem 0;
+  overflow-x: auto;
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* one source line: fixed-width number gutter, then the code itself */
+.sim-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.05rem 1rem 0.05rem 0.7rem;
+  border-left: 3px solid transparent;
+  white-space: pre;
+  color: #dfe3ec;
+}
+
+.sim-ln {
+  flex: 0 0 1.6rem;
+  text-align: right;
+  color: #545b6a;
+  user-select: none;
+}
+
+/* the line about to run: orange bar + warm wash (matches the "you" hue) */
+.sim-line.now {
+  background: #3a2410;
+  border-left-color: #e8590c;
+}
+
+/* lines already executed stay fully readable; only un-run lines dim */
+.sim-line.pending {
+  color: #6e7585;
+}
+
+.sim-line.pending .sim-ln {
+  color: #3f4552;
+}
+
+/* live variable state: one chip per name, updated as steps run */
+.sim-vars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.8rem 0;
+}
+
+.sim-var {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 8px;
+  border: 1.5px solid #9fc6cc;
+  background: #ffffff;
+  font-size: 0.82rem;
+}
+
+.sim-var-k {
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  color: #0a6c7d;
+  font-weight: 700;
+}
+
+.sim-var-v {
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  color: #2b2620;
+}
+
+/* the variable that changed on this step */
+.sim-var.changed {
+  border-color: #e8590c;
+  background: #fff4ec;
+}
+
+.sim-var.changed .sim-var-v {
+  color: #c14a0a;
+  font-weight: 700;
+}
+
+/* "step 3 of 9" readout sitting alongside the buttons */
+.sim-progress {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3d5f65;
+}
+
+.sim-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.sim-btn:disabled:hover {
+  transform: none;
+  border-color: #9fc6cc;
+}
+
+/* ---------- before/after re-order (.sim-rank*) ---------- */
+/* Two ranked columns side by side: the ordering before a step, and the
+   ordering after it, with a movement badge on each row. Both columns are in
+   the markup from the start, so with JavaScript off the reader sees the full
+   before-and-after comparison already laid out. */
+
+.sim-rank {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 0.7rem;
+  margin: 0.8rem 0;
+}
+
+.sim-rank-head {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.55rem;
+  border-radius: 7px;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* the starting order is neutral; the improved order is orange (the "you" hue) */
+.sim-rank-head.before {
+  background: #ece7df;
+  color: #6b6459;
+}
+
+.sim-rank-head.after {
+  background: #fdece1;
+  color: #c14a0a;
+}
+
+.sim-rank-arrow {
+  align-self: center;
+  font-size: 1.3rem;
+  color: #0c8599;
+  padding: 0 0.15rem;
+}
+
+.sim-rank-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.28rem 0.45rem;
+  margin-bottom: 0.28rem;
+  border-radius: 8px;
+  border: 1.5px solid #e0d8cc;
+  background: #ffffff;
+  font-size: 0.8rem;
+}
+
+.sim-rank-n {
+  flex: 0 0 1.1rem;
+  text-align: right;
+  font-weight: 700;
+  color: #8a8275;
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+}
+
+.sim-rank-label {
+  flex: 0 0 4.2rem;
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  color: #2b2620;
+}
+
+/* the bar track; JS sets only the fill's width (geometry, never colour) */
+.sim-rank-bar {
+  flex: 1 1 auto;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #ece7df;
+  overflow: hidden;
+}
+
+.sim-rank-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #7048e8;
+  transition: width 0.45s ease;
+}
+
+.sim-rank-val {
+  flex: 0 0 2.6rem;
+  text-align: right;
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  color: #2b2620;
+}
+
+/* movement badge: how far this row climbed or fell between the two orders */
+.sim-rank-move {
+  flex: 0 0 2.1rem;
+  text-align: right;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.sim-rank-row.up {
+  border-color: #2f9e44;
+}
+
+.sim-rank-row.up .sim-rank-move {
+  color: #2f9e44;
+}
+
+.sim-rank-row.down {
+  border-color: #c92a2a;
+}
+
+.sim-rank-row.down .sim-rank-move {
+  color: #c92a2a;
+}
+
+.sim-rank-row.same .sim-rank-move {
+  color: #8a8275;
+}
+
+/* stack the two columns on a narrow screen, arrow turned to point down */
+@media (max-width: 620px) {
+  .sim-rank {
+    grid-template-columns: 1fr;
+  }
+
+  .sim-rank-arrow {
+    transform: rotate(90deg);
+    justify-self: center;
+  }
+}
+
+/* ---------- 2-D feature map (.sim-map*) ---------- */
+/* An interactive scatter plot in feature space: stored examples as points, a
+   new point being classified, and the neighbourhood around it. Same colour
+   language as the .fig-* diagrams - violet = data/examples, orange = the new
+   thing and the prediction being formed. Class shape (circle vs square) also
+   encodes the label, so the plot stays readable without colour.
+   IMPORTANT: the x and y scales must be EQUAL in px per data unit, or a
+   distance ring is no longer a circle and the picture would lie. */
+
+.sim-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #ffffff;
+  border-radius: 10px;
+  margin: 0.8rem 0;
+}
+
+.sim-map-axis {
+  stroke: #b8b0a3;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.sim-map-tick {
+  fill: #8a8275;
+  font-size: 11px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+}
+
+.sim-map-label {
+  fill: #6b6459;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* stored training examples = data = violet */
+.sim-map-pt {
+  fill: #7048e8;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+}
+
+/* a stored example currently inside the neighbourhood and voting */
+.sim-map-pt.picked {
+  stroke: #e8590c;
+  stroke-width: 3;
+}
+
+/* outside the neighbourhood: still visible, clearly not voting */
+.sim-map-pt.dim {
+  fill: #cfc4f0;
+}
+
+/* the new, unlabelled point = the prediction being formed = orange */
+.sim-map-new {
+  fill: #e8590c;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.sim-map-ring {
+  fill: none;
+  stroke: #e8590c;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.sim-map-link {
+  stroke: #e8590c;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+.sim-map-key {
+  fill: #6b6459;
+  font-size: 11px;
+}
+
 .sim-note {
   margin: 0.6rem 0 0;
   font-size: 0.85rem;
@@ -1013,6 +1333,130 @@ footer.next a {
 
   .sim-note {
     color: #9a9285;
+  }
+
+  /* .sim-codebox is terminal-dark in both themes, so only the light-surface
+     pieces (variable chips, progress readout) need overriding here. */
+  .sim-var {
+    background: #1c2a2c;
+    border-color: #35545a;
+  }
+
+  .sim-var-k {
+    color: #4cc4d9;
+  }
+
+  .sim-var-v {
+    color: #e8e2d6;
+  }
+
+  .sim-var.changed {
+    border-color: #ff7b33;
+    background: #33200e;
+  }
+
+  .sim-var.changed .sim-var-v {
+    color: #ffc078;
+  }
+
+  .sim-progress {
+    color: #9fc0c6;
+  }
+
+  .sim-btn:disabled:hover {
+    border-color: #35545a;
+  }
+
+  .sim-rank-head.before {
+    background: #2a2723;
+    color: #b8b0a3;
+  }
+
+  .sim-rank-head.after {
+    background: #3a2410;
+    color: #ff9d5c;
+  }
+
+  .sim-rank-arrow {
+    color: #4cc4d9;
+  }
+
+  .sim-rank-row {
+    background: #211f1c;
+    border-color: #3a352e;
+  }
+
+  .sim-rank-n {
+    color: #8a8275;
+  }
+
+  .sim-rank-label,
+  .sim-rank-val {
+    color: #e8e2d6;
+  }
+
+  .sim-rank-bar {
+    background: #2f2b26;
+  }
+
+  .sim-rank-fill {
+    background: #9775fa;
+  }
+
+  .sim-rank-row.up {
+    border-color: #51cf66;
+  }
+
+  .sim-rank-row.up .sim-rank-move {
+    color: #51cf66;
+  }
+
+  .sim-rank-row.down {
+    border-color: #ff8787;
+  }
+
+  .sim-rank-row.down .sim-rank-move {
+    color: #ff8787;
+  }
+
+  .sim-map {
+    background: #1c2a2c;
+  }
+
+  .sim-map-axis {
+    stroke: #5a6470;
+  }
+
+  .sim-map-tick {
+    fill: #9a9285;
+  }
+
+  .sim-map-label,
+  .sim-map-key {
+    fill: #b8b0a3;
+  }
+
+  .sim-map-pt {
+    fill: #9775fa;
+    stroke: #1c2a2c;
+  }
+
+  .sim-map-pt.picked {
+    stroke: #ff7b33;
+  }
+
+  .sim-map-pt.dim {
+    fill: #4a4166;
+  }
+
+  .sim-map-new {
+    fill: #ff7b33;
+    stroke: #1c2a2c;
+  }
+
+  .sim-map-ring,
+  .sim-map-link {
+    stroke: #ff7b33;
   }
 }
 
@@ -1405,12 +1849,21 @@ figure.fig figcaption strong {
    token colours need no dark override. NEVER wrap escaped &lt; &gt; &amp; so a
    span splits the entity. Existing .c (comment) and .hi (highlight) still apply. */
 
-pre .kw { color: #ff7b72; }   /* keyword: def, for, if, return, import, in ... */
-pre .ty { color: #79c0ff; }   /* type / builtin constant: int, str, True, None */
-pre .st { color: #9ece6a; }   /* string literal */
-pre .nu { color: #f2cc60; }   /* number literal */
-pre .fn { color: #d2a8ff; }   /* function / method name */
-pre .an { color: #ffa657; }   /* annotation / decorator */
+pre .kw, .sim-codebox .kw { color: #ff7b72; }   /* keyword: def, for, if, return, import, in */
+pre .ty, .sim-codebox .ty { color: #79c0ff; }   /* type / builtin constant: int, str, True, None */
+pre .st, .sim-codebox .st { color: #9ece6a; }   /* string literal */
+pre .nu, .sim-codebox .nu { color: #f2cc60; }   /* number literal */
+pre .fn, .sim-codebox .fn { color: #d2a8ff; }   /* function / method name */
+pre .an, .sim-codebox .an { color: #ffa657; }   /* annotation / decorator */
+
+/* a stepper's un-run lines dim as a whole, tokens included */
+.sim-codebox .sim-line.pending .kw,
+.sim-codebox .sim-line.pending .ty,
+.sim-codebox .sim-line.pending .st,
+.sim-codebox .sim-line.pending .nu,
+.sim-codebox .sim-line.pending .fn,
+.sim-codebox .sim-line.pending .an,
+.sim-codebox .sim-line.pending .c { color: #6e7585; }
 
 /* ---------- active-recall micro-check (distinct from challenge details) ---------- */
 /* <details class="check"><summary>question</summary>
@@ -1663,13 +2116,40 @@ details.check summary:hover {
     display: none;
   }
 
-  pre code, pre .kw, pre .ty, pre .st, pre .nu, pre .fn, pre .an, pre .hi {
+  pre code, pre .kw, pre .ty, pre .st, pre .nu, pre .fn, pre .an, pre .hi,
+  .sim-codebox code, .sim-codebox .kw, .sim-codebox .ty, .sim-codebox .st,
+  .sim-codebox .nu, .sim-codebox .fn, .sim-codebox .an, .sim-codebox .hi {
     color: #111111 !important;
     background: transparent !important;
   }
 
-  pre .c {
+  pre .c,
+  .sim-codebox .c {
     color: #666666 !important;
+  }
+
+  /* a code stepper prints as the plain, complete listing: light background,
+     no half-run highlight state, and every line at full contrast */
+  .sim-codebox {
+    background: #f4f4f4 !important;
+    border: 1px solid #cccccc;
+  }
+
+  .sim-line,
+  .sim-line.pending,
+  .sim-line.now {
+    color: #111111 !important;
+    background: none !important;
+    border-left-color: transparent !important;
+  }
+
+  .sim-line .sim-ln,
+  .sim-line.pending .sim-ln {
+    color: #666666 !important;
+  }
+
+  .sim-vars {
+    display: none !important;
   }
 
   /* keep these blocks whole across page breaks */

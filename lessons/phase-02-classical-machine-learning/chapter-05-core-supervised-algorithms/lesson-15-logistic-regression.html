@@ -222,6 +222,181 @@ slope for b  =  (P − y)</code></pre>
 <div class="note">
 <p><strong>Verify-as-you-go note:</strong> logistic regression, the sigmoid, and log loss are stable, decades-old fundamentals — no fast-moving API here. When we move to scikit-learn (Chapter 9), the same idea is <code>LogisticRegression().fit(X, y)</code> and <code>.predict_proba(X)</code>; confirm those method names against the current scikit-learn docs when we get there.</p>
 </div>
+
+<h3>Walk the gradient loop one line at a time</h3>
+
+<p>Cell 12 is the cell people re-read the most: a loop that visits every ticket and quietly piles up two running totals. Reading it top to bottom hides the thing that matters — that the totals <em>change on every pass</em>. So run it by hand below. Press <strong>Next step</strong> to execute one line, watch which line lights up, and watch the variable chips update underneath.</p>
+
+<div class="sim">
+<p class="sim-hint">This is <code>compute_gradients(0.5, 0.0)</code> — the guess model from cell 7, on the notebook's own twelve tickets. Step through the first three tickets in full, then fast-forward the rest.</p>
+<div class="sim-controls">
+  <button type="button" class="sim-btn go" id="sim1-next">Next step ▶</button>
+  <button type="button" class="sim-btn" id="sim1-reset">Reset ↺</button>
+  <span class="sim-progress" id="sim1-progress">step 0 of 21</span>
+</div>
+<div class="sim-codebox" id="sim1-code" aria-hidden="true">
+<div class="sim-line" data-line="1"><span class="sim-ln">1</span><code><span class="kw">def</span> <span class="fn">compute_gradients</span>(w, b):</code></div>
+<div class="sim-line" data-line="2"><span class="sim-ln">2</span><code>    w_slope_total = <span class="nu">0.0</span></code></div>
+<div class="sim-line" data-line="3"><span class="sim-ln">3</span><code>    b_slope_total = <span class="nu">0.0</span></code></div>
+<div class="sim-line" data-line="4"><span class="sim-ln">4</span><code>    n = <span class="fn">len</span>(signal_counts)</code></div>
+<div class="sim-line" data-line="5"><span class="sim-ln">5</span><code>    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):</code></div>
+<div class="sim-line" data-line="6"><span class="sim-ln">6</span><code>        x = signal_counts[i]</code></div>
+<div class="sim-line" data-line="7"><span class="sim-ln">7</span><code>        actual = labels[i]</code></div>
+<div class="sim-line" data-line="8"><span class="sim-ln">8</span><code>        p = <span class="fn">predict_prob</span>(w, b, x)</code></div>
+<div class="sim-line" data-line="9"><span class="sim-ln">9</span><code>        error = p - actual</code></div>
+<div class="sim-line" data-line="10"><span class="sim-ln">10</span><code>        w_slope_total += error * x</code></div>
+<div class="sim-line" data-line="11"><span class="sim-ln">11</span><code>        b_slope_total += error</code></div>
+<div class="sim-line" data-line="12"><span class="sim-ln">12</span><code>    w_slope = w_slope_total / n</code></div>
+<div class="sim-line" data-line="13"><span class="sim-ln">13</span><code>    b_slope = b_slope_total / n</code></div>
+<div class="sim-line" data-line="14"><span class="sim-ln">14</span><code>    <span class="kw">return</span> w_slope, b_slope</code></div>
+</div>
+<div class="sim-vars" id="sim1-vars" aria-hidden="true"></div>
+<div class="sim-console" id="sim1-out" aria-live="polite"></div>
+<p class="sim-note">This is a model of the mechanism, not the real thing — the same twelve tickets and the same arithmetic as the notebook's cell 12, one click per line, with the comments stripped for space. The notebook is the authority: open <code>lesson-15-logistic-regression.ipynb</code> and run the gradient cell for real.</p>
+</div>
+
+<script>
+(function () {
+  // Each step: which source lines run, what to say, and the full variable state
+  // after the step. The renderer diffs `vars` against the previous step to
+  // decide which chip to flag as changed, so nothing is duplicated here.
+  var STEPS = [
+    { lines: [1], say: "Called as compute_gradients(0.5, 0.0) - the guess model.",
+      vars: { w: "0.5", b: "0.0" } },
+    { lines: [2, 3], say: "Both running totals start empty.",
+      vars: { w: "0.5", b: "0.0", w_slope_total: "0.0", b_slope_total: "0.0" } },
+    { lines: [4], say: "n = 12 - there are twelve labelled tickets.",
+      vars: { w: "0.5", b: "0.0", w_slope_total: "0.0", b_slope_total: "0.0", n: "12" } },
+
+    { lines: [5], say: "Loop pass 1 of 12: i = 0.",
+      vars: { i: "0", w_slope_total: "0.0", b_slope_total: "0.0" } },
+    { lines: [6, 7], say: "Ticket 0 has 0 signal words and a human label of 0 (not urgent).",
+      vars: { i: "0", x: "0", actual: "0", w_slope_total: "0.0", b_slope_total: "0.0" } },
+    { lines: [8], say: "z = 0.5 x 0 + 0.0 = 0.0, and sigmoid(0.0) = 0.500. The guess model is on the fence.",
+      vars: { i: "0", x: "0", actual: "0", p: "0.500", w_slope_total: "0.0", b_slope_total: "0.0" } },
+    { lines: [9], say: "error = 0.500 - 0 = +0.500. Positive means the model guessed TOO HIGH.",
+      vars: { i: "0", x: "0", actual: "0", p: "0.500", error: "+0.500", w_slope_total: "0.0", b_slope_total: "0.0" } },
+    { lines: [10, 11], say: "w gets error x x = 0.500 x 0 = 0 (a zero-signal ticket says nothing about w). b gets the plain error.",
+      vars: { i: "0", x: "0", actual: "0", p: "0.500", error: "+0.500", w_slope_total: "0.0", b_slope_total: "0.500" } },
+
+    { lines: [5], say: "Loop pass 2 of 12: i = 1.",
+      vars: { i: "1", w_slope_total: "0.0", b_slope_total: "0.500" } },
+    { lines: [6, 7], say: "Ticket 1 is identical to ticket 0: 0 signal words, label 0.",
+      vars: { i: "1", x: "0", actual: "0", w_slope_total: "0.0", b_slope_total: "0.500" } },
+    { lines: [8, 9], say: "Same input, so the same p = 0.500 and the same error = +0.500.",
+      vars: { i: "1", x: "0", actual: "0", p: "0.500", error: "+0.500", w_slope_total: "0.0", b_slope_total: "0.500" } },
+    { lines: [10, 11], say: "w_slope_total is untouched again; b_slope_total reaches 1.000.",
+      vars: { i: "1", x: "0", actual: "0", p: "0.500", error: "+0.500", w_slope_total: "0.0", b_slope_total: "1.000" } },
+
+    { lines: [5], say: "Loop pass 3 of 12: i = 2. This is the first ticket that moves w.",
+      vars: { i: "2", w_slope_total: "0.0", b_slope_total: "1.000" } },
+    { lines: [6, 7], say: "Ticket 2 has 1 signal word, but a human still labelled it 0 (not urgent).",
+      vars: { i: "2", x: "1", actual: "0", w_slope_total: "0.0", b_slope_total: "1.000" } },
+    { lines: [8], say: "z = 0.5 x 1 + 0.0 = 0.5, and sigmoid(0.5) = 0.622.",
+      vars: { i: "2", x: "1", actual: "0", p: "0.622", w_slope_total: "0.0", b_slope_total: "1.000" } },
+    { lines: [9], say: "error = 0.622 - 0 = +0.622. Confidently wrong, so a bigger error than before.",
+      vars: { i: "2", x: "1", actual: "0", p: "0.622", error: "+0.622", w_slope_total: "0.0", b_slope_total: "1.000" } },
+    { lines: [10, 11], say: "Now x = 1, so the error finally lands on w_slope_total too.",
+      vars: { i: "2", x: "1", actual: "0", p: "0.622", error: "+0.622", w_slope_total: "0.622", b_slope_total: "1.622" } },
+
+    { lines: [5, 6, 7, 8, 9, 10, 11], say: "Fast-forward: tickets 3 to 11 run these same six lines nine more times. Urgent tickets (label 1) give NEGATIVE errors, which pull the totals back down.",
+      vars: { i: "11", w_slope_total: "0.364", b_slope_total: "1.650" } },
+
+    { lines: [12], say: "Loop over. Divide by n to turn the pile-up into an AVERAGE slope: 0.364 / 12.",
+      vars: { n: "12", w_slope_total: "0.364", b_slope_total: "1.650", w_slope: "0.030" } },
+    { lines: [13], say: "Same for the bias: 1.650 / 12.",
+      vars: { n: "12", w_slope_total: "0.364", b_slope_total: "1.650", w_slope: "0.030", b_slope: "0.138" } },
+    { lines: [14], say: "Both slopes are POSITIVE, meaning 'w and b are currently too big'. The training loop will now subtract a small share of each - that is one step of gradient descent.",
+      vars: { w_slope: "0.030", b_slope: "0.138" } }
+  ];
+
+  var codeBox = document.getElementById("sim1-code");
+  var varsBox = document.getElementById("sim1-vars");
+  var out = document.getElementById("sim1-out");
+  var progress = document.getElementById("sim1-progress");
+  var nextBtn = document.getElementById("sim1-next");
+  var resetBtn = document.getElementById("sim1-reset");
+  var lineEls = codeBox.querySelectorAll(".sim-line");
+
+  var cursor = 0;          // how many steps have been executed
+  var previousVars = {};   // last step's values, for the changed-chip diff
+
+  function markLines(activeLines) {
+    for (var i = 0; i < lineEls.length; i++) {
+      var el = lineEls[i];
+      var lineNo = parseInt(el.getAttribute("data-line"), 10);
+      var isActive = false;
+      for (var j = 0; j < activeLines.length; j++) {
+        if (activeLines[j] === lineNo) { isActive = true; }
+      }
+      el.classList.remove("now");
+      el.classList.remove("pending");
+      if (isActive) {
+        el.classList.add("now");
+      } else if (cursor === 0) {
+        el.classList.add("pending");
+      }
+    }
+  }
+
+  function renderVars(vars) {
+    var html = "";
+    for (var name in vars) {
+      if (!vars.hasOwnProperty(name)) { continue; }
+      var value = vars[name];
+      var changed = previousVars[name] !== value;
+      html += '<span class="sim-var' + (changed ? " changed" : "") + '">';
+      html += '<span class="sim-var-k">' + name + "</span>";
+      html += '<span class="sim-var-v">' + value + "</span></span>";
+    }
+    varsBox.innerHTML = html;
+    previousVars = vars;
+  }
+
+  function append(html) {
+    if (out.innerHTML !== "") { out.innerHTML += "\n"; }
+    out.innerHTML += html;
+    out.scrollTop = out.scrollHeight;
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function doNext() {
+    if (cursor >= STEPS.length) { return; }
+    var step = STEPS[cursor];
+    cursor += 1;
+    markLines(step.lines);
+    renderVars(step.vars);
+    var label = step.lines.length === 1 ? "line " + step.lines[0]
+                                        : "lines " + step.lines[0] + "-" + step.lines[step.lines.length - 1];
+    append('<span class="hi">step ' + cursor + "</span> (" + label + ") " + escapeHtml(step.say));
+    progress.textContent = "step " + cursor + " of " + STEPS.length;
+    if (cursor >= STEPS.length) {
+      append('<span class="ok">Done - one full pass over the data produced one pair of slopes.</span>');
+      nextBtn.disabled = true;
+      nextBtn.textContent = "Finished";
+    }
+  }
+
+  function reset() {
+    cursor = 0;
+    previousVars = {};
+    out.innerHTML = "";
+    varsBox.innerHTML = "";
+    nextBtn.disabled = false;
+    nextBtn.textContent = "Next step ▶";
+    progress.textContent = "step 0 of " + STEPS.length;
+    markLines([]);
+    append('<span class="skip">Ready. Press "Next step" to run compute_gradients(0.5, 0.0) one line at a time.</span>');
+  }
+
+  nextBtn.addEventListener("click", doNext);
+  resetBtn.addEventListener("click", reset);
+  reset();
+})();
+</script>
 </section>
 
 <section id="ranit">
@@ -290,6 +465,258 @@ Majority-class baseline:          0.58</code></pre>
 <span class="hi">Self-check passed.</span></code></pre>
 
 <p>(The exact probabilities in line 1 will vary a little with training, but the pattern is firm: near 1 for the signal-heavy urgent ticket, near 0 for the calm one. The resolution estimates in section 2 are unchanged from Lesson 14.) Running <code>python ticket_urgency.py</code> on its own prints the learned model, its decision boundary, the two demo probabilities, and passes its own asserts. <code>requirements.txt</code> stays empty — this classifier is pure standard-library Python (<code>math</code> only).</p>
+
+<h3>Walk the project code one line at a time</h3>
+
+<p>Those two output lines hide four function calls stacked inside each other. <code>predict_urgency</code> asks <code>urgency_probability</code>, which asks <code>count_signal_words</code>, which asks <code>tokenize</code> — and only then does the answer come back up the stack. Step through it below with each of the two demo tickets and watch where they <strong>diverge</strong>: they take different branches inside <code>sigmoid</code>, for a reason worth seeing.</p>
+
+<div class="sim">
+<p class="sim-hint">This is the real prediction path in <code>ticket_urgency.py</code>. Pick a ticket, then press Next step. Try both — the calm one takes the other branch on line 16.</p>
+<div class="sim-controls">
+  <span>ticket:</span>
+  <button type="button" class="sim-btn active" data-ticket="a" aria-pressed="true">"...right now" (urgent)</button>
+  <button type="button" class="sim-btn" data-ticket="b" aria-pressed="false">"...larger size" (calm)</button>
+  <button type="button" class="sim-btn go" id="sim2-next">Next step ▶</button>
+  <button type="button" class="sim-btn" id="sim2-reset">Reset ↺</button>
+  <span class="sim-progress" id="sim2-progress"></span>
+</div>
+<div class="sim-codebox" id="sim2-code" aria-hidden="true">
+<div class="sim-line" data-line="1"><span class="sim-ln">1</span><code>SIGNAL_WORDS = {<span class="st">"now"</span>, <span class="st">"immediately"</span>, <span class="st">"right"</span>, <span class="st">"today"</span>, <span class="c">...</span>}</code></div>
+<div class="sim-line"><span class="sim-ln"> </span><code> </code></div>
+<div class="sim-line" data-line="3"><span class="sim-ln">3</span><code><span class="kw">def</span> <span class="fn">tokenize</span>(text):</code></div>
+<div class="sim-line" data-line="4"><span class="sim-ln">4</span><code>    lowered = text.<span class="fn">lower</span>().<span class="fn">replace</span>(<span class="st">","</span>, <span class="st">""</span>).<span class="fn">replace</span>(<span class="st">"."</span>, <span class="st">""</span>)</code></div>
+<div class="sim-line" data-line="5"><span class="sim-ln">5</span><code>    <span class="kw">return</span> lowered.<span class="fn">split</span>()</code></div>
+<div class="sim-line"><span class="sim-ln"> </span><code> </code></div>
+<div class="sim-line" data-line="7"><span class="sim-ln">7</span><code><span class="kw">def</span> <span class="fn">count_signal_words</span>(text):</code></div>
+<div class="sim-line" data-line="8"><span class="sim-ln">8</span><code>    words = <span class="fn">tokenize</span>(text)</code></div>
+<div class="sim-line" data-line="9"><span class="sim-ln">9</span><code>    count = <span class="nu">0</span></code></div>
+<div class="sim-line" data-line="10"><span class="sim-ln">10</span><code>    <span class="kw">for</span> word <span class="kw">in</span> words:</code></div>
+<div class="sim-line" data-line="11"><span class="sim-ln">11</span><code>        <span class="kw">if</span> word <span class="kw">in</span> SIGNAL_WORDS:</code></div>
+<div class="sim-line" data-line="12"><span class="sim-ln">12</span><code>            count += <span class="nu">1</span></code></div>
+<div class="sim-line" data-line="13"><span class="sim-ln">13</span><code>    <span class="kw">return</span> count</code></div>
+<div class="sim-line"><span class="sim-ln"> </span><code> </code></div>
+<div class="sim-line" data-line="15"><span class="sim-ln">15</span><code><span class="kw">def</span> <span class="fn">sigmoid</span>(z):</code></div>
+<div class="sim-line" data-line="16"><span class="sim-ln">16</span><code>    <span class="kw">if</span> z &lt; <span class="nu">0</span>:</code></div>
+<div class="sim-line" data-line="17"><span class="sim-ln">17</span><code>        <span class="kw">return</span> math.<span class="fn">exp</span>(z) / (<span class="nu">1.0</span> + math.<span class="fn">exp</span>(z))</code></div>
+<div class="sim-line" data-line="18"><span class="sim-ln">18</span><code>    <span class="kw">return</span> <span class="nu">1.0</span> / (<span class="nu">1.0</span> + math.<span class="fn">exp</span>(-z))</code></div>
+<div class="sim-line"><span class="sim-ln"> </span><code> </code></div>
+<div class="sim-line" data-line="20"><span class="sim-ln">20</span><code><span class="kw">def</span> <span class="fn">urgency_probability</span>(ticket_text):</code></div>
+<div class="sim-line" data-line="21"><span class="sim-ln">21</span><code>    x = <span class="fn">count_signal_words</span>(ticket_text)</code></div>
+<div class="sim-line" data-line="22"><span class="sim-ln">22</span><code>    <span class="kw">return</span> <span class="fn">sigmoid</span>(WEIGHT * x + BIAS)</code></div>
+<div class="sim-line"><span class="sim-ln"> </span><code> </code></div>
+<div class="sim-line" data-line="24"><span class="sim-ln">24</span><code><span class="kw">def</span> <span class="fn">predict_urgency</span>(ticket_text):</code></div>
+<div class="sim-line" data-line="25"><span class="sim-ln">25</span><code>    <span class="kw">if</span> <span class="fn">urgency_probability</span>(ticket_text) &gt;= <span class="nu">0.5</span>:</code></div>
+<div class="sim-line" data-line="26"><span class="sim-ln">26</span><code>        <span class="kw">return</span> <span class="st">"urgent"</span></code></div>
+<div class="sim-line" data-line="27"><span class="sim-ln">27</span><code>    <span class="kw">return</span> <span class="st">"not urgent"</span></code></div>
+</div>
+<div class="sim-vars" id="sim2-vars" aria-hidden="true"></div>
+<div class="sim-console" id="sim2-out" aria-live="polite"></div>
+<p class="sim-note">This is a model of the mechanism, not the real thing — the same code path and the same arithmetic as <code>ticket_urgency.py</code>, one click per line. <code>WEIGHT</code> and <code>BIAS</code> are shown as the trained values this lesson predicts (<code>5.0</code> and <code>-5.0</code>); your own run learns its own pair, close but not identical, so the probabilities will differ in the third decimal. Your run always wins: <code>python ticket_urgency.py</code> from inside <code>customer-support-assistant/</code> is the authority.</p>
+</div>
+
+<script>
+(function () {
+  // Two walkthroughs over the SAME code listing - one per demo ticket. Each
+  // step names the lines that run, what happens, and the variable state after.
+  var WALKTHROUGHS = {
+    a: {
+      label: 'predict_urgency("My payment failed twice and I need this resolved right now")',
+      steps: [
+        { lines: [24], say: "Called with the signal-heavy ticket.",
+          vars: { ticket_text: '"...right now"' } },
+        { lines: [25], say: "The if-test needs a number first, so urgency_probability is called. Python dives in.",
+          vars: { ticket_text: '"...right now"' } },
+        { lines: [20], say: "Now inside urgency_probability.",
+          vars: { ticket_text: '"...right now"' } },
+        { lines: [21], say: "Which immediately calls count_signal_words. Diving one level deeper.",
+          vars: { ticket_text: '"...right now"' } },
+        { lines: [7], say: "Now inside count_signal_words - two calls deep.",
+          vars: { text: '"...right now"' } },
+        { lines: [8], say: "Which calls tokenize. Three levels deep now.",
+          vars: { text: '"...right now"' } },
+        { lines: [3, 4], say: "Lowercase the text and drop commas and full stops, so \"Now,\" and \"now\" cannot count as different words.",
+          vars: { lowered: '"my payment failed ... right now"' } },
+        { lines: [5], say: "split() cuts on whitespace into 11 words, and returns them up to count_signal_words.",
+          vars: { words: "[my, payment, failed, twice, and, i, need, this, resolved, right, now]" } },
+        { lines: [9], say: "The tally starts at zero.",
+          vars: { count: "0" } },
+        { lines: [10, 11], say: "Pass 1: word = \"my\". Not in SIGNAL_WORDS, so line 12 is skipped.",
+          vars: { word: '"my"', count: "0" } },
+        { lines: [10, 11], say: "Fast-forward passes 2-9: payment, failed, twice, and, i, need, this, resolved. None are signal words, so count never moves.",
+          vars: { word: '"resolved"', count: "0" } },
+        { lines: [11, 12], say: "Pass 10: word = \"right\" IS in SIGNAL_WORDS. Line 12 finally runs.",
+          vars: { word: '"right"', count: "1" } },
+        { lines: [11, 12], say: "Pass 11: word = \"now\" is a signal word too.",
+          vars: { word: '"now"', count: "2" } },
+        { lines: [13], say: "Words exhausted. Return 2 back up to urgency_probability.",
+          vars: { count: "2" } },
+        { lines: [21], say: "Back one level up: the whole ticket is now a single number, x = 2. This is the feature.",
+          vars: { x: "2" } },
+        { lines: [22], say: "The weighted sum: z = 5.0 x 2 + (-5.0) = 5.0. Now call sigmoid with it.",
+          vars: { x: "2", WEIGHT: "5.0", BIAS: "-5.0", z: "5.0" } },
+        { lines: [16], say: "The branch: is 5.0 < 0? NO. So line 17 is skipped and execution falls through.",
+          vars: { z: "5.0" } },
+        { lines: [18], say: "1.0 / (1.0 + e^-5.0) = 1.0 / 1.0067 = 0.993. Returned up to predict_urgency.",
+          vars: { z: "5.0", p: "0.993" } },
+        { lines: [25], say: "The if-test can finally resolve: 0.993 >= 0.5 is True.",
+          vars: { p: "0.993" } },
+        { lines: [26], say: "Answer: \"urgent\" - and main.py prints it as P(urgent)=0.99.",
+          vars: { p: "0.993", result: '"urgent"' } }
+      ]
+    },
+    b: {
+      label: 'predict_urgency("Do you have this item in a larger size")',
+      steps: [
+        { lines: [24], say: "Called with the calm ticket this time.",
+          vars: { ticket_text: '"...larger size"' } },
+        { lines: [25], say: "Same as before: the if-test needs the probability, so it dives in.",
+          vars: { ticket_text: '"...larger size"' } },
+        { lines: [20], say: "Inside urgency_probability.",
+          vars: { ticket_text: '"...larger size"' } },
+        { lines: [21], say: "Calling count_signal_words.",
+          vars: { ticket_text: '"...larger size"' } },
+        { lines: [7], say: "Inside count_signal_words.",
+          vars: { text: '"...larger size"' } },
+        { lines: [8], say: "Calling tokenize.",
+          vars: { text: '"...larger size"' } },
+        { lines: [3, 4], say: "Lowercase and strip punctuation, exactly as before.",
+          vars: { lowered: '"do you have this item in a larger size"' } },
+        { lines: [5], say: "split() gives 9 words.",
+          vars: { words: "[do, you, have, this, item, in, a, larger, size]" } },
+        { lines: [9], say: "The tally starts at zero.",
+          vars: { count: "0" } },
+        { lines: [10, 11], say: "Fast-forward all 9 passes: do, you, have, this, item, in, a, larger, size. NOT ONE is in SIGNAL_WORDS, so line 12 never runs at all.",
+          vars: { word: '"size"', count: "0" } },
+        { lines: [13], say: "Return 0. The whole calm ticket collapses to zero signal words.",
+          vars: { count: "0" } },
+        { lines: [21], say: "Back up: x = 0.",
+          vars: { x: "0" } },
+        { lines: [22], say: "z = 5.0 x 0 + (-5.0) = -5.0. A NEGATIVE weighted sum this time.",
+          vars: { x: "0", WEIGHT: "5.0", BIAS: "-5.0", z: "-5.0" } },
+        { lines: [16], say: "Here is the divergence: is -5.0 < 0? YES. So this ticket takes the OTHER branch.",
+          vars: { z: "-5.0" } },
+        { lines: [17], say: "e^-5.0 / (1.0 + e^-5.0) = 0.0067 / 1.0067 = 0.007. Algebraically identical to line 18, but written so math.exp never overflows on a large positive -z.",
+          vars: { z: "-5.0", p: "0.007" } },
+        { lines: [25], say: "0.007 >= 0.5 is False, so line 26 is skipped.",
+          vars: { p: "0.007" } },
+        { lines: [27], say: "Answer: \"not urgent\" - printed as P(urgent)=0.01.",
+          vars: { p: "0.007", result: '"not urgent"' } }
+      ]
+    }
+  };
+
+  var ticketButtons = document.querySelectorAll('.sim-controls .sim-btn[data-ticket]');
+  var codeBox = document.getElementById("sim2-code");
+  var varsBox = document.getElementById("sim2-vars");
+  var out = document.getElementById("sim2-out");
+  var progress = document.getElementById("sim2-progress");
+  var nextBtn = document.getElementById("sim2-next");
+  var resetBtn = document.getElementById("sim2-reset");
+  var lineEls = codeBox.querySelectorAll(".sim-line");
+
+  var which = "a";         // which ticket is selected
+  var cursor = 0;          // how many steps have been executed
+  var previousVars = {};   // last step's values, for the changed-chip diff
+
+  function currentSteps() {
+    return WALKTHROUGHS[which].steps;
+  }
+
+  function markLines(activeLines) {
+    for (var i = 0; i < lineEls.length; i++) {
+      var el = lineEls[i];
+      var attr = el.getAttribute("data-line");
+      var lineNo = attr === null ? -1 : parseInt(attr, 10);
+      var isActive = false;
+      for (var j = 0; j < activeLines.length; j++) {
+        if (activeLines[j] === lineNo) { isActive = true; }
+      }
+      el.classList.remove("now");
+      el.classList.remove("pending");
+      if (isActive) {
+        el.classList.add("now");
+      } else if (cursor === 0 && attr !== null) {
+        el.classList.add("pending");
+      }
+    }
+  }
+
+  function renderVars(vars) {
+    var html = "";
+    for (var name in vars) {
+      if (!vars.hasOwnProperty(name)) { continue; }
+      var value = vars[name];
+      var changed = previousVars[name] !== value;
+      html += '<span class="sim-var' + (changed ? " changed" : "") + '">';
+      html += '<span class="sim-var-k">' + name + "</span>";
+      html += '<span class="sim-var-v">' + value + "</span></span>";
+    }
+    varsBox.innerHTML = html;
+    previousVars = vars;
+  }
+
+  function append(html) {
+    if (out.innerHTML !== "") { out.innerHTML += "\n"; }
+    out.innerHTML += html;
+    out.scrollTop = out.scrollHeight;
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function doNext() {
+    var steps = currentSteps();
+    if (cursor >= steps.length) { return; }
+    var step = steps[cursor];
+    cursor += 1;
+    markLines(step.lines);
+    renderVars(step.vars);
+    var label = step.lines.length === 1 ? "line " + step.lines[0]
+                                        : "lines " + step.lines.join(", ");
+    append('<span class="hi">step ' + cursor + "</span> (" + label + ") " + escapeHtml(step.say));
+    progress.textContent = "step " + cursor + " of " + steps.length;
+    if (cursor >= steps.length) {
+      append('<span class="ok">Done - the answer travelled back up all four function calls.</span>');
+      nextBtn.disabled = true;
+      nextBtn.textContent = "Finished";
+    }
+  }
+
+  function reset() {
+    cursor = 0;
+    previousVars = {};
+    out.innerHTML = "";
+    varsBox.innerHTML = "";
+    nextBtn.disabled = false;
+    nextBtn.textContent = "Next step ▶";
+    progress.textContent = "step 0 of " + currentSteps().length;
+    markLines([]);
+    append('<span class="skip">' + escapeHtml(WALKTHROUGHS[which].label) + "</span>");
+    append('<span class="skip">Ready. Press "Next step" to run it one line at a time.</span>');
+  }
+
+  function pickTicket(btn) {
+    for (var i = 0; i < ticketButtons.length; i++) {
+      ticketButtons[i].classList.remove("active");
+      ticketButtons[i].setAttribute("aria-pressed", "false");
+    }
+    btn.classList.add("active");
+    btn.setAttribute("aria-pressed", "true");
+    which = btn.getAttribute("data-ticket");
+    reset();
+  }
+
+  for (var i = 0; i < ticketButtons.length; i++) {
+    (function (btn) {
+      btn.addEventListener("click", function () { pickTicket(btn); });
+    })(ticketButtons[i]);
+  }
+  nextBtn.addEventListener("click", doNext);
+  resetBtn.addEventListener("click", reset);
+  reset();
+})();
+</script>
 </section>
 
 <section id="mistakes">
